@@ -450,6 +450,7 @@ abstract class CalciteConnectionImpl
     public CalciteConnection getConnection() {
       return connection;
     }
+    
   }
 }
 
