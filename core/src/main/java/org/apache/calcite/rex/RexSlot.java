@@ -27,14 +27,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class RexSlot extends RexVariable {
   //~ Instance fields --------------------------------------------------------
 
-  protected final int index;
+  protected final int index;//属性序号
 
   //~ Constructors -----------------------------------------------------------
 
   /**
    * Creates a slot.
    *
-   * @param index Index of the field in the underlying rowtype
+   * @param index Index of the field in the underlying rowtype 属性序号
    * @param type  Type of the column
    */
   protected RexSlot(
@@ -56,6 +56,8 @@ public abstract class RexSlot extends RexVariable {
    * Thread-safe list that populates itself if you make a reference beyond
    * the end of the list. Useful if you are using the same entries repeatedly.
    * Once populated, accesses are very efficient.
+   * 返回前缀1、前缀2这样的字符串
+   * 用于生产字段名称,比如$1、$2等
    */
   protected static class SelfPopulatingList
       extends CopyOnWriteArrayList<String> {
@@ -81,6 +83,7 @@ public abstract class RexSlot extends RexVariable {
       };
     }
 
+    //返回"前缀1"这样的字符串
     @Override public String get(int index) {
       for (;;) {
         try {

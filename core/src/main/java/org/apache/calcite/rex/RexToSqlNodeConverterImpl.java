@@ -26,6 +26,7 @@ import java.util.Calendar;
 
 /**
  * Standard implementation of {@link RexToSqlNodeConverter}.
+ * 表达式到sqlNode的转换实现类
  */
 public class RexToSqlNodeConverterImpl implements RexToSqlNodeConverter {
   //~ Instance fields --------------------------------------------------------

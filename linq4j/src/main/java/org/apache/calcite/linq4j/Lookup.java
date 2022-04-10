@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  * Represents a collection of keys each mapped to one or more values.
- *
+ * 是一个Map,只是value是一个list
  * @param <K> Key type
  * @param <V> Value type
  */
@@ -32,7 +32,7 @@ public interface Lookup<K, V>
    * Applies a transform function to each key and its associated values and
    * returns the results.
    *
-   * @param resultSelector Result selector
+   * @param resultSelector Result selector,参数是key和list<V>,转换成另外一个结果
    * @param <TResult> Result type
    *
    * @return Enumerable over results

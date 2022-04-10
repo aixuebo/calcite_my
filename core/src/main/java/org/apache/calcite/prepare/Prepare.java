@@ -384,7 +384,9 @@ public abstract class Prepare {
     PreparingTable getTableForMember(List<String> names);
 
     /** Returns a catalog reader the same as this one but with a possibly
-     * different schema path. */
+     * different schema path.
+     * 追加默认的schema
+     **/
     CatalogReader withSchemaPath(List<String> schemaPath);
 
     PreparingTable getTable(List<String> names);

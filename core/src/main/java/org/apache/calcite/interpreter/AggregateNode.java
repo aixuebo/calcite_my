@@ -347,19 +347,25 @@ public class AggregateNode extends AbstractSingleNode<Aggregate> {
   }
 
   /** Implementation of {@code SUM} over INTEGER values as a user-defined
-   * aggregate. */
+   * aggregate.
+   * 集合方法,返回integer
+   **/
   public static class IntSum {
     public IntSum() {
     }
+    //初始化的值
     public int init() {
       return 0;
     }
+    //每次追加v时该如何操作
     public int add(int accumulator, int v) {
       return accumulator + v;
     }
+    //如何处理merge操作
     public int merge(int accumulator0, int accumulator1) {
       return accumulator0 + accumulator1;
     }
+    //如何返回结果
     public int result(int accumulator) {
       return accumulator;
     }

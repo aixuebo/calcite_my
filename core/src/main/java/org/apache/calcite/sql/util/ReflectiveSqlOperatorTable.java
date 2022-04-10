@@ -47,8 +47,10 @@ public abstract class ReflectiveSqlOperatorTable implements SqlOperatorTable {
 
   //~ Instance fields --------------------------------------------------------
 
+  //SqlOperator.name 与 SqlOperator的映射
   private final Multimap<String, SqlOperator> operators = HashMultimap.create();
 
+  //SqlOperator.name+动作类型 与 SqlOperator的映射
   private final Map<Pair<String, SqlSyntax>, SqlOperator> mapNameToOp =
       new HashMap<Pair<String, SqlSyntax>, SqlOperator>();
 
@@ -63,6 +65,8 @@ public abstract class ReflectiveSqlOperatorTable implements SqlOperatorTable {
    * Performs post-constructor initialization of an operator table. It can't
    * be part of the constructor, because the subclass constructor needs to
    * complete first.
+   * 每一个SqlFunction作为一个属性
+   * 每一个SqlOperator作为一个属性
    */
   public final void init() {
     // Use reflection to register the expressions stored in public fields.
@@ -91,15 +95,16 @@ public abstract class ReflectiveSqlOperatorTable implements SqlOperatorTable {
   }
 
   // implement SqlOperatorTable
-  public void lookupOperatorOverloads(SqlIdentifier opName,
+  //通过操作name去查找操作集合,找到的操作集合存储到operatorList参数中
+  public void lookupOperatorOverloads(SqlIdentifier opName,//操作名字
       SqlFunctionCategory category,
-      SqlSyntax syntax,
-      List<SqlOperator> operatorList) {
+      SqlSyntax syntax,//操作语法
+      List<SqlOperator> operatorList) {//返回的操作方法集合
     // NOTE jvs 3-Mar-2005:  ignore category until someone cares
 
     String simpleName;
     if (opName.names.size() > 1) {
-      if (opName.names.get(opName.names.size() - 2).equals(IS_NAME)) {
+      if (opName.names.get(opName.names.size() - 2).equals(IS_NAME)) {//倒数第2位是INFORMATION_SCHEMA库
         // per SQL99 Part 2 Section 10.4 Syntax Rule 7.b.ii.1
         simpleName = Util.last(opName.names);
       } else {
@@ -112,10 +117,12 @@ public abstract class ReflectiveSqlOperatorTable implements SqlOperatorTable {
     // Always look up built-in operators case-insensitively. Even in sessions
     // with unquotedCasing=UNCHANGED and caseSensitive=true.
     final Collection<SqlOperator> list =
-        operators.get(simpleName.toUpperCase());
+        operators.get(simpleName.toUpperCase());//通过操作的名字,找到操作对象
     if (list.isEmpty()) {
       return;
     }
+
+    //同一个操作name可能有多个SqlSyntax
     for (SqlOperator op : list) {
       if (op.getSyntax() == syntax) {
         operatorList.add(op);
@@ -127,6 +134,7 @@ public abstract class ReflectiveSqlOperatorTable implements SqlOperatorTable {
       }
     }
 
+    //理论上不会走这个逻辑
     // REVIEW jvs 1-Jan-2005:  why is this extra lookup required?
     // Shouldn't it be covered by search above?
     switch (syntax) {
@@ -165,6 +173,7 @@ public abstract class ReflectiveSqlOperatorTable implements SqlOperatorTable {
         : "Function type for " + function.getName() + " not set";
   }
 
+  //返回所有的注册的操作集合
   public List<SqlOperator> getOperatorList() {
     return ImmutableList.copyOf(operators.values());
   }

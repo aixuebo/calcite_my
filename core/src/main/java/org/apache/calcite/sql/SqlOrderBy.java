@@ -28,6 +28,17 @@ import java.util.List;
  * <p>It is a purely syntactic operator, and is eliminated by
  * {@link org.apache.calcite.sql.validate.SqlValidatorImpl#performUnconditionalRewrites}
  * and replaced with the ORDER_OPERAND of SqlSelect.</p>
+ 1.语法:
+ a.QueryOrExpr 返回 SqlNode
+ b.[OrderBy(e.isA(SqlKind.QUERY))]
+ v.[LIMIT NumericLiteral()—>count ]  [ limit ALL]
+ d.[OFFSET NumericLiteral—>start] [ROW|ROWS]
+ e.[FETCH FIRST/NEXR NumericLiteral—>count ROW|ROWS ONLY ]
+ 2.操作:super("ORDER BY", SqlKind.ORDER_BY, 0)
+ 3.参数:
+ query(SqlNode查询语句)、orderList(SqlNodeList orderby的字段集合)、offset(SqlNode)、fetch(SqlNode)
+ 即scope环境、key、value值
+ 4.SqlKind:SqlKind.ORDER_BY
  */
 public class SqlOrderBy extends SqlCall {
   public static final SqlSpecialOperator OPERATOR = new Operator() {

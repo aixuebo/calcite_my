@@ -28,6 +28,7 @@ package org.apache.calcite.sql.type;
  * By itself, the presence of a constant here doesn't imply that farrago
  * fully supports the associated type.  This is simply a mirror of the
  * missing constant values.
+ * 额外的sql类型
  */
 public interface ExtraSqlTypes {
   // From JDK 1.6

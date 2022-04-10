@@ -56,7 +56,7 @@ public abstract class AvaticaConnection implements Connection {
   private int transactionIsolation;
   private int holdability;
   private int networkTimeout;
-  private String catalog;
+  private String catalog;//是schema的父层名称，一般都是空,即一个catalog包含多个schema,每一个schema包含多个table
 
   public final int id;
   protected final UnregisteredDriver driver;
@@ -400,10 +400,10 @@ public abstract class AvaticaConnection implements Connection {
    */
   protected ResultSet executeQueryInternal(AvaticaStatement statement,
       Meta.Signature signature, Iterable<Object> iterable) throws SQLException {
-    // Close the previous open result set, if there is one.
+    // Close the previous open result set, if there is one.关闭以前的结果集
     synchronized (statement) {
       if (statement.openResultSet != null) {
-        final AvaticaResultSet rs = statement.openResultSet;
+        final AvaticaResultSet rs = statement.openResultSet;//获取以前的结果集
         statement.openResultSet = null;
         try {
           rs.close();
@@ -508,6 +508,7 @@ public abstract class AvaticaConnection implements Connection {
 
     /** A means for anyone who has a trojan to call the protected method
      * {@link org.apache.calcite.avatica.AvaticaStatement#getParameterValues()}.
+     * 获取动态参数值
      */
     public List<Object> getParameterValues(AvaticaStatement statement) {
       return statement.getParameterValues();

@@ -32,7 +32,7 @@ import java.util.Set;
 
 /**
  * A <code>SqlNode</code> is a SQL parse tree.
- *
+ * 描述sql节点树上的一个节点
  * <p>It may be an
  * {@link SqlOperator operator}, {@link SqlLiteral literal},
  * {@link SqlIdentifier identifier}, and so forth.
@@ -44,7 +44,7 @@ public abstract class SqlNode implements Cloneable {
 
   //~ Instance fields --------------------------------------------------------
 
-  protected final SqlParserPos pos;
+  protected final SqlParserPos pos;//节点在sql中的位置
 
   //~ Constructors -----------------------------------------------------------
 
@@ -100,6 +100,7 @@ public abstract class SqlNode implements Cloneable {
    *
    * @param category Category
    * @return Whether this node belongs to the given category.
+   * 判断当前节点所归属的sqlKind是否再参数的范围内
    */
   public final boolean isA(Set<SqlKind> category) {
     return getKind().belongsTo(category);
@@ -193,6 +194,7 @@ public abstract class SqlNode implements Cloneable {
    * methods such as {@link SqlValidator#validateLiteral} for these purposes.
    *
    * @param scope Validator
+   * 针对该node去校验，该方法是递归的方式去校验的
    */
   public abstract void validate(
       SqlValidator validator,

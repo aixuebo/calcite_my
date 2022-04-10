@@ -28,12 +28,14 @@ import java.util.Set;
  *
  * <p>REVIEW 7/05/04 Wael: We should split this up in Cast rules, symmetric and
  * asymmetric assignable rules
+ * 类型之间的转换规则
  */
 public class SqlTypeAssignmentRules {
   //~ Static fields/initializers ---------------------------------------------
 
   private static SqlTypeAssignmentRules instance = null;
 
+  //key类型,value该类型可以转换成其他的类型集合
   private final Map<SqlTypeName, Set<SqlTypeName>> rules;
   private final Map<SqlTypeName, Set<SqlTypeName>> coerceRules;
 

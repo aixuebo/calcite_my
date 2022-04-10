@@ -64,7 +64,7 @@ public class SqlPrefixOperator extends SqlOperator {
       SqlValidator validator,
       SqlCall call,
       RelDataType type) {
-    if (SqlTypeUtil.inCharFamily(type)) {
+    if (SqlTypeUtil.inCharFamily(type)) { //true表示类型是字符串类型
       // Determine coercibility and resulting collation name of
       // unary operator if needed.
       RelDataType operandType =

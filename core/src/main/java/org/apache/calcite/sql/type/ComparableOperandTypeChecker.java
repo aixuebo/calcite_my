@@ -28,16 +28,17 @@ import java.util.Collections;
 /**
  * Type checking strategy which verifies that types have the required attributes
  * to be used as arguments to comparison operators.
+ * 类型相同,并且是可比较的类型
  */
 public class ComparableOperandTypeChecker extends SameOperandTypeChecker {
   //~ Instance fields --------------------------------------------------------
 
-  private final RelDataTypeComparability requiredComparability;
+  private final RelDataTypeComparability requiredComparability;//比较形式
 
   //~ Constructors -----------------------------------------------------------
 
   public ComparableOperandTypeChecker(
-      int nOperands,
+      int nOperands,//参数数量
       RelDataTypeComparability requiredComparability) {
     super(nOperands);
     this.requiredComparability = requiredComparability;
@@ -49,13 +50,13 @@ public class ComparableOperandTypeChecker extends SameOperandTypeChecker {
       SqlCallBinding callBinding,
       boolean throwOnFailure) {
     boolean b = true;
-    for (int i = 0; i < nOperands; ++i) {
+    for (int i = 0; i < nOperands; ++i) {//循环每一个参数
       RelDataType type = callBinding.getOperandType(i);
-      if (!checkType(callBinding, throwOnFailure, type)) {
+      if (!checkType(callBinding, throwOnFailure, type)) {//校验参数是否支持排序
         b = false;
       }
     }
-    if (b) {
+    if (b) {//调用父类,判断参数类型是否都相同
       b = super.checkOperandTypes(callBinding, false);
       if (!b && throwOnFailure) {
         throw callBinding.newValidationSignatureError();
@@ -64,6 +65,7 @@ public class ComparableOperandTypeChecker extends SameOperandTypeChecker {
     return b;
   }
 
+  //校验类型是否支持排序
   private boolean checkType(
       SqlCallBinding callBinding,
       boolean throwOnFailure,
@@ -88,7 +90,7 @@ public class ComparableOperandTypeChecker extends SameOperandTypeChecker {
   public boolean checkOperandTypes(
       SqlOperatorBinding callBinding) {
     boolean b = true;
-    for (int i = 0; i < nOperands; ++i) {
+    for (int i = 0; i < nOperands; ++i) {//校验每一个参数是否支持比较。必须要求都支持比较。
       RelDataType type = callBinding.getOperandType(i);
       boolean result;
       if (type.getComparability().ordinal()
@@ -101,7 +103,7 @@ public class ComparableOperandTypeChecker extends SameOperandTypeChecker {
         b = false;
       }
     }
-    if (b) {
+    if (b) {//调用父类,判断参数类型是否都相同
       b = super.checkOperandTypes(callBinding);
     }
     return b;

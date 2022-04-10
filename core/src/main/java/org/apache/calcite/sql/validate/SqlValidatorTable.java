@@ -25,21 +25,23 @@ import java.util.List;
  * Supplies a {@link SqlValidator} with the metadata for a table.
  *
  * @see SqlValidatorCatalogReader
+ * 用于校验时，获取一个table的元数据信息--比如表可以访问哪些权限(增删改查)
  */
 public interface SqlValidatorTable {
   //~ Methods ----------------------------------------------------------------
 
-  RelDataType getRowType();
+  RelDataType getRowType();//表的schema数据结构
 
-  List<String> getQualifiedName();
+  List<String> getQualifiedName();//表的全路径
 
   /**
-   * Returns whether a given column is monotonic.
+   * Returns whether a given column is monotonic.返回字段的单调性 ---默认显示每一个列是非单调的 NOT_MONOTONIC
    */
   SqlMonotonicity getMonotonicity(String columnName);
 
   /**
    * Returns the access type of the table
+   * 访问该表的权限---增删改查
    */
   SqlAccessType getAllowedAccess();
 }

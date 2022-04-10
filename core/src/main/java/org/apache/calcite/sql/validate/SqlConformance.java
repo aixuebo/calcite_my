@@ -18,6 +18,7 @@ package org.apache.calcite.sql.validate;
 
 /**
  * Enumeration of valid SQL compatiblity modes.
+ * sql有效兼容性
  */
 public enum SqlConformance {
   DEFAULT, STRICT_92, STRICT_99, PRAGMATIC_99, ORACLE_10, STRICT_2003,

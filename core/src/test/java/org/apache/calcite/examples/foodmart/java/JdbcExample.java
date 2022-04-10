@@ -39,26 +39,27 @@ public class JdbcExample {
   public void run() throws ClassNotFoundException, SQLException {
     Class.forName("org.apache.calcite.jdbc.Driver");
     Connection connection =
-        DriverManager.getConnection("jdbc:calcite:");
+            DriverManager.getConnection("jdbc:calcite:");
     CalciteConnection calciteConnection =
-        connection.unwrap(CalciteConnection.class);
+            connection.unwrap(CalciteConnection.class);
+
     SchemaPlus rootSchema = calciteConnection.getRootSchema();
-    rootSchema.add("hr", new ReflectiveSchema(new Hr()));
+    rootSchema.add("hr", new ReflectiveSchema(new Hr()));//添加一个表
     rootSchema.add("foodmart", new ReflectiveSchema(new Foodmart()));
     Statement statement = connection.createStatement();
     ResultSet resultSet =
-        statement.executeQuery("select *\n"
-            + "from \"foodmart\".\"sales_fact_1997\" as s\n"
-            + "join \"hr\".\"emps\" as e\n"
-            + "on e.\"empid\" = s.\"cust_id\"");
+            statement.executeQuery("select *\n"
+                    + "from \"foodmart\".\"sales_fact_1997\" as s\n"
+                    + "join \"hr\".\"emps\" as e\n"
+                    + "on e.\"empid\" = s.\"cust_id\"");
     final StringBuilder buf = new StringBuilder();
     while (resultSet.next()) {
       int n = resultSet.getMetaData().getColumnCount();
       for (int i = 1; i <= n; i++) {
         buf.append(i > 1 ? "; " : "")
-            .append(resultSet.getMetaData().getColumnLabel(i))
-            .append("=")
-            .append(resultSet.getObject(i));
+                .append(resultSet.getMetaData().getColumnLabel(i))
+                .append("=")
+                .append(resultSet.getObject(i));
       }
       System.out.println(buf.toString());
       buf.setLength(0);
@@ -68,12 +69,14 @@ public class JdbcExample {
     connection.close();
   }
 
-  /** Object that will be used via reflection to create the "hr" schema. */
-  public static class Hr {
-    public final Employee[] emps = {
-      new Employee(100, "Bill"),
-      new Employee(200, "Eric"),
-      new Employee(150, "Sebastian"),
+  /** Object that will be used via reflection to create the "hr" schema.
+   * 表示员工表
+   **/
+  public static class Hr {//表示表
+    public final Employee[] emps = {//表示数据
+            new Employee(100, "Bill"),//表示一条员工数据
+            new Employee(200, "Eric"),
+            new Employee(150, "Sebastian"),
     };
   }
 
@@ -89,17 +92,21 @@ public class JdbcExample {
   }
 
   /** Object that will be used via reflection to create the "foodmart"
-   * schema. */
+   * schema.
+   * 表示销售表
+   **/
   public static class Foodmart {
     public final SalesFact[] sales_fact_1997 = {
-      new SalesFact(100, 10),
-      new SalesFact(150, 20),
+            new SalesFact(100, 10),//表示一条销售数据
+            new SalesFact(150, 20),
     };
   }
 
 
   /** Object that will be used via reflection to create the
-   * "sales_fact_1997" fact table. */
+   * "sales_fact_1997" fact table.
+   *  表示一条销售数据   哪个员工 销售了哪个商品
+   **/
   public static class SalesFact {
     public final int cust_id;
     public final int prod_id;

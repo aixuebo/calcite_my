@@ -22,19 +22,23 @@ import org.apache.calcite.sql.SqlOperandCountRange;
  * Helpers for {@link SqlOperandCountRange}.
  */
 public abstract class SqlOperandCountRanges {
+  //固定长度的参数
   public static SqlOperandCountRange of(int length) {
     return new RangeImpl(length, length);
   }
 
+  //在一定范围内的参数数量
   public static SqlOperandCountRange between(int min, int max) {
     assert min < max;
     return new RangeImpl(min, max);
   }
 
+  //最少min个参数
   public static SqlOperandCountRange from(int min) {
     return new RangeImpl(min, -1);
   }
 
+  //任意多个数量,比0大就可以
   public static SqlOperandCountRange any() {
     return new RangeImpl(0, -1);
   }
@@ -49,6 +53,7 @@ public abstract class SqlOperandCountRanges {
       this.max = max;
     }
 
+    //参数数量在min和max之间,表示有效
     public boolean isValidCount(int count) {
       return count >= min && (max == -1 || count <= max);
     }

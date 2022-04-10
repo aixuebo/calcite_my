@@ -26,6 +26,7 @@ import java.util.Map;
  * inter-operation with Java collections classes. In any implementation of this
  * interface, {@link #getKey()} must be equivalent to {@link #getName()}
  * and {@link #getValue()} must be equivalent to {@link #getType()}.
+ * 表示某一个字段
  */
 public interface RelDataTypeField extends Map.Entry<String, RelDataType> {
   //~ Methods ----------------------------------------------------------------
@@ -33,20 +34,20 @@ public interface RelDataTypeField extends Map.Entry<String, RelDataType> {
   /**
    * Gets the name of this field, which is unique within its containing type.
    *
-   * @return field name
+   * @return field name 字段名字
    */
   String getName();
 
   /**
    * Gets the ordinal of this field within its containing type.
    *
-   * @return 0-based ordinal
+   * @return 0-based ordinal 字段在表的位置,属于第几个字段
    */
   int getIndex();
 
   /**
    * Gets the type of this field.
-   *
+   * 获取该字段的类型
    * @return field type
    */
   RelDataType getType();

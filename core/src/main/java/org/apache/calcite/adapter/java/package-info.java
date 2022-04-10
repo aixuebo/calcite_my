@@ -18,6 +18,7 @@
 /**
  * Query provider based on Java in-memory data
  * structures.
+ * 基于java class管理的数据库 表关系
  */
 @PackageMarker
 package org.apache.calcite.adapter.java;

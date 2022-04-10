@@ -25,9 +25,9 @@ public enum ExpressionType {
   //
   //  Priority Operators  Operation
   //  ======== ========== ========================================
-  //  1 left   [ ]        array index
-  //           ()         method call
-  //           .          member access
+  //  1 left   [ ]        array index 数组索引
+  //           ()         method call 方法调用
+  //           .          member access 对象的访问
   //  2 right  ++         pre- or postfix increment
   //           --         pre- or postfix decrement
   //           + -        unary plus, minus

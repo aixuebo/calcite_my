@@ -21,6 +21,7 @@ import org.apache.calcite.rel.core.Window;
 /**
  * Interpreter node that implements a
  * {@link org.apache.calcite.rel.core.Window}.
+ * 什么都不操作，直接输出
  */
 public class WindowNode extends AbstractSingleNode<Window> {
   WindowNode(Interpreter interpreter, Window rel) {

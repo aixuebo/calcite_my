@@ -18,6 +18,7 @@
 /**
  * Defines interfaces for constructing rule-based optimizers of
  * relational expressions.
+ * 构建基于规则的优化关系表达式接口
  */
 @PackageMarker
 package org.apache.calcite.plan;

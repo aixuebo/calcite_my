@@ -46,11 +46,12 @@ import java.util.List;
  *
  * <p>So <code>RexInputRef(3, Integer)</code> is the correct reference for the
  * field DEPTNO2.</p>
+ * 表达式:表示表的某一个字段
  */
 public class RexInputRef extends RexSlot {
   //~ Static fields/initializers ---------------------------------------------
 
-  // list of common names, to reduce memory allocations
+  // list of common names, to reduce memory allocations产生字段名称
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   private static final List<String> NAMES = new SelfPopulatingList("$", 30);
 
@@ -59,8 +60,8 @@ public class RexInputRef extends RexSlot {
   /**
    * Creates an input variable.
    *
-   * @param index Index of the field in the underlying row-type
-   * @param type  Type of the column
+   * @param index Index of the field in the underlying row-type 第几个字段
+   * @param type  Type of the column 字段类型
    */
   public RexInputRef(int index, RelDataType type) {
     super(createName(index), index, type);
@@ -94,6 +95,7 @@ public class RexInputRef extends RexSlot {
 
   /**
    * Creates a reference to a given field in a list of fields.
+   * 创建字段表达式与字段名称的映射
    */
   public static Pair<RexNode, String> of2(
       int index,

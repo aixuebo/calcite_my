@@ -54,11 +54,11 @@ import java.util.List;
  * Implementation of {@link org.apache.calcite.plan.RelOptTable}.
  */
 public class RelOptTableImpl implements Prepare.PreparingTable {
-  private final RelOptSchema schema;
-  private final RelDataType rowType;
-  private final Table table;
+  private final RelOptSchema schema;//表所在schema
+  private final RelDataType rowType;//表的schema数据结构
+  private final Table table;//具体表对象
   private final Function<Class, Expression> expressionFunction;
-  private final ImmutableList<String> names;
+  private final ImmutableList<String> names;//表的schema全路径
 
   /** Estimate for the row count, or null.
    *
@@ -67,7 +67,7 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
    * <p>Useful when a table that contains a materialized query result is being
    * used to replace a query expression that wildly underestimates the row
    * count. Now the materialized table can tell the same lie. */
-  private final Double rowCount;
+  private final Double rowCount;//数据量行数
 
   private RelOptTableImpl(
       RelOptSchema schema,
@@ -98,6 +98,7 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
         expressionFunction, null);
   }
 
+  //转换成读取表的关系表达式
   public static RelOptTableImpl create(RelOptSchema schema, RelDataType rowType,
       final CalciteSchema.TableEntry tableEntry, Double rowCount) {
     Function<Class, Expression> expressionFunction;
@@ -193,16 +194,17 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
     return schema;
   }
 
+  //如何转换成表达式
   public RelNode toRel(ToRelContext context) {
     if (table instanceof TranslatableTable) {
       return ((TranslatableTable) table).toRel(context, this);
     }
-    if (CalcitePrepareImpl.ENABLE_BINDABLE) {
+    if (CalcitePrepareImpl.ENABLE_BINDABLE) {//直接扫描table
       return new LogicalTableScan(context.getCluster(), this);
     }
     if (CalcitePrepareImpl.ENABLE_ENUMERABLE) {
       RelOptCluster cluster = context.getCluster();
-      Class elementType = deduceElementType();
+      Class elementType = deduceElementType();//读取一行元素如何存储，比如数组存储
       final RelNode scan = new EnumerableTableScan(cluster,
           cluster.traitSetOf(EnumerableConvention.INSTANCE), this, elementType);
       if (table instanceof FilterableTable
@@ -249,10 +251,12 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
     return names;
   }
 
+  //返回字段的单调性 ---默认显示每一个列是非单调的 NOT_MONOTONIC
   public SqlMonotonicity getMonotonicity(String columnName) {
     return SqlMonotonicity.NOT_MONOTONIC;
   }
 
+  //访问该表的权限---增删改查都支持访问
   public SqlAccessType getAllowedAccess() {
     return SqlAccessType.ALL;
   }

@@ -20,6 +20,7 @@ import org.apache.calcite.util.Util;
 
 /**
  * Enumeration of possible syntactic types of {@link SqlOperator operators}.
+ * 操作的语法类型--函数、二元运算、前缀运算、后缀运算、特殊语法(select insert等)
  */
 public enum SqlSyntax {
   /**
@@ -119,6 +120,7 @@ public enum SqlSyntax {
   /**
    * Function syntax which takes no parentheses if there are no arguments, for
    * example "CURRENTTIME".
+   * 无参数的函数
    */
   FUNCTION_ID {
     public void unparse(

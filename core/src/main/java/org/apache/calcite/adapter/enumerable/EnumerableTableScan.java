@@ -45,7 +45,7 @@ import java.util.List;
 public class EnumerableTableScan
     extends TableScan
     implements EnumerableRel {
-  private final Class elementType;
+  private final Class elementType;//一行数据如何存储，比如数组
 
   public EnumerableTableScan(RelOptCluster cluster, RelTraitSet traitSet,
       RelOptTable table, Class elementType) {

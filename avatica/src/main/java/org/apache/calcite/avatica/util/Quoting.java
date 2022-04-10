@@ -16,16 +16,16 @@
  */
 package org.apache.calcite.avatica.util;
 
-/** Syntax for quoting identifiers in SQL statements. */
+/** Syntax for quoting identifiers in SQL statements. 提示字符*/
 public enum Quoting {
   /** Quote identifiers in double-quotes. For example, {@code "my id"}. */
-  DOUBLE_QUOTE("\""),
+  DOUBLE_QUOTE("\""),//双引号
 
   /** Quote identifiers in back-quotes. For example, {@code `my id`}. */
-  BACK_TICK("`"),
+  BACK_TICK("`"),//`字符
 
   /** Quote identifiers in brackets. For example, {@code [my id]}. */
-  BRACKET("[");
+  BRACKET("[");//[字符
 
   public String string;
 

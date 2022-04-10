@@ -39,6 +39,7 @@ public class ConnectionConfigImpl implements ConnectionConfig {
     return BuiltInConnectionProperty.TIMEZONE.wrap(properties).getString();
   }
 
+  //默认值是null
   public Service.Factory factory() {
     return BuiltInConnectionProperty.FACTORY.wrap(properties)
         .getPlugin(Service.Factory.class, null);
@@ -58,6 +59,7 @@ public class ConnectionConfigImpl implements ConnectionConfig {
    * @param properties Properties
    * @return Map
    * @throws RuntimeException if a property is not known
+   * 从Properties配置属性中,获取ConnectionProperty对应的value,组成map返回
    */
   public static Map<ConnectionProperty, String> parse(Properties properties,
       Map<String, ? extends ConnectionProperty> nameToProps) {
@@ -203,6 +205,7 @@ public class ConnectionConfigImpl implements ConnectionConfig {
     };
   }
 
+  //配置参数是class的全路径,并且要求该class有一个无参数的INSTANCE熟悉
   public static <T> Converter<T> pluginConverter(final Class<T> pluginClass,
       final T defaultInstance) {
     return new Converter<T>() {

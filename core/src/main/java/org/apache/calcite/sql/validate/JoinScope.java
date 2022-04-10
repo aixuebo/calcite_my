@@ -32,7 +32,7 @@ import org.apache.calcite.sql.SqlWindow;
 public class JoinScope extends ListScope {
   //~ Instance fields --------------------------------------------------------
 
-  private final SqlValidatorScope usingScope;
+  private final SqlValidatorScope usingScope;//在join语法中,使用USING关联表,因此需要知道join的上游select对应的scope,这样可以获取全部using需要的信息。比如select的scope
   private final SqlJoin join;
 
   //~ Constructors -----------------------------------------------------------

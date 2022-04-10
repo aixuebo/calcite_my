@@ -113,6 +113,7 @@ public class RelJson {
   /**
    * Converts a type name to a class. E.g. {@code getClass("LogicalProject")}
    * returns {@link org.apache.calcite.rel.logical.LogicalProject}.class.
+   * 给定一个class类名，找到对应的class类路径
    */
   public Class typeNameToClass(String type) {
     if (!type.contains(".")) {
@@ -133,6 +134,7 @@ public class RelJson {
 
   /**
    * Inverse of {@link #typeNameToClass}.
+   * 给定一个class对象,解析最后的class类名
    */
   public String classToTypeName(Class<? extends RelNode> class_) {
     final String canonicalName = class_.getName();

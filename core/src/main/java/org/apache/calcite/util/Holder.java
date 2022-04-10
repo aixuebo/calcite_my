@@ -24,6 +24,7 @@ package org.apache.calcite.util;
  * <p>It is possible to sub-class to receive events on get or set.</p>
  *
  * @param <E> Element type
+ * 存储一个可变值的对象
  */
 public class Holder<E> {
   private E e;

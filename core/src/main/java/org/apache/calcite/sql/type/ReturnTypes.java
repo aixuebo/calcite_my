@@ -41,18 +41,23 @@ public abstract class ReturnTypes {
   private ReturnTypes() {
   }
 
+  //返回第一个规则结果不是null的结果,相当于coalesce方法
   public static SqlReturnTypeInferenceChain chain(
       SqlReturnTypeInference... rules) {
     return new SqlReturnTypeInferenceChain(rules);
   }
 
   /** Creates a return-type inference that applies a rule then a sequence of
-   * transforms. */
+   * transforms.
+   * 级联操作,一层套一层的进行运算
+   * 需要一个初始类型才能走通,因此参数第一个是SqlReturnTypeInference
+   **/
   public static SqlTypeTransformCascade cascade(SqlReturnTypeInference rule,
       SqlTypeTransform... transforms) {
     return new SqlTypeTransformCascade(rule, transforms);
   }
 
+  //根据工厂自己造返回类型---用于非常明确返回值类型,自己自定义返回类型
   public static ExplicitReturnTypeInference explicit(
       RelProtoDataType protoType) {
     return new ExplicitReturnTypeInference(protoType);
@@ -60,6 +65,7 @@ public abstract class ReturnTypes {
 
   /**
    * Creates an inference rule which returns a copy of a given data type.
+   * 复制参数类型
    */
   public static ExplicitReturnTypeInference explicit(RelDataType type) {
     return explicit(RelDataTypeImpl.proto(type));
@@ -68,6 +74,7 @@ public abstract class ReturnTypes {
   /**
    * Creates an inference rule which returns a type with no precision or scale,
    * such as {@code DATE}.
+   * 返回一个精准的字段类型,类型为SqlTypeName
    */
   public static ExplicitReturnTypeInference explicit(SqlTypeName typeName) {
     return explicit(RelDataTypeImpl.proto(typeName, false));
@@ -76,6 +83,7 @@ public abstract class ReturnTypes {
   /**
    * Creates an inference rule which returns a type with precision but no scale,
    * such as {@code VARCHAR(100)}.
+   * 返回带有精准度的SqlTypeName类型字段,比如VARCHAR(2000)
    */
   public static ExplicitReturnTypeInference explicit(SqlTypeName typeName,
       int precision) {
@@ -85,6 +93,7 @@ public abstract class ReturnTypes {
   /**
    * Type-inference strategy whereby the result type of a call is the type of
    * the operand #0 (0-based).
+   * 基于第0个参数的返回值
    */
   public static final SqlReturnTypeInference ARG0 =
       new OrdinalReturnTypeInference(0);
@@ -93,6 +102,7 @@ public abstract class ReturnTypes {
    * type of the first argument. The length returned is the same as length of
    * the first argument. If any of the other operands are nullable the
    * returned type will also be nullable. First Arg must be of string type.
+   * 第一个参数允许值为null,并且转换成string类型
    */
   public static final SqlReturnTypeInference ARG0_NULLABLE_VARYING =
       cascade(
@@ -108,6 +118,7 @@ public abstract class ReturnTypes {
   /**
    * Type-inference strategy whereby the result type of a call is the type of
    * the operand #0 (0-based), with nulls always allowed.
+   * 第一个参数强制是允许值为null
    */
   public static final SqlReturnTypeInference ARG0_FORCE_NULLABLE =
       cascade(ARG0, SqlTypeTransforms.FORCE_NULLABLE);
@@ -124,13 +135,14 @@ public abstract class ReturnTypes {
    * the operand #0 (0-based), and nullable if the call occurs within a
    * "GROUP BY ()" query. E.g. in "select sum(1) as s from empty", s may be
    * null.
+   * 第0个参数,如果是empty,则设置值为null
    */
   public static final SqlReturnTypeInference ARG0_NULLABLE_IF_EMPTY =
       new OrdinalReturnTypeInference(0) {
         @Override public RelDataType
         inferReturnType(SqlOperatorBinding opBinding) {
           final RelDataType type = super.inferReturnType(opBinding);
-          if (opBinding.getGroupCount() == 0) {
+          if (opBinding.getGroupCount() == 0) {//无group by
             return opBinding.getTypeFactory()
                 .createTypeWithNullability(type, true);
           } else {
@@ -142,6 +154,7 @@ public abstract class ReturnTypes {
   /**
    * Type-inference strategy whereby the result type of a call is the type of
    * the operand #1 (0-based).
+   * 基于第二个参数的类型作为返回值
    */
   public static final SqlReturnTypeInference ARG1 =
       new OrdinalReturnTypeInference(1);
@@ -155,6 +168,7 @@ public abstract class ReturnTypes {
   /**
    * Type-inference strategy whereby the result type of a call is the type of
    * operand #2 (0-based).
+   * 基于第三个参数的类型作为返回值
    */
   public static final SqlReturnTypeInference ARG2 =
       new OrdinalReturnTypeInference(2);
@@ -270,12 +284,13 @@ public abstract class ReturnTypes {
    * intersect, case and other places.
    *
    * @sql.99 Part 2 Section 9.3
+   * 这个规则用于union、except、intersect等场景,返回类型中公共的类型,即共同父类
    */
   public static final SqlReturnTypeInference LEAST_RESTRICTIVE =
       new SqlReturnTypeInference() {
         public RelDataType inferReturnType(SqlOperatorBinding opBinding) {
           return opBinding.getTypeFactory().leastRestrictive(
-              opBinding.collectOperandTypes());
+              opBinding.collectOperandTypes());//收集每一个参数的具体类型
         }
       };
   /**
@@ -344,6 +359,7 @@ public abstract class ReturnTypes {
    * Type-inference strategy for a call where the first argument is a decimal.
    * The result type of a call is a decimal with a scale of 0, and the same
    * precision and nullability as the first argument.
+   * 第一个参数是decimal类型,设置scale为0
    */
   public static final SqlReturnTypeInference DECIMAL_SCALE0 =
       new SqlReturnTypeInference() {

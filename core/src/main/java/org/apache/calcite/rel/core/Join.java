@@ -48,18 +48,19 @@ import java.util.Set;
  * <p>Each output row has columns from the left and right inputs.
  * The set of output rows is a subset of the cartesian product of the two
  * inputs; precisely which subset depends on the join condition.
+ * join需要2个参数，输出是两个参数的输入，并且结果集是笛卡尔
  */
 public abstract class Join extends BiRel {
   //~ Instance fields --------------------------------------------------------
 
-  protected final RexNode condition;
+  protected final RexNode condition;//where条件表达式
   protected final ImmutableSet<String> variablesStopped;
 
   /**
    * Values must be of enumeration {@link JoinRelType}, except that
    * {@link JoinRelType#RIGHT} is disallowed.
    */
-  protected JoinRelType joinType;
+  protected JoinRelType joinType;//join条件
 
   //~ Constructors -----------------------------------------------------------
 
@@ -162,9 +163,11 @@ public abstract class Join extends BiRel {
     return planner.getCostFactory().makeCost(rowCount, 0, 0);
   }
 
+  //预测join的行数
   public static double estimateJoinedRows(
       Join joinRel,
       RexNode condition) {
+    //笛卡尔积的行数
     double product =
         RelMetadataQuery.getRowCount(joinRel.getLeft())
             * RelMetadataQuery.getRowCount(joinRel.getRight());
@@ -173,7 +176,7 @@ public abstract class Join extends BiRel {
     return product * RelMetadataQuery.getSelectivity(joinRel, condition);
   }
 
-  // implement RelNode
+  // implement RelNode 预测join的行数
   public double getRows() {
     return estimateJoinedRows(this, condition);
   }

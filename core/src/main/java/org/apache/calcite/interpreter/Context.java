@@ -25,7 +25,7 @@ public class Context {
   public final DataContext root;
 
   /** Values of incoming columns from all inputs. */
-  public Object[] values;
+  public Object[] values;//持有一行数据的值
 
   Context(DataContext root) {
     this.root = root;

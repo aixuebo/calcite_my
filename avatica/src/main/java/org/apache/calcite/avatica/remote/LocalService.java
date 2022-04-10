@@ -32,6 +32,7 @@ public class LocalService implements Service {
     this.meta = meta;
   }
 
+  //迭代器转换成list对象
   private static <E> List<E> list(Iterable<E> iterable) {
     if (iterable instanceof List) {
       return (List<E>) iterable;

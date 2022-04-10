@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
  * by using a series of {@link SqlReturnTypeInference} rules in a given order.
  * If a rule fails to find a return type (by returning NULL), next rule is tried
  * until there are no more rules in which case NULL will be returned.
+ * 相当于coalesce方法,持有一组返回值,找到第一个不是null的返回值
  */
 public class SqlReturnTypeInferenceChain implements SqlReturnTypeInference {
   //~ Instance fields --------------------------------------------------------

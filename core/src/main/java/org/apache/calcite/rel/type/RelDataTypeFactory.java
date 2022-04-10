@@ -146,7 +146,7 @@ public interface RelDataTypeFactory {
    *
    * @param type     input type
    * @param nullable true to request a nullable type; false to request a NOT
-   *                 NULL type
+   *                 NULL type ,true表示允许为null
    * @return output type, same as input type except with specified nullability
    * @throws NullPointerException if type is null
    */
@@ -184,6 +184,8 @@ public interface RelDataTypeFactory {
    *
    * @param types input types to be combined using union (not null, not empty)
    * @return canonical union type descriptor
+   * 这个规则用于union、except、intersect等场景,返回类型中公共的类型,即共同父类。
+   * 如果没有公共父类,即任意两个类型不能互相转换,则结果返回null
    */
   RelDataType leastRestrictive(List<RelDataType> types);
 

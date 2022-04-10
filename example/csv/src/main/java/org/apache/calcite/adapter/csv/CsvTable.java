@@ -57,7 +57,9 @@ public abstract class CsvTable extends AbstractTable {
 
   /** Various degrees of table "intelligence". */
   public enum Flavor {
-    SCANNABLE, FILTERABLE, TRANSLATABLE
+    SCANNABLE, //纯扫描
+    FILTERABLE, //带有where条件的过滤扫描
+    TRANSLATABLE //数据转换
   }
 }
 

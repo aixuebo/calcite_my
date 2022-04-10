@@ -28,14 +28,18 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Name-resolution scope. Represents any position in a parse tree than an
+ * Name-resolution scope. Represents any position in a parse tree that an
  * expression can be, or anything in the parse tree which has columns.
+ *
+ * 名称解析域:代表解析树的任意位置 that 可以是表达式 或者 解析树上任意列(columns)
  *
  * <p>When validating an expression, say "foo"."bar", you first use the
  * {@link #resolve} method of the scope where the expression is defined to
  * locate "foo". If successful, this returns a
  * {@link SqlValidatorNamespace namespace} describing the type of the resulting
  * object.
+ *
+ * 一个scope可以持有多个命名空间
  */
 public interface SqlValidatorScope {
   //~ Methods ----------------------------------------------------------------
@@ -52,13 +56,13 @@ public interface SqlValidatorScope {
 
   /**
    * Looks up a node with a given name. Returns null if none is found.
-   *
-   * @param names       Name of node to find
+   * 查找别名对应的子查询或者子表对象
+   * @param names       Name of node to find 别名
    * @param ancestorOut If not null, writes the ancestor scope here
    * @param offsetOut   If not null, writes the offset within the ancestor here
    */
   SqlValidatorNamespace resolve(
-      List<String> names,
+      List<String> names,//别名
       SqlValidatorScope[] ancestorOut,
       int[] offsetOut);
 
@@ -74,23 +78,26 @@ public interface SqlValidatorScope {
    *
    * @param columnName Column name
    * @param ctx        Validation context, to appear in any error thrown
-   * @return Table alias and namespace
+   * @return Table alias and namespace <别名,子查询表空间>
+   * 通过列名,找到包含列的 别名以及子查询对象或者表，返回值<别名,子查询表空间>
    */
-  Pair<String, SqlValidatorNamespace> findQualifyingTableName(String columnName,
-      SqlNode ctx);
+  Pair<String, SqlValidatorNamespace> findQualifyingTableName(String columnName,SqlNode ctx);
 
   /**
    * Collects the {@link SqlMoniker}s of all possible columns in this scope.
-   *
+   * 搜集该scope内所有的列集合，输出到参数集合中
    * @param result an array list of strings to add the result to
+   * 将所有命名空间内所有的输出字段--追加到result中,存储每一个列信息
    */
   void findAllColumnNames(List<SqlMoniker> result);
 
   /**
    * Collects the {@link SqlMoniker}s of all table aliases (uses of tables in
    * query FROM clauses) available in this scope.
+   * 搜集所有别名与子查询表的映射关系
    *
    * @param result a list of monikers to add the result to
+   * 将每一个表与别名关系，插入到参数中
    */
   void findAliases(Collection<SqlMoniker> result);
 
@@ -100,6 +107,7 @@ public interface SqlValidatorScope {
    * "emp.empno".
    *
    * @return A qualified identifier, never null
+   * 将列名字补全,比如empno转换成emp.empno
    */
   SqlQualified fullyQualify(SqlIdentifier identifier);
 
@@ -108,11 +116,13 @@ public interface SqlValidatorScope {
    *
    * @param ns    Namespace representing the result-columns of the relation
    * @param alias Alias with which to reference the relation, must not be null
+   * 添加一个子查询表与别名
    */
   void addChild(SqlValidatorNamespace ns, String alias);
 
   /**
    * Finds a window with a given name. Returns null if not found.
+   * 通过name查找window
    */
   SqlWindow lookupWindow(String name);
 
@@ -139,6 +149,7 @@ public interface SqlValidatorScope {
    * @param name Name of column
    * @param ctx  Context for exception
    * @return Type of column, if found and unambiguous; null if not found
+   * 通过列名，解析一个真实的列对象，返回列对象的类型
    */
   RelDataType resolveColumn(String name, SqlNode ctx);
 

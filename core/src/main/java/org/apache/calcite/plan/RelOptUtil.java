@@ -527,8 +527,8 @@ public abstract class RelOptUtil {
    * condition, returning the same fields as its input, using the default
    * filter factory.
    *
-   * @param child     Child relational expression
-   * @param condition Condition
+   * @param child     Child relational expression ,root节点
+   * @param condition Condition 添加filter的表达式
    * @return Relational expression
    */
   public static RelNode createFilter(RelNode child, RexNode condition) {
@@ -1856,9 +1856,10 @@ public abstract class RelOptUtil {
   /**
    * Decomposes a predicate into a list of expressions that are AND'ed
    * together.
-   *
    * @param rexPredicate predicate to be analyzed
    * @param rexList      list of decomposed RexNodes
+   * 分解and断言表达式 进入到list表达式中。
+   * 即按照表达式中的and语法,拆分成list
    */
   public static void decomposeConjunction(
       RexNode rexPredicate,
@@ -1881,6 +1882,10 @@ public abstract class RelOptUtil {
    *
    * <p>For example, {@code a AND NOT b AND NOT (c and d) AND TRUE AND NOT
    * FALSE} returns {@code rexList = [a], notList = [b, c AND d]}.</p>
+   *
+   *
+   *     将表达式拆分,按照and拆分成两个list,一个存放true,一个存放false表达式。
+   *     比如 id = 4 and !(age = 5) and !( a = 5 and b = 6) and true and !false
    *
    * <p>TRUE and NOT FALSE expressions are ignored. FALSE and NOT TRUE
    * expressions are placed on {@code rexList} and {@code notList} as other
@@ -1922,7 +1927,7 @@ public abstract class RelOptUtil {
   /**
    * Decomposes a predicate into a list of expressions that are OR'ed
    * together.
-   *
+   * 拆分or表达式
    * @param rexPredicate predicate to be analyzed
    * @param rexList      list of decomposed RexNodes
    */
@@ -1946,6 +1951,7 @@ public abstract class RelOptUtil {
    *
    * <p>For example, {@code conjunctions(TRUE)} returns the empty list;
    * {@code conjunctions(FALSE)} returns list {@code {FALSE}}.</p>
+   * 拆分and表达式
    */
   public static List<RexNode> conjunctions(RexNode rexPredicate) {
     final List<RexNode> list = new ArrayList<RexNode>();
@@ -1957,6 +1963,7 @@ public abstract class RelOptUtil {
    * Returns a condition decomposed by OR.
    *
    * <p>For example, {@code disjunctions(FALSE)} returns the empty list.</p>
+   * 拆分or表达式
    */
   public static List<RexNode> disjunctions(RexNode rexPredicate) {
     final List<RexNode> list = new ArrayList<RexNode>();
@@ -2001,7 +2008,7 @@ public abstract class RelOptUtil {
 
   /**
    * Adjusts key values in a list by some fixed amount.
-   *
+   * keys的值都同步修正adjustment
    * @param keys       list of key values
    * @param adjustment the amount to adjust the key values by
    * @return modified list
@@ -3049,10 +3056,11 @@ public abstract class RelOptUtil {
 
   /**
    * Visitor which builds a bitmap of the inputs used by an expression.
+   * 表达式使用了哪些字段
    */
   public static class InputFinder extends RexVisitorImpl<Void> {
-    public final ImmutableBitSet.Builder inputBitSet;
-    private final Set<RelDataTypeField> extraFields;
+    public final ImmutableBitSet.Builder inputBitSet;//表达式使用了哪些字段
+    private final Set<RelDataTypeField> extraFields;//额外需要的字段常数值、类型
 
     public InputFinder() {
       this(null);
@@ -3081,6 +3089,7 @@ public abstract class RelOptUtil {
     /**
      * Returns a bit set describing the inputs used by a collection of
      * project expressions and an optional condition.
+     * 统计select的表达式集合、where条件使用到的字段
      */
     public static ImmutableBitSet bits(List<RexNode> exprs, RexNode expr) {
       final InputFinder inputFinder = new InputFinder();
@@ -3089,10 +3098,11 @@ public abstract class RelOptUtil {
     }
 
     public Void visitInputRef(RexInputRef inputRef) {
-      inputBitSet.set(inputRef.getIndex());
+      inputBitSet.set(inputRef.getIndex());//表达式使用了哪些字段
       return null;
     }
 
+    //额外需要的字段常数值、类型
     @Override public Void visitCall(RexCall call) {
       if (call.getOperator() == RexBuilder.GET_OPERATOR) {
         RexLiteral literal = (RexLiteral) call.getOperands().get(1);

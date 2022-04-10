@@ -46,6 +46,7 @@ import java.util.List;
  * <li>for {@code DELETE}, the old values;
  * <li>for {@code UPDATE}, all old values plus updated new values.
  * </ul>
+ * 表的修改操作
  */
 public abstract class TableModify extends SingleRel {
   //~ Enums ------------------------------------------------------------------

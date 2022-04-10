@@ -27,7 +27,7 @@ import com.google.common.collect.Iterables;
 
 import java.util.List;
 
-/** Namespace based on a table from the catalog. */
+/** Namespace based on a table from the catalog. 一个表的空间*/
 class TableNamespace extends AbstractNamespace {
   private final SqlValidatorTable table;
   public final ImmutableList<RelDataTypeField> extendedFields;
@@ -69,7 +69,9 @@ class TableNamespace extends AbstractNamespace {
    *
    * <p>Extended fields are "hidden" or undeclared fields that may nevertheless
    * be present if you ask for them. Phoenix uses them, for instance, to access
-   * rarely used fields in the underlying HBase table. */
+   * rarely used fields in the underlying HBase table.
+   * 继续追加列
+   **/
   public TableNamespace extend(List<RelDataTypeField> extendedFields) {
     return new TableNamespace(validator, table,
         ImmutableList.copyOf(

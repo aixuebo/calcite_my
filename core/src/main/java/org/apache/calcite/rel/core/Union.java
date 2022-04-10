@@ -30,6 +30,7 @@ import java.util.List;
  * optionally eliminating duplicates.
  *
  * <p>Corresponds to SQL {@code UNION} and {@code UNION ALL}.
+ * 并集
  */
 public abstract class Union extends SetOp {
   //~ Constructors -----------------------------------------------------------

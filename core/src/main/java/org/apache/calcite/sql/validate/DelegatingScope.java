@@ -80,6 +80,7 @@ public abstract class DelegatingScope implements SqlValidatorScope {
     return parent.resolve(names, ancestorOut, offsetOut);
   }
 
+  //将命名空间内所有的输出字段--追加到colNames中
   protected void addColumnNames(
       SqlValidatorNamespace ns,
       List<SqlMoniker> colNames) {
@@ -95,7 +96,7 @@ public abstract class DelegatingScope implements SqlValidatorScope {
       colNames.add(
           new SqlMonikerImpl(
               field.getName(),
-              SqlMonikerType.COLUMN));
+              SqlMonikerType.COLUMN));//列对象
     }
   }
 
@@ -150,9 +151,8 @@ public abstract class DelegatingScope implements SqlValidatorScope {
     String columnName;
     switch (identifier.names.size()) {
     case 1:
-      columnName = identifier.names.get(0);
-      final Pair<String, SqlValidatorNamespace> pair =
-          findQualifyingTableName(columnName, identifier);
+      columnName = identifier.names.get(0);//获取查询的字段
+      final Pair<String, SqlValidatorNamespace> pair = findQualifyingTableName(columnName, identifier);//找到列对应的别名以及子查询表
       final String tableName = pair.left;
       final SqlValidatorNamespace namespace = pair.right;
 
@@ -160,11 +160,11 @@ public abstract class DelegatingScope implements SqlValidatorScope {
       final SqlParserPos pos = identifier.getParserPosition();
       SqlIdentifier expanded =
           new SqlIdentifier(
-              ImmutableList.of(tableName, columnName),
+              ImmutableList.of(tableName, columnName),//改成table.列名
               null,
               pos,
               ImmutableList.of(SqlParserPos.ZERO, pos));
-      validator.setOriginal(expanded, identifier);
+      validator.setOriginal(expanded, identifier);//替换
       return SqlQualified.create(this, 1, namespace, expanded);
 
     default:
@@ -173,7 +173,7 @@ public abstract class DelegatingScope implements SqlValidatorScope {
       int i = size - 1;
       for (; i > 0; i--) {
         final SqlIdentifier prefix = identifier.getComponent(0, i);
-        fromNs = resolve(prefix.names, null, null);
+        fromNs = resolve(prefix.names, null, null);//找到子表命名空间
         if (fromNs != null) {
           break;
         }

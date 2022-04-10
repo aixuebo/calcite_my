@@ -226,7 +226,9 @@ public class CalcitePrepareImpl implements CalcitePrepare {
     return (ConvertResult) parse_(context, sql, true);
   }
 
-  /** Shared implementation for {@link #parse} and {@link #convert}. */
+  /** Shared implementation for {@link #parse} and {@link #convert}.
+   * 参数 convert 表示返回值是ParseResult还是ConvertResult
+   **/
   private ParseResult parse_(Context context, String sql, boolean convert) {
     final JavaTypeFactory typeFactory = context.getTypeFactory();
     CalciteCatalogReader catalogReader =
@@ -268,14 +270,18 @@ public class CalcitePrepareImpl implements CalcitePrepare {
   }
 
   /** Creates a collection of planner factories.
+   * 创建一个planner工厂集合
    *
    * <p>The collection must have at least one factory, and each factory must
    * create a planner. If the collection has more than one planner, Calcite will
    * try each planner in turn.</p>
+   * 这个集合至少有一个工厂,每一个工厂可以创建planner对象.
+   * 如果存在多个工厂,则循环每一个工厂去运行
    *
    * <p>One of the things you can do with this mechanism is to try a simpler,
    * faster, planner with a smaller rule set first, then fall back to a more
    * complex planner for complex and costly queries.</p>
+   * 基于这个机制,你可以尝试使用简单的、快速的planner,如果失败再尝试更复杂的planner
    *
    * <p>The default implementation returns a factory that calls
    * {@link #createPlanner(org.apache.calcite.jdbc.CalcitePrepare.Context)}.</p>
@@ -304,8 +310,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
     if (externalContext == null) {
       externalContext = Contexts.withConfig(prepareContext.config());
     }
-    final VolcanoPlanner planner =
-        new VolcanoPlanner(costFactory, externalContext);
+    final VolcanoPlanner planner = new VolcanoPlanner(costFactory, externalContext);
     planner.addRelTraitDef(ConventionTraitDef.INSTANCE);
     if (ENABLE_COLLATION_TRAIT) {
       planner.addRelTraitDef(RelCollationTraitDef.INSTANCE);
@@ -364,9 +369,9 @@ public class CalcitePrepareImpl implements CalcitePrepare {
 
   public <T> CalciteSignature<T> prepareSql(
       Context context,
-      String sql,
+      String sql,//查询的sql
       Queryable<T> expression,
-      Type elementType,
+      Type elementType,//可能是数组,表示返回值一行数据使用数组表示
       int maxRowCount) {
     return prepare_(context, sql, expression, elementType, maxRowCount);
   }
@@ -380,7 +385,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
     if (SIMPLE_SQLS.contains(sql)) {
       return simplePrepare(context, sql);
     }
-    final JavaTypeFactory typeFactory = context.getTypeFactory();
+    final JavaTypeFactory typeFactory = context.getTypeFactory();//org.apache.calcite.jdbc.JavaTypeFactoryImpl
     CalciteCatalogReader catalogReader =
         new CalciteCatalogReader(
             context.getRootSchema(),
@@ -409,20 +414,20 @@ public class CalcitePrepareImpl implements CalcitePrepare {
   }
 
   /** Quickly prepares a simple SQL statement, circumventing the usual
-   * preparation process. */
+   * preparation process.
+   * 执行简单的sql
+   **/
   private <T> CalciteSignature<T> simplePrepare(Context context, String sql) {
     final JavaTypeFactory typeFactory = context.getTypeFactory();
-    final RelDataType x =
-        typeFactory.builder().add("EXPR$0", SqlTypeName.INTEGER).build();
+    final RelDataType x = typeFactory.builder().add("EXPR$0", SqlTypeName.INTEGER).build();//返回结果就是一个int
     @SuppressWarnings("unchecked")
     final List<T> list = (List) ImmutableList.of(1);
     final List<String> origin = null;
-    final List<List<String>> origins =
-        Collections.nCopies(x.getFieldCount(), origin);
-    final List<ColumnMetaData> columns =
-        getColumnMetaDataList(typeFactory, x, x, origins);
-    final Meta.CursorFactory cursorFactory =
-        Meta.CursorFactory.deduce(columns, null);
+    final List<List<String>> origins = Collections.nCopies(x.getFieldCount(), origin);//返回1行数据,内容是ist<String>,此时是null
+
+    final List<ColumnMetaData> columns = getColumnMetaDataList(typeFactory, x, x, origins);//获取每一个字段的元数据信息
+
+    final Meta.CursorFactory cursorFactory =  Meta.CursorFactory.deduce(columns, null);
     return new CalciteSignature<T>(
         sql,
         ImmutableList.<AvaticaParameter>of(),
@@ -559,27 +564,27 @@ public class CalcitePrepareImpl implements CalcitePrepare {
         bindable);
   }
 
+  //获取每一个字段的元数据信息
   private List<ColumnMetaData> getColumnMetaDataList(
       JavaTypeFactory typeFactory, RelDataType x, RelDataType jdbcType,
-      List<List<String>> originList) {
-    final List<ColumnMetaData> columns = new ArrayList<ColumnMetaData>();
-    for (Ord<RelDataTypeField> pair : Ord.zip(jdbcType.getFieldList())) {
-      final RelDataTypeField field = pair.e;
+      List<List<String>> originList) {//存储每一行数据的值
+    final List<ColumnMetaData> columns = new ArrayList<ColumnMetaData>();//每一个字段的元数据
+    for (Ord<RelDataTypeField> pair : Ord.zip(jdbcType.getFieldList())) {//每一个字段
+      final RelDataTypeField field = pair.e;//字段对象
       final RelDataType type = field.getType();
-      final RelDataType fieldType =
-          x.isStruct() ? x.getFieldList().get(pair.i).getType() : type;
-      columns.add(
-          metaData(typeFactory, columns.size(), field.getName(), type,
-              fieldType, originList.get(pair.i)));
+      final RelDataType fieldType = x.isStruct() ? x.getFieldList().get(pair.i).getType() : type;
+      columns.add(metaData(typeFactory, columns.size(), //第几个字段
+              field.getName(), type,fieldType, originList.get(pair.i)));//这一行的值
     }
     return columns;
   }
 
-  private ColumnMetaData metaData(JavaTypeFactory typeFactory, int ordinal,
-      String fieldName, RelDataType type, RelDataType fieldType,
-      List<String> origins) {
-    final ColumnMetaData.AvaticaType avaticaType =
-        avaticaType(typeFactory, type, fieldType);
+  //某一个字段的元数据信息
+  private ColumnMetaData metaData(JavaTypeFactory typeFactory, int ordinal,//第几列
+      String fieldName,//列名称
+      RelDataType type, RelDataType fieldType,
+      List<String> origins) {//一行的值 --- schema.table.column
+    final ColumnMetaData.AvaticaType avaticaType = avaticaType(typeFactory, type, fieldType);
     return new ColumnMetaData(
         ordinal,
         false,
@@ -591,12 +596,12 @@ public class CalcitePrepareImpl implements CalcitePrepare {
             : DatabaseMetaData.columnNoNulls,
         true,
         type.getPrecision(),
-        fieldName,
-        origin(origins, 0),
-        origin(origins, 2),
+        fieldName,//别名
+        origin(origins, 0),//获取数组最后一个值  列名
+        origin(origins, 2),//获取数组倒数第三个值---如果找不到则返回null,不会抛异常  数据库名
         getPrecision(type),
         getScale(type),
-        origin(origins, 1),
+        origin(origins, 1), //表名
         null,
         avaticaType,
         true,
@@ -605,27 +610,29 @@ public class CalcitePrepareImpl implements CalcitePrepare {
         avaticaType.columnClassName());
   }
 
-  private ColumnMetaData.AvaticaType avaticaType(JavaTypeFactory typeFactory,
-      RelDataType type, RelDataType fieldType) {
+  private ColumnMetaData.AvaticaType avaticaType(JavaTypeFactory typeFactory,RelDataType type, RelDataType fieldType) {
     final Type clazz = typeFactory.getJavaClass(Util.first(fieldType, type));
     final ColumnMetaData.Rep rep = ColumnMetaData.Rep.of(clazz);
     assert rep != null;
     final String typeName = getTypeName(type);
     if (type.getComponentType() != null) {
-      final ColumnMetaData.AvaticaType componentType =
-          avaticaType(typeFactory, type.getComponentType(), null);
+      final ColumnMetaData.AvaticaType componentType = avaticaType(typeFactory, type.getComponentType(), null);
+
       return ColumnMetaData.array(componentType, typeName, rep);
     } else {
       return ColumnMetaData.scalar(getTypeOrdinal(type), typeName, rep);
     }
   }
 
+  //从后开始计算,获取数组的第几个下标值,比如offsetFromEnd = 0 ，表示获取数组最后一个值。offsetFromEnd=1表示获取数组导数第二个值。
+  //如果找不到则返回null,不会抛异常
   private static String origin(List<String> origins, int offsetFromEnd) {
     return origins == null || offsetFromEnd >= origins.size()
         ? null
         : origins.get(origins.size() - 1 - offsetFromEnd);
   }
 
+  //获取jdbc对应的类型id
   private int getTypeOrdinal(RelDataType type) {
     return type.getSqlTypeName().getJdbcOrdinal();
   }
@@ -663,8 +670,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
     }
   }
 
-  protected void populateMaterializations(Context context,
-      RelOptPlanner planner, Prepare.Materialization materialization) {
+  protected void populateMaterializations(Context context,RelOptPlanner planner, Prepare.Materialization materialization) {
     // REVIEW: initialize queryRel and tableRel inside MaterializationService,
     // not here?
     try {

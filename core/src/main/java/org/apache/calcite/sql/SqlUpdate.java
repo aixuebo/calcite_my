@@ -28,6 +28,16 @@ import java.util.List;
 /**
  * A <code>SqlUpdate</code> is a node of a parse tree which represents an UPDATE
  * statement.
+ * 1.语法:
+ * UPDATE targetTable SET FRemark = "BlaBla" WHERE FAge =25
+ * update targetTable(SqlNode) as alias(SqlIdentifier) SET targetColumnList(SqlNodeList) = sourceExpressionList(SqlNodeList) where condition(SqlNode)
+ * 要求targetColumnList与sourceExpressionList的size是相同的,即1:1的关系
+ * 2.操作:new SqlSpecialOperator("UPDATE", SqlKind.UPDATE)
+ * 3.参数:
+ * targetTable, targetColumnList,sourceExpressionList, condition, sourceSelect, alias
+ * 注意:sourceSelect是set进来的,不是很常用,应该是用于代替targetColumnList
+ * 其中keywords识别是否包含UPSERT这个SqlLiteral常量node—具体参见SqlInsertKeyword
+ * 4.SqlKind:SqlKind.UPDATE
  */
 public class SqlUpdate extends SqlCall {
   public static final SqlSpecialOperator OPERATOR =

@@ -25,6 +25,14 @@ import java.util.List;
 
 /**
  * Parse tree node representing a {@code JOIN} clause.
+ * 1.语法:
+ * from A JoinType
+ * from A natural INNER JOIN B on condition
+ * from A natural INNER JOIN B USING condition
+ * 2.操作:SqlJoinOperator(("JOIN", SqlKind.JOIN)
+ * 3.参数:
+ * left(SqlNode)、natural(SqlLiteral)、joinType(SqlLiteral left/inner/full等)、right(SqlNode)、conditionType(SqlLiteral on/using/none)、condition(SqlNode)
+ * 4.SqlKind:SqlKind.JOIN
  */
 public class SqlJoin extends SqlCall {
   public static final SqlJoinOperator OPERATOR = new SqlJoinOperator();

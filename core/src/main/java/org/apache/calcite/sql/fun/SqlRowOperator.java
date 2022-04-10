@@ -33,7 +33,7 @@ import java.util.Map;
 
 /**
  * SqlRowOperator represents the special ROW constructor.
- *
+ * 代表构造一行数据
  * <p>TODO: describe usage for row-value construction and row-type construction
  * (SQL supports both).
  */

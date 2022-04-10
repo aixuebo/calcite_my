@@ -25,8 +25,11 @@ import java.util.List;
 
 /**
  * An interface of an object identifier that represents a SqlIdentifier
+ * 绰号，一个字符串标识的绰号
  */
 public interface SqlMoniker {
+
+  //绰号是可以排序的
   Comparator<SqlMoniker> COMPARATOR =
       new Comparator<SqlMoniker>() {
         final Ordering<Iterable<String>> listOrdering =
@@ -46,16 +49,19 @@ public interface SqlMoniker {
 
   /**
    * Returns the type of object referred to by this moniker. Never null.
+   * 绰号类型，该绰号是为谁服务的
    */
   SqlMonikerType getType();
 
   /**
    * Returns the array of component names.
+   * 绰号的全内容    比如:foodmart.sales_fact_1997
    */
   List<String> getFullyQualifiedNames();
 
   /**
    * Creates a {@link SqlIdentifier} containing the fully-qualified name.
+   * 绰号内容
    */
   SqlIdentifier toIdentifier();
 

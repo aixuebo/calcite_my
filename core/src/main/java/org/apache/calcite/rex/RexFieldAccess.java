@@ -22,6 +22,7 @@ import org.apache.calcite.sql.SqlKind;
 
 /**
  * Access to a field of a row-expression.
+ * 访问属性的行表达式
  *
  * <p>You might expect to use a <code>RexFieldAccess</code> to access columns of
  * relational tables, for example, the expression <code>emp.empno</code> in the
@@ -45,6 +46,10 @@ import org.apache.calcite.sql.SqlKind;
  *     WHERE emp.deptno = dept.deptno
  *     AND gender = 'F')</pre>
  * </blockquote>
+ *
+ * 你可能期望的是,RexFieldAccess用于访问一个表的某一个列，其实不是的，这种case有专门的RexInputRef用于该目的。
+ * RexFieldAccess 主要用于访问关联的变量。属于小众应用。
+ * 即比如emp.deptno,说明我要访问emp表的deptno字段。
  */
 public class RexFieldAccess extends RexNode {
   //~ Instance fields --------------------------------------------------------

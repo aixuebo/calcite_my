@@ -534,15 +534,16 @@ public abstract class RelOptRule {
    *
    * <p>Examples:
    * <ul>
-   * <li>"com.foo.Bar" yields "Bar";</li>
-   * <li>"com.flatten.Bar$Baz" yields "Baz";</li>
+   * <li>"com.foo.Bar" yields "Bar";</li> 返回Bar
+   * <li>"com.flatten.Bar$Baz" yields "Baz";</li> 返回Baz
    * <li>"com.foo.Bar$1" yields "1" (which as an integer is an invalid
    * name, and writer of the rule is encouraged to give it an
-   * explicit name).</li>
+   * explicit name).</li> 抛异常,因为结果是数字
    * </ul>
    *
    * @param className Name of the rule's class
    * @return Last segment of the class
+   * 猜类描述名称,返回class的name
    */
   static String guessDescription(String className) {
     String description = className;

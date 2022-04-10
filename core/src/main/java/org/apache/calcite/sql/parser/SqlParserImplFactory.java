@@ -30,7 +30,7 @@ public interface SqlParserImplFactory {
 
   /**
    * Get the underlying parser implementation.
-   *
+   * 传入读取sql reader流,如何生成Node树
    * @return {@link SqlAbstractParserImpl} object.
    */
   SqlAbstractParserImpl getParser(Reader stream);

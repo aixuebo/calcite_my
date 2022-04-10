@@ -76,6 +76,7 @@ import java.util.List;
 
 /**
  * Standard implementation of {@link SqlRexConvertletTable}.
+ * 注册每一个sqlNode如何转换成表达是rexNode的过程
  */
 public class StandardConvertletTable extends ReflectiveConvertletTable {
 

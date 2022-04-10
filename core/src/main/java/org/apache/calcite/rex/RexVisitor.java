@@ -24,6 +24,7 @@ package org.apache.calcite.rex;
  * @see RexVisitorImpl
  *
  * @param <R> Return type
+ * 参见RexShuttle和RexPermutationShuttle
  */
 public interface RexVisitor<R> {
   //~ Methods ----------------------------------------------------------------

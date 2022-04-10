@@ -51,7 +51,7 @@ public interface RelInput {
   /**
    * Returns an expression.
    */
-  RexNode getExpression(String tag);
+  RexNode getExpression(String tag);//input.getExpression("condition")
 
   ImmutableBitSet getBitSet(String tag);
 
@@ -74,7 +74,7 @@ public interface RelInput {
   /**
    * Returns an enum value. Throws if not a valid member.
    */
-  <E extends Enum<E>> E getEnum(String tag, Class<E> enumClass);
+  <E extends Enum<E>> E getEnum(String tag, Class<E> enumClass);//input.getEnum("joinType", JoinRelType.class),
 
   List<RexNode> getExpressionList(String tag);
 

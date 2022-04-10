@@ -23,7 +23,7 @@ import org.apache.calcite.sql.SqlOperatorBinding;
 /**
  * Strategy interface to infer the type of an operator call from the type of the
  * operands.
- *
+ * 策略:返回值类型来自于参数的某一个类型
  * <p>This interface is an example of the
  * {@link org.apache.calcite.util.Glossary#STRATEGY_PATTERN strategy pattern}.
  * This makes

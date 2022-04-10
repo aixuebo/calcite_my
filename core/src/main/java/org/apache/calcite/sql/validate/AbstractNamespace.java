@@ -37,6 +37,7 @@ abstract class AbstractNamespace implements SqlValidatorNamespace {
   /**
    * Whether this scope is currently being validated. Used to check for
    * cycles.
+   * 校验的状态
    */
   private SqlValidatorImpl.Status status =
       SqlValidatorImpl.Status.UNVALIDATED;
@@ -44,13 +45,14 @@ abstract class AbstractNamespace implements SqlValidatorNamespace {
   /**
    * Type of the output row, which comprises the name and type of each output
    * column. Set on validate.
+   * 输出row的类型,包含输出列的名字以及类型
    */
   protected RelDataType rowType;
 
   /** As {@link #rowType}, but not necessarily a struct. */
   protected RelDataType type;
 
-  private boolean forceNullable;
+  private boolean forceNullable;//true 强制所有的属性字段都支持 nullable
 
   protected final SqlNode enclosingNode;
 
@@ -80,6 +82,7 @@ abstract class AbstractNamespace implements SqlValidatorNamespace {
     case UNVALIDATED:
       try {
         status = SqlValidatorImpl.Status.IN_PROGRESS;
+        //校验,再未调用校验方法前,rowType一定是null
         Util.permAssert(
             rowType == null,
             "Namespace.rowType must be null before validate has been called");
@@ -121,7 +124,7 @@ abstract class AbstractNamespace implements SqlValidatorNamespace {
 
   public RelDataType getRowType() {
     if (rowType == null) {
-      validator.validateNamespace(this);
+      validator.validateNamespace(this);//this表示真实的实现类,产生rowType
       Util.permAssert(rowType != null, "validate must set rowType");
     }
     return rowType;
@@ -160,6 +163,7 @@ abstract class AbstractNamespace implements SqlValidatorNamespace {
     return validator.catalogReader.field(rowType, name) != null;
   }
 
+  //返回空间内有单调性的表达式集合 --- 表达式Node与单调性
   public List<Pair<SqlNode, SqlMonotonicity>> getMonotonicExprs() {
     return ImmutableList.of();
   }

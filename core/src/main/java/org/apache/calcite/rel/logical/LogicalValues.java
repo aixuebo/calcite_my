@@ -35,6 +35,7 @@ import java.util.List;
 /**
  * Sub-class of {@link org.apache.calcite.rel.core.Values}
  * not targeted at any particular engine or calling convention.
+ * 属于sql中values,用于生产静态的数据源
  */
 public class LogicalValues extends Values {
   //~ Constructors -----------------------------------------------------------
@@ -54,8 +55,8 @@ public class LogicalValues extends Values {
    */
   public LogicalValues(
       RelOptCluster cluster,
-      RelDataType rowType,
-      ImmutableList<ImmutableList<RexLiteral>> tuples) {
+      RelDataType rowType,//每一行的字段schema
+      ImmutableList<ImmutableList<RexLiteral>> tuples) {//values一组row,所以是二维数组,外面表示一行数据,里面表示每一行的列
     super(cluster, rowType, tuples, cluster.traitSetOf(Convention.NONE));
   }
 
@@ -75,24 +76,28 @@ public class LogicalValues extends Values {
         tuples);
   }
 
-  /** Creates a LogicalValues that outputs no rows of a given row type. */
+  /** Creates a LogicalValues that outputs no rows of a given row type.
+   * 创建一个空数据源集合
+   **/
   public static LogicalValues createEmpty(RelOptCluster cluster,
       RelDataType rowType) {
     return new LogicalValues(cluster, rowType,
-        ImmutableList.<ImmutableList<RexLiteral>>of());
+        ImmutableList.<ImmutableList<RexLiteral>>of());//不需要有具体的row值,因此是空数组
   }
 
-  /** Creates a LogicalValues that outputs one row and one column. */
+  /** Creates a LogicalValues that outputs one row and one column.
+   * 创建一行一列的数据源
+   **/
   public static LogicalValues createOneRow(RelOptCluster cluster) {
     final RelDataType rowType =
         cluster.getTypeFactory().builder()
             .add("ZERO", SqlTypeName.INTEGER).nullable(false)
-            .build();
+            .build();//列类型是int
+
     final ImmutableList<ImmutableList<RexLiteral>> tuples =
         ImmutableList.of(
-            ImmutableList.of(
-                cluster.getRexBuilder().makeExactLiteral(BigDecimal.ZERO,
-                    rowType.getFieldList().get(0).getType())));
+            ImmutableList.of(cluster.getRexBuilder().makeExactLiteral(BigDecimal.ZERO,rowType.getFieldList().get(0).getType())));//产生一个0的值
+
     return new LogicalValues(cluster, rowType, tuples);
   }
 

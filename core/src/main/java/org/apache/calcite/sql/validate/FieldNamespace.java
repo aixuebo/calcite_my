@@ -25,6 +25,7 @@ import org.apache.calcite.sql.SqlNode;
  * <p>A field is not a very interesting namespace - except if the field has a
  * record or multiset type - but this class exists to make fields behave
  * similarly to other records for purposes of name resolution.
+ * 代表一行数据中的一个字段，为该字段设置一个空间
  */
 class FieldNamespace extends AbstractNamespace {
   //~ Constructors -----------------------------------------------------------
@@ -40,23 +41,27 @@ class FieldNamespace extends AbstractNamespace {
       RelDataType dataType) {
     super(validator, null);
     assert dataType != null;
-    this.rowType = dataType;
+    this.rowType = dataType;//具体字段类型
   }
 
   //~ Methods ----------------------------------------------------------------
 
+  //不需要设置类型,因为具体字段类型赢存在了(他是字段,比较特别,从构造函数传递过来)
   public void setType(RelDataType type) {
     throw new UnsupportedOperationException();
   }
 
+  //也不需要实现了,直接返回
   protected RelDataType validateImpl() {
     return rowType;
   }
 
+  //不是sqlNode
   public SqlNode getNode() {
     return null;
   }
 
+  //如果是struct类型,才有子节点
   public SqlValidatorNamespace lookupChild(String name) {
     if (rowType.isStruct()) {
       return validator.lookupFieldNamespace(
@@ -66,6 +71,7 @@ class FieldNamespace extends AbstractNamespace {
     return null;
   }
 
+  //不存在
   public boolean fieldExists(String name) {
     return false;
   }

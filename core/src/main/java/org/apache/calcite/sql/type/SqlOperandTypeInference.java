@@ -21,16 +21,17 @@ import org.apache.calcite.sql.SqlCallBinding;
 
 /**
  * Strategy to infer unknown types of the operands of an operator call.
+ * 猜测参数类型
  */
 public interface SqlOperandTypeInference {
   //~ Methods ----------------------------------------------------------------
 
   /**
    * Infers any unknown operand types.
-   *
+   * 推测未知的参数类型
    * @param callBinding  description of the call being analyzed
-   * @param returnType   the type known or inferred for the result of the call
-   * @param operandTypes receives the inferred types for all operands
+   * @param returnType   the type known or inferred for the result of the call 结果类型
+   * @param operandTypes receives the inferred types for all operands 参数类型
    */
   void inferOperandTypes(
       SqlCallBinding callBinding,

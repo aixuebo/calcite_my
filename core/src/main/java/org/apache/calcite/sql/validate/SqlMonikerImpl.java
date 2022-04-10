@@ -27,6 +27,7 @@ import java.util.List;
 
 /**
  * A generic implementation of {@link SqlMoniker}.
+ * 正常实现，没什么讲的
  */
 public class SqlMonikerImpl implements SqlMoniker {
   //~ Instance fields --------------------------------------------------------

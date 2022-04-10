@@ -21,13 +21,14 @@ import org.apache.calcite.sql.SqlNode;
 
 /**
  * Namespace representing the type of a dynamic parameter.
+ * 代表动态参数
  *
  * @see ParameterScope
  */
 class ParameterNamespace extends AbstractNamespace {
   //~ Instance fields --------------------------------------------------------
 
-  private final RelDataType type;
+  private final RelDataType type;//标识动态参数类型
 
   //~ Constructors -----------------------------------------------------------
 

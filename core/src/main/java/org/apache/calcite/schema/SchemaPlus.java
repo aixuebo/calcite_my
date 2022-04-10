@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Extension to the {@link Schema} interface.
+ * 扩展schema数据
  *
  * <p>Given a user-defined schema that implements the {@link Schema} interface,
  * Calcite creates a wrapper that implements the {@code SchemaPlus} interface.
@@ -31,16 +32,18 @@ import com.google.common.collect.ImmutableList;
  * <p>A user-defined schema does not need to implement this interface, but by
  * the time a schema is passed to a method in a user-defined schema or
  * user-defined table, it will have been wrapped in this interface.</p>
+ * 描述一个数据库
  */
 public interface SchemaPlus extends Schema {
   /**
    * Returns the parent schema, or null if this schema has no parent.
+   * 父数据库信息---一般无父子关系
    */
   SchemaPlus getParentSchema();
 
   /**
    * Returns the name of this schema.
-   *
+   * 数据库名字
    * <p>The name must not be null, and must be unique within its parent.
    * The root schema is typically named "".
    */
@@ -50,10 +53,14 @@ public interface SchemaPlus extends Schema {
   SchemaPlus getSubSchema(String name);
 
   /** Adds a schema as a sub-schema of this schema, and returns the wrapped
-   * object. */
+   * object.
+   * 添加一个子库
+   **/
   SchemaPlus add(String name, Schema schema);
 
-  /** Adds a table to this schema. */
+  /** Adds a table to this schema.
+   * 添加一个表
+   **/
   void add(String name, Table table);
 
   /** Adds a function to this schema. */

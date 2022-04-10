@@ -21,11 +21,12 @@ import org.apache.calcite.sql.SqlKind;
 
 /**
  * Dynamic parameter reference in a row-expression.
+ * 动态参数
  */
 public class RexDynamicParam extends RexVariable {
   //~ Instance fields --------------------------------------------------------
 
-  private final int index;
+  private final int index;//第几个动态参数
 
   //~ Constructors -----------------------------------------------------------
 

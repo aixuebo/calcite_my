@@ -24,6 +24,7 @@ import java.util.List;
 
 /**
  * RelRecordType represents a structured type having named fields.
+ * 表示一个java对象组成的一行数据
  */
 public class RelRecordType extends RelDataTypeImpl implements Serializable {
   //~ Constructors -----------------------------------------------------------

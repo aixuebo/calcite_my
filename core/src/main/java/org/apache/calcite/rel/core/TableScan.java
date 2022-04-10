@@ -39,6 +39,7 @@ import java.util.Set;
 
 /**
  * Relational operator that returns the contents of a table.
+ * 如何读取一个表的关系表达式
  */
 public abstract class TableScan extends AbstractRelNode {
   //~ Instance fields --------------------------------------------------------
@@ -114,33 +115,34 @@ public abstract class TableScan extends AbstractRelNode {
    * <p>Sub-classes, representing table types that have these capabilities,
    * should override.</p>
    *
-   * @param fieldsUsed  Bitmap of the fields desired by the consumer
+   * @param fieldsUsed  Bitmap of the fields desired by the consumer 需要去投影消费的字段集合
    * @param extraFields Extra fields, not advertised in the table's row-type,
-   *                    wanted by the consumer
+   *                    wanted by the consumer 额外追加的字段
    * @return Relational expression that projects the desired fields
+   * 在原始表的基础上进行投影,提取有效的字段
    */
   public RelNode project(ImmutableBitSet fieldsUsed,
       Set<RelDataTypeField> extraFields,
       RelFactories.ProjectFactory projectFactory) {
-    final int fieldCount = getRowType().getFieldCount();
-    if (fieldsUsed.equals(ImmutableBitSet.range(fieldCount))
-        && extraFields.isEmpty()) {
+    final int fieldCount = getRowType().getFieldCount();//一共多少个字段
+    if (fieldsUsed.equals(ImmutableBitSet.range(fieldCount)) && extraFields.isEmpty()) { //全部字段都要,则直接返回本身,不需要投影
       return this;
     }
-    List<RexNode> exprList = new ArrayList<RexNode>();
-    List<String> nameList = new ArrayList<String>();
+    List<RexNode> exprList = new ArrayList<RexNode>();//存储select中字段的表达式
+    List<String> nameList = new ArrayList<String>();//存储列名称
     RexBuilder rexBuilder = getCluster().getRexBuilder();
     final List<RelDataTypeField> fields = getRowType().getFieldList();
 
     // Project the subset of fields.
     for (int i : fieldsUsed) {
-      RelDataTypeField field = fields.get(i);
-      exprList.add(rexBuilder.makeInputRef(this, i));
+      RelDataTypeField field = fields.get(i);//
+      exprList.add(rexBuilder.makeInputRef(this, i));//将该字段转换成表达式
       nameList.add(field.getName());
     }
 
     // Project nulls for the extra fields. (Maybe a sub-class table has
     // extra fields, but we don't.)
+    //追加额外的类型
     for (RelDataTypeField extraField : extraFields) {
       exprList.add(
           rexBuilder.ensureType(

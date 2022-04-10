@@ -18,12 +18,15 @@ package org.apache.calcite.interpreter;
 
 /**
  * Sink to which to send rows.
- *
+ * 一行一行写数据到输出流中
  * <p>Corresponds to an output of a relational expression.
  */
 public interface Sink {
+
+  //如何将一行数据输出出去
   void send(Row row) throws InterruptedException;
 
+  //对结果做一些额外处理
   void end() throws InterruptedException;
 }
 

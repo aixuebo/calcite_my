@@ -22,6 +22,7 @@ import java.sql.SQLException;
 /**
  * Implementation of {@link ResultSetMetaData}
  * for the Avatica framework.
+ * 数据结果中,字段的元数据信息
  */
 public class AvaticaResultSetMetaData implements ResultSetMetaData {
   final AvaticaStatement statement;

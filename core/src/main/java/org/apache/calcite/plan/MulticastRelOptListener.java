@@ -22,6 +22,7 @@ import java.util.List;
 /**
  * MulticastRelOptListener implements the {@link RelOptListener} interface by
  * forwarding events on to a collection of other listeners.
+ * 持有多个RelOptListener
  */
 public class MulticastRelOptListener implements RelOptListener {
   //~ Instance fields --------------------------------------------------------

@@ -45,15 +45,17 @@ import java.util.Set;
  * or can be applied to relational inputs.
  *
  * @see org.apache.calcite.rel.logical.LogicalTableFunctionScan
+ * 生产数据源---他是查询树的叶子节点
+ * 产生多行数据，每行多列
  */
 public abstract class TableFunctionScan extends AbstractRelNode {
   //~ Instance fields --------------------------------------------------------
 
-  private final RexNode rexCall;
+  private final RexNode rexCall;//函数,如何拆分成多列数据
 
-  private final Type elementType;
+  private final Type elementType;//输出类型
 
-  private ImmutableList<RelNode> inputs;
+  private ImmutableList<RelNode> inputs;//输入源
 
   protected final ImmutableSet<RelColumnMapping> columnMappings;
 
@@ -73,7 +75,7 @@ public abstract class TableFunctionScan extends AbstractRelNode {
   protected TableFunctionScan(
       RelOptCluster cluster,
       RelTraitSet traits,
-      List<RelNode> inputs,
+      List<RelNode> inputs,//数据源,可以无，也可以有。如果存在数据源,则可能在数据源基础上进一步1行拆分成多行
       RexNode rexCall,
       Type elementType,
       RelDataType rowType,
@@ -152,6 +154,7 @@ public abstract class TableFunctionScan extends AbstractRelNode {
     recomputeDigest();
   }
 
+  //多数据源统计行数
   @Override public double getRows() {
     // Calculate result as the sum of the input rowcount estimates,
     // assuming there are any, otherwise use the superclass default.  So

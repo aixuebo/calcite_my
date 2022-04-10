@@ -51,6 +51,7 @@ import java.util.Set;
  *
  * <p>A schema may be nested within another schema; see
  * {@link Schema#getSubSchema(String)}.</p>
+ * 表示一个数据库
  */
 public interface Schema {
   /**
@@ -65,6 +66,7 @@ public interface Schema {
    * Returns the names of the tables in this schema.
    *
    * @return Names of the tables in this schema
+   * 获取所有表名字集合
    */
   Set<String> getTableNames();
 
@@ -118,6 +120,7 @@ public interface Schema {
    *
    * @return Whether the user is allowed to create new tables, functions
    *   and sub-schemas in this schema
+   *   true表示在该库下是允许创建新表、函数、子库的
    */
   boolean isMutable();
 
@@ -139,6 +142,7 @@ public interface Schema {
    *   {@link System#currentTimeMillis()}
    *
    * @return Whether contents changed after {@code lastCheckMillis}.
+   * 是否schema在lastCheck时间之后有更改
    */
   boolean contentsHaveChangedSince(long lastCheck, long now);
 
@@ -149,32 +153,32 @@ public interface Schema {
 
     /** A relation whose contents are calculated by evaluating a SQL
      * expression. */
-    VIEW,
+    VIEW,//视图
 
     /** A table maintained by the system. Data dictionary tables, such as the
      * "TABLES" and "COLUMNS" table in the "metamodel" schema, examples of
      * system tables. */
-    SYSTEM_TABLE,
+    SYSTEM_TABLE,//系统表
 
     /** A table that is only visible to one connection. */
-    LOCAL_TEMPORARY,
+    LOCAL_TEMPORARY,//临时表
 
     /** A structure, similar to a view, that is the basis for auto-generated
      * materializations. It is either a single table or a collection of tables
      * that are joined via many-to-one relationships from a central hub table.
      * It is not available for queries, but is just used as an intermediate
      * structure during query planning. */
-    STAR,
+    STAR,//*
 
     /** Index table.
      *
      * <p>Used by Apache Phoenix. */
-    INDEX,
+    INDEX,//索引表
 
     /** Join table.
      *
      * <p>Used by Apache Phoenix. */
-    JOIN,
+    JOIN,//join的复核表
 
     /** Sequence table.
      *

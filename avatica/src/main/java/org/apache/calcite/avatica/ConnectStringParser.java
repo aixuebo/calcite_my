@@ -58,15 +58,16 @@ import java.util.Properties;
  * <dd>Returns a param string, quoted and escaped as needed, to represent the
  * supplied name-value pairs.
  * </dl>
+ * 解析url的配置信息
  */
 public class ConnectStringParser {
   //~ Instance fields --------------------------------------------------------
 
   private final String s;
-  private final int n;
-  private int i;
-  private final StringBuilder nameBuf = new StringBuilder();
-  private final StringBuilder valueBuf = new StringBuilder();
+  private final int n;//总字符串位置
+  private int i;//当前处理位置
+  private final StringBuilder nameBuf = new StringBuilder();//缓存name
+  private final StringBuilder valueBuf = new StringBuilder();//缓存value
 
   //~ Constructors -----------------------------------------------------------
 
@@ -145,6 +146,7 @@ public class ConnectStringParser {
    * Reads "name=value;" or "name=value<EOF>".
    *
    * @throws SQLException error parsing value
+   * 按照key=value; 分号分隔符解析
    */
   void parsePair(Properties props)
       throws SQLException {
@@ -171,7 +173,7 @@ public class ConnectStringParser {
       switch (c) {
       case '=':
         i++;
-        if ((i < n) && ((c = s.charAt(i)) == '=')) {
+        if ((i < n) && ((c = s.charAt(i)) == '=')) {//说明是两个等号,只获取一个即可
           // doubled equals sign; take one of them, and carry on
           i++;
           nameBuf.append(c);
@@ -206,7 +208,7 @@ public class ConnectStringParser {
       throws SQLException {
     char c;
 
-    // skip over leading white space
+    // skip over leading white space 跳过空白字符
     while ((c = s.charAt(i)) == ' ') {
       i++;
       if (i >= n) {

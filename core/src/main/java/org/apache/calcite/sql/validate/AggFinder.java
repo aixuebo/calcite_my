@@ -62,6 +62,7 @@ class AggFinder extends SqlBasicVisitor<Void> {
    *
    * @param node Parse tree to search
    * @return First aggregate function in parse tree, or null if not found
+   * 去该SqlNode阶段查找聚合函数,最终会调用到visit方法
    */
   public SqlNode findAgg(SqlNode node) {
     try {
@@ -79,16 +80,17 @@ class AggFinder extends SqlBasicVisitor<Void> {
         node.accept(this);
       }
       return null;
-    } catch (Util.FoundOne e) {
+    } catch (Util.FoundOne e) {//找到聚合函数,则抛异常
       Util.swallow(e, null);
-      return (SqlNode) e.getNode();
+      return (SqlNode) e.getNode();//返回找到的节点
     }
   }
 
+  //查找聚合函数
   public Void visit(SqlCall call) {
     final SqlOperator operator = call.getOperator();
     if (operator.isAggregator()) {
-      throw new Util.FoundOne(call);
+      throw new Util.FoundOne(call);//找到聚合函数,则抛异常
     }
     // User-defined function may not be resolved yet.
     if (operator instanceof SqlFunction
@@ -99,7 +101,7 @@ class AggFinder extends SqlBasicVisitor<Void> {
           SqlFunctionCategory.USER_DEFINED_FUNCTION, SqlSyntax.FUNCTION, list);
       for (SqlOperator sqlOperator : list) {
         if (sqlOperator.isAggregator()) {
-          throw new Util.FoundOne(call);
+          throw new Util.FoundOne(call);//找到聚合函数,则抛异常
         }
       }
     }

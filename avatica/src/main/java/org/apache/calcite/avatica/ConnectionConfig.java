@@ -23,9 +23,9 @@ import org.apache.calcite.avatica.remote.Service;
  */
 public interface ConnectionConfig {
   String schema();
-  String timeZone();
+  String timeZone();//时区
   Service.Factory factory();
-  String url();
+  String url();//远程url
 }
 
 // End ConnectionConfig.java

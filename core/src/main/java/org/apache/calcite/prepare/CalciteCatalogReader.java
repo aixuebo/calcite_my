@@ -67,13 +67,14 @@ import java.util.NavigableSet;
  * Implementation of {@link org.apache.calcite.prepare.Prepare.CatalogReader}
  * and also {@link org.apache.calcite.sql.SqlOperatorTable} based on tables and
  * functions defined schemas.
+ * 找函数、找table、找schema数据库
  */
 public class CalciteCatalogReader implements Prepare.CatalogReader,
     SqlOperatorTable {
   final CalciteSchema rootSchema;
   final JavaTypeFactory typeFactory;
-  private final List<String> defaultSchema;
-  private final boolean elideRecord = true;
+  private final List<String> defaultSchema;//root下默认的子schema
+  private final boolean elideRecord = true;//在查找表内某个字段时，是否需要递归查找,因为表的某一个字段可能是一个对象
   private final boolean caseSensitive;
 
   public CalciteCatalogReader(
@@ -94,6 +95,7 @@ public class CalciteCatalogReader implements Prepare.CatalogReader,
         typeFactory);
   }
 
+  //参数表示 aa.bb
   public RelOptTableImpl getTable(final List<String> names) {
     // First look in the default schema, if any.
     if (defaultSchema != null) {
@@ -102,6 +104,7 @@ public class CalciteCatalogReader implements Prepare.CatalogReader,
         return table;
       }
     }
+    //从aa.bb中获取表
     // If not found, look in the root schema
     return getTableFrom(names, ImmutableList.<String>of());
   }
@@ -127,6 +130,11 @@ public class CalciteCatalogReader implements Prepare.CatalogReader,
     return null;
   }
 
+  /**
+   *
+   * @param names 表示一行函数的名字,只是带schema的全路径，因此是list
+   * @return
+   */
   private Collection<Function> getFunctionsFrom(List<String> names) {
     final List<Function> functions2 = Lists.newArrayList();
     final List<? extends List<String>> schemaNameList;
@@ -152,6 +160,7 @@ public class CalciteCatalogReader implements Prepare.CatalogReader,
     return functions2;
   }
 
+  //参数是schema的全路径
   private CalciteSchema getSchema(Iterable<String> schemaNames) {
     CalciteSchema schema = rootSchema;
     for (String schemaName : schemaNames) {
@@ -167,6 +176,7 @@ public class CalciteCatalogReader implements Prepare.CatalogReader,
     return null;
   }
 
+  //读取参数schema下的所有子schema、子table、子function
   public List<SqlMoniker> getAllSchemaObjectNames(List<String> names) {
     final CalciteSchema schema = getSchema(names);
     if (schema == null) {
@@ -201,6 +211,9 @@ public class CalciteCatalogReader implements Prepare.CatalogReader,
     return getTable(names);
   }
 
+  //获取表中某一个字段的schema信息
+  //参数rowType 表示表的schema
+  //通过表的schema，找到name列对应的类型对象
   public RelDataTypeField field(RelDataType rowType, String alias) {
     return SqlValidatorUtil.lookupField(caseSensitive, elideRecord, rowType,
         alias);
@@ -211,14 +224,22 @@ public class CalciteCatalogReader implements Prepare.CatalogReader,
     return field != null ? field.getIndex() : -1;
   }
 
+  //返回两个字符串参数是否相同
   public boolean matches(String string, String name) {
     return Util.matches(caseSensitive, string, name);
   }
 
+  //找到name出现在strings中的序号位置
   public int match(List<String> strings, String name) {
     return Util.findMatch(strings, name, caseSensitive);
   }
 
+  /**
+   * 转换成select 提取部分数据字段
+   * @param type 表示表的schema全部字段信息
+   * @param columnNameList 要提取的project列信息
+   * @return 返回select字段类型组成新的struct对象
+   */
   public RelDataType createTypeFromProjection(final RelDataType type,
       final List<String> columnNameList) {
     return SqlValidatorUtil.createTypeFromProjection(type, columnNameList,

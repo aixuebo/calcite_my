@@ -32,6 +32,8 @@ import static org.apache.calcite.jdbc.CalciteMetaImpl.MetaTable;
 
 /** Schema that contains metadata tables such as "TABLES" and "COLUMNS". */
 class MetadataSchema extends AbstractSchema {
+
+    //元数据库存储的两个表---固定两个表
   private static final Map<String, Table> TABLE_MAP =
       ImmutableMap.<String, Table>of(
           "COLUMNS",

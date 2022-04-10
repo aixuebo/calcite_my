@@ -33,6 +33,7 @@ import java.util.List;
 /**
  * Interpreter node that implements a
  * {@link org.apache.calcite.rel.core.Sort}.
+ * 从数据源读取数据,然后排序操作,再输出
  */
 public class SortNode extends AbstractSingleNode<Sort> {
   public SortNode(Interpreter interpreter, Sort rel) {
@@ -51,13 +52,15 @@ public class SortNode extends AbstractSingleNode<Sort> {
     // In pure limit mode. No sort required.
     Row row;
   loop:
-    if (rel.getCollation().getFieldCollations().isEmpty()) {
-      for (int i = 0; i < offset; i++) {
+    if (rel.getCollation().getFieldCollations().isEmpty()) {//说明已经排序了
+      for (int i = 0; i < offset; i++) {//先读取offset行数据,抛弃掉
         row = source.receive();
-        if (row == null) {
+        if (row == null) {//数据无数据了
           break loop;
         }
       }
+
+      //不断的读取数据,sink出去
       if (fetch >= 0) {
         for (int i = 0; i < fetch && (row = source.receive()) != null; i++) {
           sink.send(row);
@@ -68,6 +71,7 @@ public class SortNode extends AbstractSingleNode<Sort> {
         }
       }
     } else {
+      //先读取数据到内存,然后排序,然后在输出limit数据
       // Build a sorted collection.
       final List<Row> list = Lists.newArrayList();
       while ((row = source.receive()) != null) {
@@ -85,10 +89,10 @@ public class SortNode extends AbstractSingleNode<Sort> {
   }
 
   private Comparator<Row> comparator() {
-    if (rel.getCollation().getFieldCollations().size() == 1) {
+    if (rel.getCollation().getFieldCollations().size() == 1) {//只有一个排序规则
       return comparator(rel.getCollation().getFieldCollations().get(0));
     }
-    return Ordering.compound(
+    return Ordering.compound(//生产一组排序规则,按照一组排序规则进行排序数据
         Iterables.transform(rel.getCollation().getFieldCollations(),
             new Function<RelFieldCollation, Comparator<? super Row>>() {
               public Comparator<? super Row> apply(RelFieldCollation input) {
@@ -97,8 +101,7 @@ public class SortNode extends AbstractSingleNode<Sort> {
             }));
   }
 
-  private static int compare(Comparable c1, Comparable c2,
-      int nullComparison) {
+  private static int compare(Comparable c1, Comparable c2,int nullComparison) {
     if (c1 == c2) {
       return 0;
     } else if (c1 == null) {
@@ -112,7 +115,7 @@ public class SortNode extends AbstractSingleNode<Sort> {
   }
 
   private Comparator<Row> comparator(final RelFieldCollation fieldCollation) {
-    final int nullComparison = getNullComparison(fieldCollation.nullDirection);
+    final int nullComparison = getNullComparison(fieldCollation.nullDirection);//null的排序位置
     switch (fieldCollation.direction) {
     case ASCENDING:
       return new Comparator<Row>() {

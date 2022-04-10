@@ -70,6 +70,7 @@ public class JavaTypeFactoryImpl
     super(typeSystem);
   }
 
+  //java对象转换成 sql对象struck
   public RelDataType createStructType(Class type) {
     List<RelDataTypeField> list = new ArrayList<RelDataTypeField>();
     for (Field field : type.getFields()) {
@@ -85,6 +86,7 @@ public class JavaTypeFactoryImpl
     return canonize(new JavaRecordType(list, type));
   }
 
+  //java对象转换成sql对象
   public RelDataType createType(Type type) {
     if (type instanceof RelDataType) {
       return (RelDataType) type;
@@ -106,18 +108,18 @@ public class JavaTypeFactoryImpl
     }
     if (JavaToSqlTypeConversionRules.instance().lookup(clazz) != null) {
       return createJavaType(clazz);
-    } else if (clazz.isArray()) {
+    } else if (clazz.isArray()) {//可以递归
       return createMultisetType(
           createType(clazz.getComponentType()), -1);
-    } else if (List.class.isAssignableFrom(clazz)) {
+    } else if (List.class.isAssignableFrom(clazz)) {//不能递归,类型一定是原始类型
       return createArrayType(
           createSqlType(SqlTypeName.ANY), -1);
-    } else if (Map.class.isAssignableFrom(clazz)) {
+    } else if (Map.class.isAssignableFrom(clazz)) {//不能递归,类型一定是原始类型
       return createMapType(
           createSqlType(SqlTypeName.ANY),
           createSqlType(SqlTypeName.ANY));
     } else {
-      return createStructType(clazz);
+      return createStructType(clazz);//可以递归
     }
   }
 

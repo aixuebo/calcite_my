@@ -41,15 +41,16 @@ public abstract class SqlTypeTransforms {
    * Parameter type-inference transform strategy where a derived type is
    * transformed into the same type but nullable if any of a calls operands is
    * nullable
+   * 如果参数中有任意一个字段允许为null,则返回值就允许为null
    */
   public static final SqlTypeTransform TO_NULLABLE =
       new SqlTypeTransform() {
         public RelDataType transformType(
             SqlOperatorBinding opBinding,
-            RelDataType typeToTransform) {
-          return SqlTypeUtil.makeNullableIfOperandsAre(
+            RelDataType typeToTransform) {//返回值类型
+          return SqlTypeUtil.makeNullableIfOperandsAre(//如果参数中有任意一个字段允许为null,则返回值就允许为null
               opBinding.getTypeFactory(),
-              opBinding.collectOperandTypes(),
+              opBinding.collectOperandTypes(),//收集每一个参数的具体类型
               Preconditions.checkNotNull(typeToTransform));
         }
       };
@@ -57,6 +58,7 @@ public abstract class SqlTypeTransforms {
   /**
    * Parameter type-inference transform strategy where a derived type is
    * transformed into the same type but not nullable.
+   * 字段的值不允许为null
    */
   public static final SqlTypeTransform TO_NOT_NULLABLE =
       new SqlTypeTransform() {
@@ -72,6 +74,7 @@ public abstract class SqlTypeTransforms {
   /**
    * Parameter type-inference transform strategy where a derived type is
    * transformed into the same type with nulls allowed.
+   * 字段强制允许为null
    */
   public static final SqlTypeTransform FORCE_NULLABLE =
       new SqlTypeTransform() {
@@ -89,6 +92,8 @@ public abstract class SqlTypeTransforms {
    * type given. The length returned is the same as length of the first
    * argument. Return type will have same nullability as input type
    * nullability. First Arg must be of string type.
+   * 转换成VARCHAR类型。要求第一个参数一定是string类型
+   * 返回值的VARCHAR类型长度与参数typeToTransform相同。是否允许null也与参数typeToTransform相同
    */
   public static final SqlTypeTransform TO_VARYING =
       new SqlTypeTransform() {
@@ -140,6 +145,7 @@ public abstract class SqlTypeTransforms {
    * a multiset type and the returned type is the multiset's element type.
    *
    * @see MultisetSqlType#getComponentType
+   * 目标对象必须是multiset类型。返回该类型
    */
   public static final SqlTypeTransform TO_MULTISET_ELEMENT_TYPE =
       new SqlTypeTransform() {
@@ -154,6 +160,7 @@ public abstract class SqlTypeTransforms {
    * Parameter type-inference transform strategy where a derived type must be
    * a struct type with precisely one field and the returned type is the type
    * of that field.
+   * 目标类型一定是struct类型,并且只有一个字段,返回该字段对应的类型.相当于提取类型
    */
   public static final SqlTypeTransform ONLY_COLUMN =
       new SqlTypeTransform() {

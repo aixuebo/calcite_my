@@ -28,11 +28,12 @@ import java.util.List;
 /**
  * <code>ExplicitOperatorBinding</code> implements {@link SqlOperatorBinding}
  * via an underlying array of known operand types.
+ * 确定具体参数的值
  */
 public class ExplicitOperatorBinding extends SqlOperatorBinding {
   //~ Instance fields --------------------------------------------------------
 
-  private final List<RelDataType> types;
+  private final List<RelDataType> types;//已经确定的具体每一个参数的值
   private final SqlOperatorBinding delegate;
 
   //~ Constructors -----------------------------------------------------------

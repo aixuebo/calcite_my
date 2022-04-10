@@ -25,6 +25,7 @@ import org.apache.calcite.sql.SqlNode;
  * operand in isolation. This isn't meaningful for all type-checking rules (e.g.
  * SameOperandTypeChecker requires two operands to have matching types, so
  * checking one in isolation is meaningless).
+ * 该类是一个扩展类,只适用于一个参数的情况。
  */
 public interface SqlSingleOperandTypeChecker extends SqlOperandTypeChecker {
   //~ Methods ----------------------------------------------------------------
@@ -51,9 +52,9 @@ public interface SqlSingleOperandTypeChecker extends SqlOperandTypeChecker {
    *                       implementation should <em>NOT</em> examine the
    *                       operands of the call as part of the check
    * @param operand        the actual operand to be checked
-   * @param iFormalOperand the 0-based formal operand ordinal
+   * @param iFormalOperand the 0-based formal operand ordinal 真实需要被校验的是第几个参数
    * @param throwOnFailure whether to throw an exception if check fails
-   *                       (otherwise returns false in that case)
+   *                       (otherwise returns false in that case) true表示如果失败的话,需要抛异常出去
    * @return whether check succeeded
    */
   boolean checkSingleOperandType(

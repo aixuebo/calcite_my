@@ -38,7 +38,9 @@ public class Contexts {
   }
 
   /** Context that contains a
-   * {@link org.apache.calcite.config.CalciteConnectionConfig}. */
+   * {@link org.apache.calcite.config.CalciteConnectionConfig}.
+   * 一定可以转换成CalciteConnectionConfig类
+   **/
   private static class ConfigContext implements Context {
     private CalciteConnectionConfig config;
 

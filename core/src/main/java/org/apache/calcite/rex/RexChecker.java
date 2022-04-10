@@ -24,6 +24,7 @@ import java.util.List;
 
 /**
  * Visitor which checks the validity of a {@link RexNode} expression.
+ * 校验表达式的正确性
  *
  * <p>There are two modes of operation:
  *
@@ -55,9 +56,9 @@ import java.util.List;
 public class RexChecker extends RexVisitorImpl<Boolean> {
   //~ Instance fields --------------------------------------------------------
 
-  protected final boolean fail;
-  protected final List<RelDataType> inputTypeList;
-  protected int failCount;
+  protected final boolean fail;//true 表示如何失效被发现,则抛异常。false不需要抛异常
+  protected final List<RelDataType> inputTypeList;//表的字段集合
+  protected int failCount;//失败次数
 
   //~ Constructors -----------------------------------------------------------
 
@@ -108,15 +109,26 @@ public class RexChecker extends RexVisitorImpl<Boolean> {
     return failCount;
   }
 
+  /**
+   * 校验
+   * 1.校验字段序号是否在范围内
+   * 2.判断类型要相同
+   * @param ref
+   * @return
+   */
   public Boolean visitInputRef(RexInputRef ref) {
     final int index = ref.getIndex();
+
+    //校验字段序号是否在范围内
     if ((index < 0) || (index >= inputTypeList.size())) {
       assert !fail
           : "RexInputRef index " + index
-          + " out of range 0.." + (inputTypeList.size() - 1);
+          + " out of range 0.." + (inputTypeList.size() - 1);//如果是true,则抛异常
       ++failCount;
       return false;
     }
+
+    //判断类型要相同
     if (!ref.getType().isStruct()
         && !RelOptUtil.eq("ref", ref.getType(), "input",
             inputTypeList.get(index), fail)) {
@@ -133,6 +145,7 @@ public class RexChecker extends RexVisitorImpl<Boolean> {
     return false;
   }
 
+  //针对参数校验
   public Boolean visitCall(RexCall call) {
     for (RexNode operand : call.getOperands()) {
       Boolean valid = operand.accept(this);

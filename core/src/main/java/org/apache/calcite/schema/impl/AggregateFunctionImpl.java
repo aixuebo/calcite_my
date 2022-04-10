@@ -40,6 +40,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  * All the methods should be either static or instance.
  * Bonus point: when using non-static implementation, the aggregate object is
  * reused through the calculation, thus it can have aggregation-related state.
+ * 表示一个聚合函数,因此就有init方法、add方法、merge方法、result方法。
+ * 同时涉及到init时的参数、add方法的参数、result返回值参数
  */
 public class AggregateFunctionImpl implements AggregateFunction,
     ImplementableAggFunction {
@@ -52,9 +54,19 @@ public class AggregateFunctionImpl implements AggregateFunction,
   private final List<FunctionParameter> parameters;
   public final Class<?> accumulatorType;
   public final Class<?> resultType;
-  public final Class<?> declaringClass;
+  public final Class<?> declaringClass;//参见IntSum,表示聚合操作的class
 
-  /** Private constructor; use {@link #create}. */
+  /**
+   * Private constructor; use {@link #create}.
+   * @param declaringClass //参见IntSum,表示聚合操作的class
+   * @param valueTypes 方法在add时的参数类型集合
+   * @param accumulatorType 初始化时的参数类型
+   * @param resultType 返回值类型
+   * @param initMethod 初始化方法
+   * @param addMethod 单一元素添加方法
+   * @param mergeMethod merge元素方法
+   * @param resultMethod 返回值方法
+   */
   private AggregateFunctionImpl(Class<?> declaringClass,
       List<Class<?>> valueTypes,
       Class<?> accumulatorType,
@@ -79,7 +91,9 @@ public class AggregateFunctionImpl implements AggregateFunction,
     assert resultMethod != null || accumulatorType == resultType;
   }
 
-  /** Creates an aggregate function, or returns null. */
+  /** Creates an aggregate function, or returns null.
+   *  class可以参考IntSum对象
+   **/
   public static AggregateFunctionImpl create(Class<?> clazz) {
     final Method initMethod = ReflectiveFunctionBase.findMethod(clazz, "init");
     final Method addMethod = ReflectiveFunctionBase.findMethod(clazz, "add");
@@ -88,9 +102,11 @@ public class AggregateFunctionImpl implements AggregateFunction,
         clazz, "result");
     if (initMethod != null && addMethod != null) {
       // A is return type of init by definition
+      //解析初始化类型
       final Class<?> accumulatorType = initMethod.getReturnType();
 
       // R is return type of result by definition
+      //返回值类型--如果没有设置返回值,则返回值类型与初始化类型相同
       final Class<?> resultType =
           resultMethod != null ? resultMethod.getReturnType() : accumulatorType;
 
@@ -100,6 +116,8 @@ public class AggregateFunctionImpl implements AggregateFunction,
       if (addParamTypes.isEmpty() || addParamTypes.get(0) != accumulatorType) {
         throw RESOURCE.firstParameterOfAdd(clazz.getName()).ex();
       }
+
+      //因为第一个参数是累加值,因此刨除,剩余的参数才是方法真正需要的参数类型
       final List<Class<?>> valueTypes = Util.skip(addParamTypes, 1);
 
       // A init()

@@ -34,6 +34,7 @@ import static org.apache.calcite.util.Static.RESOURCE;
 
 /**
  * Strategies for checking operand types.
+ * 校验参数类型的策略
  *
  * <p>This class defines singleton instances of strategy objects for operand
  * type checking. {@link org.apache.calcite.sql.type.ReturnTypes}
@@ -56,6 +57,7 @@ public abstract class OperandTypes {
   /**
    * Creates a checker that passes if each operand is a member of a
    * corresponding family.
+   * 参数类型必须是指定类型组中的顺序
    */
   public static FamilyOperandTypeChecker family(SqlTypeFamily... families) {
     return new FamilyOperandTypeChecker(ImmutableList.copyOf(families));
@@ -64,6 +66,7 @@ public abstract class OperandTypes {
   /**
    * Creates a checker that passes if each operand is a member of a
    * corresponding family.
+   * 参数类型必须是指定类型组中的顺序
    */
   public static FamilyOperandTypeChecker family(List<SqlTypeFamily> families) {
     return new FamilyOperandTypeChecker(families);
@@ -97,6 +100,7 @@ public abstract class OperandTypes {
 
   /**
    * Operand type-checking strategy for an operator which takes no operands.
+   * 校验无参数的
    */
   public static final SqlSingleOperandTypeChecker NILADIC = family();
 
@@ -104,15 +108,12 @@ public abstract class OperandTypes {
    * Operand type-checking strategy for an operator with no restrictions on
    * number or type of operands.
    */
-  public static final SqlOperandTypeChecker VARIADIC =
-      variadic(SqlOperandCountRanges.any());
+  public static final SqlOperandTypeChecker VARIADIC = variadic(SqlOperandCountRanges.any());
 
   /** Operand type-checking strategy that allows one or more operands. */
-  public static final SqlOperandTypeChecker ONE_OR_MORE =
-      variadic(SqlOperandCountRanges.from(1));
+  public static final SqlOperandTypeChecker ONE_OR_MORE = variadic(SqlOperandCountRanges.from(1));
 
-  private static SqlOperandTypeChecker variadic(
-      final SqlOperandCountRange range) {
+  private static SqlOperandTypeChecker variadic(final SqlOperandCountRange range) {
     return new SqlOperandTypeChecker() {
       public boolean checkOperandTypes(
           SqlCallBinding callBinding,
@@ -130,76 +131,50 @@ public abstract class OperandTypes {
     };
   }
 
-  public static final SqlSingleOperandTypeChecker BOOLEAN =
-      family(SqlTypeFamily.BOOLEAN);
+  public static final SqlSingleOperandTypeChecker BOOLEAN = family(SqlTypeFamily.BOOLEAN);
+  public static final SqlSingleOperandTypeChecker BOOLEAN_BOOLEAN = family(SqlTypeFamily.BOOLEAN, SqlTypeFamily.BOOLEAN);
 
-  public static final SqlSingleOperandTypeChecker BOOLEAN_BOOLEAN =
-      family(SqlTypeFamily.BOOLEAN, SqlTypeFamily.BOOLEAN);
+  public static final SqlSingleOperandTypeChecker NUMERIC = family(SqlTypeFamily.NUMERIC);
+  public static final SqlSingleOperandTypeChecker NUMERIC_NUMERIC = family(SqlTypeFamily.NUMERIC, SqlTypeFamily.NUMERIC);
 
-  public static final SqlSingleOperandTypeChecker NUMERIC =
-      family(SqlTypeFamily.NUMERIC);
+  public static final SqlSingleOperandTypeChecker EXACT_NUMERIC = family(SqlTypeFamily.EXACT_NUMERIC);
+  public static final SqlSingleOperandTypeChecker EXACT_NUMERIC_EXACT_NUMERIC = family(SqlTypeFamily.EXACT_NUMERIC, SqlTypeFamily.EXACT_NUMERIC);
 
-  public static final SqlSingleOperandTypeChecker NUMERIC_NUMERIC =
-      family(SqlTypeFamily.NUMERIC, SqlTypeFamily.NUMERIC);
 
-  public static final SqlSingleOperandTypeChecker EXACT_NUMERIC =
-      family(SqlTypeFamily.EXACT_NUMERIC);
+  public static final SqlSingleOperandTypeChecker BINARY = family(SqlTypeFamily.BINARY);
+  public static final SqlSingleOperandTypeChecker STRING = family(SqlTypeFamily.STRING);
+  public static final FamilyOperandTypeChecker STRING_STRING = family(SqlTypeFamily.STRING, SqlTypeFamily.STRING);
+  public static final FamilyOperandTypeChecker STRING_STRING_STRING = family(SqlTypeFamily.STRING, SqlTypeFamily.STRING, SqlTypeFamily.STRING);
 
-  public static final SqlSingleOperandTypeChecker EXACT_NUMERIC_EXACT_NUMERIC =
-      family(SqlTypeFamily.EXACT_NUMERIC, SqlTypeFamily.EXACT_NUMERIC);
+  public static final SqlSingleOperandTypeChecker CHARACTER = family(SqlTypeFamily.CHARACTER);
+  public static final SqlSingleOperandTypeChecker DATETIME = family(SqlTypeFamily.DATETIME);
+  public static final SqlSingleOperandTypeChecker INTERVAL = family(SqlTypeFamily.DATETIME_INTERVAL);
 
-  public static final SqlSingleOperandTypeChecker BINARY =
-      family(SqlTypeFamily.BINARY);
 
-  public static final SqlSingleOperandTypeChecker STRING =
-      family(SqlTypeFamily.STRING);
+  public static final FamilyOperandTypeChecker INTERVAL_INTERVAL = family(SqlTypeFamily.DATETIME_INTERVAL, SqlTypeFamily.DATETIME_INTERVAL);
 
-  public static final FamilyOperandTypeChecker STRING_STRING =
-      family(SqlTypeFamily.STRING, SqlTypeFamily.STRING);
 
-  public static final FamilyOperandTypeChecker STRING_STRING_STRING =
-      family(SqlTypeFamily.STRING, SqlTypeFamily.STRING, SqlTypeFamily.STRING);
+  public static final SqlSingleOperandTypeChecker MULTISET = family(SqlTypeFamily.MULTISET);
 
-  public static final SqlSingleOperandTypeChecker CHARACTER =
-      family(SqlTypeFamily.CHARACTER);
 
-  public static final SqlSingleOperandTypeChecker DATETIME =
-      family(SqlTypeFamily.DATETIME);
+  public static final SqlSingleOperandTypeChecker ARRAY = family(SqlTypeFamily.ARRAY);
 
-  public static final SqlSingleOperandTypeChecker INTERVAL =
-      family(SqlTypeFamily.DATETIME_INTERVAL);
-
-  public static final FamilyOperandTypeChecker INTERVAL_INTERVAL =
-      family(SqlTypeFamily.DATETIME_INTERVAL, SqlTypeFamily.DATETIME_INTERVAL);
-
-  public static final SqlSingleOperandTypeChecker MULTISET =
-      family(SqlTypeFamily.MULTISET);
-
-  public static final SqlSingleOperandTypeChecker ARRAY =
-      family(SqlTypeFamily.ARRAY);
 
   /** Checks that returns whether a value is a multiset or an array.
    * Cf Java, where list and set are collections but a map is not. */
-  public static final SqlSingleOperandTypeChecker COLLECTION =
-      or(family(SqlTypeFamily.MULTISET),
-          family(SqlTypeFamily.ARRAY));
+  public static final SqlSingleOperandTypeChecker COLLECTION = or(family(SqlTypeFamily.MULTISET),family(SqlTypeFamily.ARRAY));
 
-  public static final SqlSingleOperandTypeChecker COLLECTION_OR_MAP =
-      or(family(SqlTypeFamily.MULTISET),
-          family(SqlTypeFamily.ARRAY),
-          family(SqlTypeFamily.MAP));
+  public static final SqlSingleOperandTypeChecker COLLECTION_OR_MAP = or(family(SqlTypeFamily.MULTISET),family(SqlTypeFamily.ARRAY),family(SqlTypeFamily.MAP));
 
   /**
    * Operand type-checking strategy where type must be a literal or NULL.
    */
-  public static final SqlSingleOperandTypeChecker NULLABLE_LITERAL =
-      new LiteralOperandTypeChecker(true);
+  public static final SqlSingleOperandTypeChecker NULLABLE_LITERAL = new LiteralOperandTypeChecker(true);
 
   /**
    * Operand type-checking strategy type must be a non-NULL literal.
    */
-  public static final SqlSingleOperandTypeChecker LITERAL =
-      new LiteralOperandTypeChecker(false);
+  public static final SqlSingleOperandTypeChecker LITERAL = new LiteralOperandTypeChecker(false);
 
   /**
    * Operand type-checking strategy type must be a positive integer non-NULL

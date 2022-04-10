@@ -22,27 +22,29 @@ import java.util.Properties;
  * Definition of a property that may be specified on the JDBC connect string.
  * {@link BuiltInConnectionProperty} enumerates built-in properties, but
  * there may be others; the list is not closed.
+ * 代表一个Property属性
  */
 public interface ConnectionProperty {
-  /** The name of this property. (E.g. "MATERIALIZATIONS_ENABLED".) */
+  /** The name of this property. (E.g. "MATERIALIZATIONS_ENABLED".) 属性name*/
   String name();
 
-  /** The name of this property in camel-case.
+  /** The name of this property in camel-case.驼峰name
    * (E.g. "materializationsEnabled".) */
   String camelName();
 
   /** Returns the default value of this property. The type must match its data
-   * type. */
+   * type. 默认返回值*/
   Object defaultValue();
 
-  /** Returns the data type of this property. */
+  /** Returns the data type of this property.属性的返回值类型 */
   Type type();
 
   /** Wraps this property with a properties object from which its value can be
-   * obtained when needed. */
+   * obtained when needed.
+   * 获取该属性对应的值*/
   ConnectionConfigImpl.PropEnv wrap(Properties properties);
 
-  /** Whether the property is mandatory. */
+  /** Whether the property is mandatory. 是否是强制要有该属性的*/
   boolean required();
 
   /** Data type of property. */
@@ -50,7 +52,7 @@ public interface ConnectionProperty {
     BOOLEAN,
     STRING,
     ENUM,
-    PLUGIN;
+    PLUGIN;//属性是一个class
 
     public boolean valid(Object defaultValue) {
       switch (this) {

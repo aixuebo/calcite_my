@@ -43,14 +43,15 @@ import java.util.List;
 /**
  * Relational expression that imposes a particular sort order on its input
  * without otherwise changing its content.
+ * 如何排序
  */
 public class Sort extends SingleRel {
   //~ Instance fields --------------------------------------------------------
 
-  protected final RelCollation collation;
-  protected final ImmutableList<RexNode> fieldExps;
-  public final RexNode offset;
-  public final RexNode fetch;
+  protected final RelCollation collation;//排序字段的序号集合、以及如何排序(desc等信息)
+  protected final ImmutableList<RexNode> fieldExps;//根据collation中字段序号,获取字段表达式,标识好字段类型、字段name等信息
+  public final RexNode offset;//limit的偏移量,默认值0
+  public final RexNode fetch;//limit,默认值-1,表示没有设置limit
 
   //~ Constructors -----------------------------------------------------------
 
@@ -65,8 +66,8 @@ public class Sort extends SingleRel {
   public Sort(
       RelOptCluster cluster,
       RelTraitSet traits,
-      RelNode child,
-      RelCollation collation) {
+      RelNode child,//数据源
+      RelCollation collation) {//排序字段的序号集合
     this(cluster, traits, child, collation, null, null);
   }
 
@@ -97,12 +98,13 @@ public class Sort extends SingleRel {
         : "traits=" + traits + ", collation=" + collation;
     assert !(fetch == null
         && offset == null
-        && collation.getFieldCollations().isEmpty())
+        && collation.getFieldCollations().isEmpty())//必须有order by的字段或者limit信息
         : "trivial sort";
+
     ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
-    for (RelFieldCollation field : collation.getFieldCollations()) {
+    for (RelFieldCollation field : collation.getFieldCollations()) {//字段id
       int index = field.getFieldIndex();
-      builder.add(cluster.getRexBuilder().makeInputRef(child, index));
+      builder.add(cluster.getRexBuilder().makeInputRef(child, index));//字段表达式
     }
     fieldExps = builder.build();
   }
@@ -204,11 +206,11 @@ public class Sort extends SingleRel {
     if (pw.nest()) {
       pw.item("collation", collation);
     } else {
-      for (Ord<RexNode> ord : Ord.zip(fieldExps)) {
+      for (Ord<RexNode> ord : Ord.zip(fieldExps)) {//按照什么排序
         pw.item("sort" + ord.i, ord.e);
       }
       for (Ord<RelFieldCollation> ord
-          : Ord.zip(collation.getFieldCollations())) {
+          : Ord.zip(collation.getFieldCollations())) {//desc等如何排序
         pw.item("dir" + ord.i, ord.e.shortString());
       }
     }

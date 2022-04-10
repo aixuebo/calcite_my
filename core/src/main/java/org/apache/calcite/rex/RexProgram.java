@@ -683,10 +683,11 @@ public class RexProgram {
   /**
    * Applies a visitor to an array of expressions and, if specified, a single
    * expression.
-   *
+   * 将exprs和expr应用到visitor中
    * @param visitor Visitor
    * @param exprs   Array of expressions
    * @param expr    Single expression, may be null
+   * 比如统计select的表达式集合、where条件使用到的字段。一个是数组,一个是单独的表达式节点
    */
   public static void apply(
       RexVisitor<Void> visitor,

@@ -27,6 +27,7 @@ import java.util.List;
 
 /**
  * Abstract base class for SQL implementations of {@link RelDataType}.
+ * 字段类型 以及 是否为null
  */
 public abstract class AbstractSqlType
     extends RelDataTypeImpl
@@ -43,7 +44,7 @@ public abstract class AbstractSqlType
    *
    * @param typeName   Type name
    * @param isNullable Whether nullable
-   * @param fields     Fields of type, or null if not a record type
+   * @param fields     Fields of type, or null if not a record type 基础类型时,比如int 该值为null,非基础类型时,有该值的意义
    */
   protected AbstractSqlType(
       SqlTypeName typeName,

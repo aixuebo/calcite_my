@@ -43,6 +43,7 @@ import java.util.Set;
  * Methods are subject to removal without notice.</p>
  */
 public class Enumerables {
+  //获取数组的第0个数据值
   private static final Function1<?, ?> SLICE =
       new Function1<Object[], Object>() {
         public Object apply(Object[] a0) {
@@ -50,6 +51,7 @@ public class Enumerables {
         }
       };
 
+  //将数组转换成row一行数据
   private static final Function1<Object[], Row> ARRAY_TO_ROW =
       new Function1<Object[], Row>() {
         public Row apply(Object[] a0) {

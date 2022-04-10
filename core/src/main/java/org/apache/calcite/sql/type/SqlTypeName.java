@@ -61,7 +61,7 @@ public enum SqlTypeName {
   TIMESTAMP(PrecScale.NO_NO | PrecScale.YES_NO, false, Types.TIMESTAMP,
       SqlTypeFamily.TIMESTAMP),
   INTERVAL_YEAR_MONTH(PrecScale.NO_NO, false, Types.OTHER,
-      SqlTypeFamily.INTERVAL_YEAR_MONTH),
+      SqlTypeFamily.INTERVAL_YEAR_MONTH),//时间间隔类型
   INTERVAL_DAY_TIME(PrecScale.NO_NO | PrecScale.YES_NO | PrecScale.YES_YES,
       false, Types.OTHER, SqlTypeFamily.INTERVAL_DAY_TIME),
   CHAR(PrecScale.NO_NO | PrecScale.YES_NO, false, Types.CHAR,
@@ -75,10 +75,10 @@ public enum SqlTypeName {
   NULL(PrecScale.NO_NO, true, Types.NULL, SqlTypeFamily.NULL),
   ANY(PrecScale.NO_NO | PrecScale.YES_NO | PrecScale.YES_YES, true,
       Types.JAVA_OBJECT, SqlTypeFamily.ANY),
-  SYMBOL(PrecScale.NO_NO, true, Types.OTHER, null),
-  MULTISET(PrecScale.NO_NO, false, Types.ARRAY, SqlTypeFamily.MULTISET),
-  ARRAY(PrecScale.NO_NO, false, Types.ARRAY, SqlTypeFamily.ARRAY),
-  MAP(PrecScale.NO_NO, false, Types.OTHER, SqlTypeFamily.MAP),
+  SYMBOL(PrecScale.NO_NO, true, Types.OTHER, null),//相当于枚举对象
+  MULTISET(PrecScale.NO_NO, false, Types.ARRAY, SqlTypeFamily.MULTISET),//可以递归,属于array类型
+  ARRAY(PrecScale.NO_NO, false, Types.ARRAY, SqlTypeFamily.ARRAY),//确定类型,属于list类型
+  MAP(PrecScale.NO_NO, false, Types.OTHER, SqlTypeFamily.MAP),//确定类型,属于Map类型
   DISTINCT(PrecScale.NO_NO, false, Types.DISTINCT, null),
   STRUCTURED(PrecScale.NO_NO, false, Types.STRUCT, null),
   ROW(PrecScale.NO_NO, false, Types.STRUCT, null),
@@ -194,6 +194,7 @@ public enum SqlTypeName {
 
   /**
    * Bitwise-or of flags indicating allowable precision/scale combinations.
+   * 标识精准度precision和scale的情况，参见PrecScale
    */
   private final int signatures;
 
@@ -201,9 +202,9 @@ public enum SqlTypeName {
    * Returns true if not of a "pure" standard sql type. "Inpure" types are
    * {@link #ANY}, {@link #NULL} and {@link #SYMBOL}
    */
-  private final boolean special;
-  private final int jdbcOrdinal;
-  private final SqlTypeFamily family;
+  private final boolean special;//true标识特殊的字段类型
+  private final int jdbcOrdinal;//jdbc的类型id
+  private final SqlTypeFamily family;//calcite的类型id
 
   private SqlTypeName(int signatures, boolean special, int jdbcType,
       SqlTypeFamily family) {
@@ -830,11 +831,12 @@ public enum SqlTypeName {
    * <li>precision = start (leading field) precision</li>
    * <li>scale = fractional second precision</li>
    * </ul>
+   * 标识精准度precision和scale的情况
    */
   private interface PrecScale {
-    int NO_NO = 1;
-    int YES_NO = 2;
-    int YES_YES = 4;
+    int NO_NO = 1;//都没有
+    int YES_NO = 2;//一个有、一个无
+    int YES_YES = 4;//都无
   }
 }
 

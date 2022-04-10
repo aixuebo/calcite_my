@@ -23,6 +23,7 @@ import org.apache.calcite.sql.SqlNode;
 /**
  * Thunk which converts a {@link SqlNode} expression into a {@link RexNode}
  * expression.
+ * 如果将sqlNode转换成表达式
  */
 public interface SqlRexConvertlet {
   //~ Methods ----------------------------------------------------------------

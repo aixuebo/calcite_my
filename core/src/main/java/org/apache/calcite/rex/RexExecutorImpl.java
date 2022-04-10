@@ -112,6 +112,7 @@ public class RexExecutorImpl implements RelOptPlanner.Executor {
 
   /**
    * Do constant reduction using generated code.
+   * 生产表达式节点，生成表达式对象值
    */
   public void reduce(RexBuilder rexBuilder, List<RexNode> constExps,
       List<RexNode> reducedValues) {

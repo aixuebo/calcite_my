@@ -63,6 +63,8 @@ import java.util.regex.Pattern;
 /**
  * Helper for implementing the {@code getXxx} methods such as
  * {@link org.apache.calcite.avatica.AvaticaDatabaseMetaData#getTables}.
+ * 提供整个数据库维度的元数据信息
+ * 比如支持哪些数值类型的函数、系统函数、字符串函数等
  */
 public class CalciteMetaImpl extends MetaImpl {
   static final Driver DRIVER = new Driver();
@@ -71,20 +73,21 @@ public class CalciteMetaImpl extends MetaImpl {
     super(connection);
   }
 
+  //生产决策器对象,要求决策期的name符合正则表达式
   static <T extends Named> Predicate1<T> namedMatcher(final Pat pattern) {
     if (pattern.s == null || pattern.s.equals("%")) {
-      return Functions.truePredicate1();
+      return Functions.truePredicate1();//永远返回true
     }
     final Pattern regex = likeToRegex(pattern);
     return new Predicate1<T>() {
-      public boolean apply(T v1) {
+      public boolean apply(T v1) {//T是Named对象,因此有name方法
         return regex.matcher(v1.getName()).matches();
       }
     };
   }
 
   static Predicate1<String> matcher(final Pat pattern) {
-    if (pattern.s == null || pattern.s.equals("%")) {
+    if (pattern.s == null || pattern.s.equals("%")) {//%在sql中相当于.*
       return Functions.truePredicate1();
     }
     final Pattern regex = likeToRegex(pattern);
@@ -135,12 +138,20 @@ public class CalciteMetaImpl extends MetaImpl {
     return h;
   }
 
+  /**
+   *
+   * @param enumerable 结果集迭代器
+   * @param clazz 每一个迭代器元素是什么对象
+   * @param names name数属性名,属性值从class中获取---即迭代器内容是值,这些值对外叫什么名字,相当于列
+   * @param <E>
+   * @return
+   */
   private <E> MetaResultSet createResultSet(Enumerable<E> enumerable,
       Class clazz, String... names) {
-    final List<ColumnMetaData> columns = new ArrayList<ColumnMetaData>();
-    final List<Field> fields = new ArrayList<Field>();
-    final List<String> fieldNames = new ArrayList<String>();
-    for (String name : names) {
+    final List<ColumnMetaData> columns = new ArrayList<ColumnMetaData>();//对应的sql属性对象
+    final List<Field> fields = new ArrayList<Field>();//按照顺序添加name对应的field属性对象
+    final List<String> fieldNames = new ArrayList<String>();//驼峰方式的属性name
+    for (String name : names) {//添加列信息
       final int index = fields.size();
       final String fieldName = AvaticaUtils.toCamelCase(name);
       final Field field;
@@ -156,10 +167,11 @@ public class CalciteMetaImpl extends MetaImpl {
     //noinspection unchecked
     final Iterable<Object> iterable = (Iterable<Object>) (Iterable) enumerable;
     return createResultSet(Collections.<String, Object>emptyMap(),
-        columns, CursorFactory.record(clazz, fields, fieldNames),
+        columns, CursorFactory.record(clazz, fields, fieldNames),//以什么方式读取迭代器的内容
         iterable);
   }
 
+  //空结果迭代器
   @Override protected <E> MetaResultSet
   createEmptyResultSet(final Class<E> clazz) {
     final List<ColumnMetaData> columns = fieldMetaData(clazz).columns;
@@ -168,9 +180,12 @@ public class CalciteMetaImpl extends MetaImpl {
         cursorFactory, Collections.emptyList());
   }
 
+
   protected MetaResultSet createResultSet(
-      Map<String, Object> internalParameters, List<ColumnMetaData> columns,
-      CursorFactory cursorFactory, final Iterable<Object> iterable) {
+      Map<String, Object> internalParameters,//内部参数信息,一般情况是空
+      List<ColumnMetaData> columns,//每一个列的元数据内容
+      CursorFactory cursorFactory,//以什么方式读取迭代器的内容
+      final Iterable<Object> iterable) {//迭代器具体的值对象
     try {
       final CalciteConnectionImpl connection = getConnection();
       final AvaticaStatement statement = connection.createStatement();
@@ -193,10 +208,12 @@ public class CalciteMetaImpl extends MetaImpl {
     return (CalciteConnectionImpl) connection;
   }
 
+  //返回sql中支持的keyword关键词集合,使用逗号拆分
   public String getSqlKeywords() {
     return SqlParser.create("").getMetadata().getJdbcKeywords();
   }
 
+  //返回所有数值型函数
   public String getNumericFunctions() {
     return SqlJdbcFunctionCall.getNumericFunctions();
   }
@@ -213,31 +230,32 @@ public class CalciteMetaImpl extends MetaImpl {
     return SqlJdbcFunctionCall.getTimeDateFunctions();
   }
 
+  //找到匹配的table迭代器
   public MetaResultSet getTables(String catalog,
-      final Pat schemaPattern,
-      final Pat tableNamePattern,
-      final List<String> typeList) {
+      final Pat schemaPattern,//如何匹配schema
+      final Pat tableNamePattern,//如何匹配表名
+      final List<String> typeList) {//如何匹配表类型,比如view
     final Predicate1<MetaTable> typeFilter;
     if (typeList == null) {
-      typeFilter = Functions.truePredicate1();
+      typeFilter = Functions.truePredicate1();//表示所有表类型都可以匹配
     } else {
       typeFilter = new Predicate1<MetaTable>() {
         public boolean apply(MetaTable v1) {
-          return typeList.contains(v1.tableType);
+          return typeList.contains(v1.tableType);//返回必须命中typeList类型中任意类型
         }
       };
     }
     final Predicate1<MetaSchema> schemaMatcher = namedMatcher(schemaPattern);
-    return createResultSet(schemas(catalog)
-            .where(schemaMatcher)
+    return createResultSet(schemas(catalog)//所有schema
+            .where(schemaMatcher)//找到匹配的schema
             .selectMany(
-                new Function1<MetaSchema, Enumerable<MetaTable>>() {
+                new Function1<MetaSchema, Enumerable<MetaTable>>() {//循环所有的table
                   public Enumerable<MetaTable> apply(MetaSchema schema) {
-                    return tables(schema, matcher(tableNamePattern));
+                    return tables(schema, matcher(tableNamePattern));//匹配表name符合条件的
                   }
                 })
-            .where(typeFilter),
-        MetaTable.class,
+            .where(typeFilter),//找到符合类型条件的table
+        MetaTable.class,//迭代器每一个元素是MetaTable类型
         "TABLE_CAT",
         "TABLE_SCHEM",
         "TABLE_NAME",
@@ -250,30 +268,31 @@ public class CalciteMetaImpl extends MetaImpl {
         "REF_GENERATION");
   }
 
+  //返回满足的列元数据集合
   public MetaResultSet getColumns(String catalog,
-      Pat schemaPattern,
-      Pat tableNamePattern,
-      Pat columnNamePattern) {
+      Pat schemaPattern,//如何匹配schema
+      Pat tableNamePattern,//如何匹配table
+      Pat columnNamePattern) {//如何匹配column
     final Predicate1<String> tableNameMatcher = matcher(tableNamePattern);
     final Predicate1<MetaSchema> schemaMatcher = namedMatcher(schemaPattern);
-    final Predicate1<MetaColumn> columnMatcher =
-        namedMatcher(columnNamePattern);
-    return createResultSet(schemas(catalog)
-            .where(schemaMatcher)
-            .selectMany(
-                new Function1<MetaSchema, Enumerable<MetaTable>>() {
+    final Predicate1<MetaColumn> columnMatcher = namedMatcher(columnNamePattern);
+
+    return createResultSet(schemas(catalog) //所有子schema集合
+            .where(schemaMatcher) //过滤schema
+            .selectMany(//每一个元素转换成多个元素,相当于flatMap
+                new Function1<MetaSchema, Enumerable<MetaTable>>() {//每一个schema 转换成table迭代器
                   public Enumerable<MetaTable> apply(MetaSchema schema) {
-                    return tables(schema, tableNameMatcher);
+                    return tables(schema, tableNameMatcher);//过滤table
                   }
                 })
             .selectMany(
-                new Function1<MetaTable, Enumerable<MetaColumn>>() {
+                new Function1<MetaTable, Enumerable<MetaColumn>>() {//每一个table 转换成多个列
                   public Enumerable<MetaColumn> apply(MetaTable schema) {
                     return columns(schema);
                   }
                 })
-            .where(columnMatcher),
-        MetaColumn.class,
+            .where(columnMatcher),//过滤column
+        MetaColumn.class,//迭代器的元素每一个是MetaColumn对象
         "TABLE_CAT",
         "TABLE_SCHEM",
         "TABLE_NAME",
@@ -304,17 +323,19 @@ public class CalciteMetaImpl extends MetaImpl {
         ImmutableList.of(new MetaCatalog(connection.getCatalog())));
   }
 
+  //只有table和view两种类型---写死
   Enumerable<MetaTableType> tableTypes() {
     return Linq4j.asEnumerable(
         ImmutableList.of(
             new MetaTableType("TABLE"), new MetaTableType("VIEW")));
   }
 
+  //所有子schema集合
   Enumerable<MetaSchema> schemas(String catalog) {
     return Linq4j.asEnumerable(
-        getConnection().rootSchema.getSubSchemaMap().values())
+        getConnection().rootSchema.getSubSchemaMap().values())//所有子schema对象
         .select(
-            new Function1<CalciteSchema, MetaSchema>() {
+            new Function1<CalciteSchema, MetaSchema>() {//将子schema转换成MetaSchema
               public MetaSchema apply(CalciteSchema calciteSchema) {
                 return new CalciteMetaSchema(
                     calciteSchema,
@@ -322,9 +343,9 @@ public class CalciteMetaImpl extends MetaImpl {
                     calciteSchema.getName());
               }
             })
-        .orderBy(
+        .orderBy(//将MetaSchema转换成可以排序的Comparable对象,参与排序
             new Function1<MetaSchema, Comparable>() {
-              public Comparable apply(MetaSchema metaSchema) {
+              public Comparable apply(MetaSchema metaSchema) {//先比较catalog,再比较schema
                 return (Comparable) FlatLists.of(
                     Util.first(metaSchema.tableCatalog, ""),
                     metaSchema.tableSchem);
@@ -332,19 +353,21 @@ public class CalciteMetaImpl extends MetaImpl {
             });
   }
 
+  //所有table表集合
   Enumerable<MetaTable> tables(String catalog) {
-    return schemas(catalog)
+    return schemas(catalog)//所有子schema集合
         .selectMany(
-            new Function1<MetaSchema, Enumerable<MetaTable>>() {
+            new Function1<MetaSchema, Enumerable<MetaTable>>() {//所有table
               public Enumerable<MetaTable> apply(MetaSchema schema) {
                 return tables(schema, Functions.<String>truePredicate1());
               }
             });
   }
 
+  //某一个schema下的所有table
   Enumerable<MetaTable> tables(final MetaSchema schema_) {
     final CalciteMetaSchema schema = (CalciteMetaSchema) schema_;
-    return Linq4j.asEnumerable(schema.calciteSchema.getTableNames())
+    return Linq4j.asEnumerable(schema.calciteSchema.getTableNames())//schema下所有table
         .select(
             new Function1<String, MetaTable>() {
               public MetaTable apply(String name) {
@@ -372,6 +395,7 @@ public class CalciteMetaImpl extends MetaImpl {
                     }));
   }
 
+  //schema下table+过滤条件
   Enumerable<MetaTable> tables(
       final MetaSchema schema,
       final Predicate1<String> matcher) {
@@ -379,18 +403,19 @@ public class CalciteMetaImpl extends MetaImpl {
         .where(
             new Predicate1<MetaTable>() {
               public boolean apply(MetaTable v1) {
-                return matcher.apply(v1.getName());
+                return matcher.apply(v1.getName());//满足过滤条件的table
               }
             });
   }
 
+  //某一个table下所有列
   public Enumerable<MetaColumn> columns(final MetaTable table_) {
     final CalciteMetaTable table = (CalciteMetaTable) table_;
     final RelDataType rowType =
-        table.calciteTable.getRowType(getConnection().typeFactory);
+        table.calciteTable.getRowType(getConnection().typeFactory);//列信息集合
     return Linq4j.asEnumerable(rowType.getFieldList())
         .select(
-            new Function1<RelDataTypeField, MetaColumn>() {
+            new Function1<RelDataTypeField, MetaColumn>() {//列对象 转换成列元数据
               public MetaColumn apply(RelDataTypeField field) {
                 final int precision =
                     field.getType().getSqlTypeName().allowsPrec()
@@ -420,20 +445,23 @@ public class CalciteMetaImpl extends MetaImpl {
             });
   }
 
+  //返回schema
   public MetaResultSet getSchemas(String catalog, Pat schemaPattern) {
-    final Predicate1<MetaSchema> schemaMatcher = namedMatcher(schemaPattern);
-    return createResultSet(schemas(catalog).where(schemaMatcher),
+    final Predicate1<MetaSchema> schemaMatcher = namedMatcher(schemaPattern);//schema条件
+    return createResultSet(schemas(catalog).where(schemaMatcher),//查找所有的schema,过滤满足条件的schema
         MetaSchema.class,
         "TABLE_SCHEM",
         "TABLE_CATALOG");
   }
 
+  //返回Catalog
   public MetaResultSet getCatalogs() {
     return createResultSet(catalogs(),
         MetaCatalog.class,
         "TABLE_CATALOG");
   }
 
+  //返回table所有类型---目前只支持table、view两种
   public MetaResultSet getTableTypes() {
     return createResultSet(tableTypes(),
         MetaTableType.class,
@@ -494,7 +522,9 @@ public class CalciteMetaImpl extends MetaImpl {
     return DRIVER.connect(schema, typeFactory);
   }
 
-  /** Metadata describing a Calcite table. */
+  /** Metadata describing a Calcite table.
+   * 描述一个表的元数据
+   **/
   private static class CalciteMetaTable extends MetaTable {
     private final Table calciteTable;
 
@@ -506,9 +536,9 @@ public class CalciteMetaImpl extends MetaImpl {
     }
   }
 
-  /** Metadata describing a Calcite schema. */
+  /** Metadata describing a Calcite schema. 描述一个子schema的元数据*/
   private static class CalciteMetaSchema extends MetaSchema {
-    private final CalciteSchema calciteSchema;
+    private final CalciteSchema calciteSchema;//子schema
 
     public CalciteMetaSchema(CalciteSchema calciteSchema,
         String tableCatalog, String tableSchem) {

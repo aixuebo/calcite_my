@@ -53,8 +53,7 @@ public abstract class AbstractRelOptPlanner implements RelOptPlanner {
    * Maps rule description to rule, just to ensure that rules' descriptions
    * are unique.
    */
-  private final Map<String, RelOptRule> mapDescToRule =
-      new HashMap<String, RelOptRule>();
+  private final Map<String, RelOptRule> mapDescToRule = new HashMap<String, RelOptRule>();
 
   protected final RelOptCostFactory costFactory;
 
@@ -65,8 +64,7 @@ public abstract class AbstractRelOptPlanner implements RelOptPlanner {
   private CancelFlag cancelFlag;
 
   @SuppressWarnings("unchecked")
-  private final Set<Class<? extends RelNode>> classes =
-      new HashSet<Class<? extends RelNode>>();
+  private final Set<Class<? extends RelNode>> classes = new HashSet<Class<? extends RelNode>>();
 
   private final Set<RelTrait> traits = new HashSet<RelTrait>();
 
@@ -144,7 +142,7 @@ public abstract class AbstractRelOptPlanner implements RelOptPlanner {
         : "Rule's description should not be an integer: "
         + rule.getClass().getName() + ", " + description;
 
-    RelOptRule existingRule = mapDescToRule.put(description, rule);
+    RelOptRule existingRule = mapDescToRule.put(description, rule);//规则必须唯一
     if (existingRule != null) {
       if (existingRule == rule) {
         throw new AssertionError(
@@ -292,8 +290,7 @@ public abstract class AbstractRelOptPlanner implements RelOptPlanner {
    *
    * @param ruleCall description of rule call
    */
-  protected void fireRule(
-      RelOptRuleCall ruleCall) {
+  protected void fireRule(RelOptRuleCall ruleCall) {
     checkCancel();
 
     assert ruleCall.getRule().matches(ruleCall);
@@ -415,10 +412,7 @@ public abstract class AbstractRelOptPlanner implements RelOptPlanner {
   protected void notifyDiscard(
       RelNode rel) {
     if (listener != null) {
-      RelOptListener.RelDiscardedEvent event =
-          new RelOptListener.RelDiscardedEvent(
-              this,
-              rel);
+      RelOptListener.RelDiscardedEvent event = new RelOptListener.RelDiscardedEvent(this,rel);
       listener.relDiscarded(event);
     }
   }
@@ -432,7 +426,7 @@ public abstract class AbstractRelOptPlanner implements RelOptPlanner {
       final Class<? extends RelNode> clazz) {
     return Iterables.filter(classes,
         new Predicate<Class<? extends RelNode>>() {
-          public boolean apply(Class<? extends RelNode> input) {
+          public boolean apply(Class<? extends RelNode> input) {//确定input是class的父类
             return clazz.isAssignableFrom(input);
           }
         });

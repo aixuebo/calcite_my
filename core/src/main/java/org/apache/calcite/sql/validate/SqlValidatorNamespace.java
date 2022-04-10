@@ -23,11 +23,14 @@ import org.apache.calcite.util.Pair;
 import java.util.List;
 
 /**
+ * 命名空间，描述sql的一部分表示的关系
  * A namespace describes the relation returned by a section of a SQL query.
  *
+ * 比如下面的例子，from由2个表组成一个新的空间
  * <p>For example, in the query <code>SELECT emp.deptno, age FROM emp,
  * dept</code>, the FROM clause forms a namespace consisting of two tables EMP
  * and DEPT, and a row type consisting of the combined columns of those tables.
+ *
  *
  * <p>Other examples of namespaces include a table in the from list (the
  * namespace contains the constituent columns) and a subquery (the namespace
@@ -47,6 +50,10 @@ import java.util.List;
  *
  * @see SqlValidator
  * @see SqlValidatorScope
+ * 标识一个节点的输出类型与name、持有的root节点(比如selectNode)
+ *
+ * 一个命名空间多半指代一直表 或者 一个子查询
+ * 一个scope可以包含多个命名空间，比如一顿join,他们都在一个scope范围内，我是这么理解scope和Namespace区别的
  */
 public interface SqlValidatorNamespace {
   //~ Methods ----------------------------------------------------------------
@@ -54,7 +61,7 @@ public interface SqlValidatorNamespace {
   /**
    * Returns the validator.
    *
-   * @return validator
+   * @return validator 返回SqlValidatorImpl
    */
   SqlValidator getValidator();
 
@@ -69,12 +76,13 @@ public interface SqlValidatorNamespace {
    * derived, derives it.
    *
    * @return Row type of this namespace, never null, always a struct
+   * 输出row的类型,包含输出列的名字以及类型
    */
   RelDataType getRowType();
 
   /**
    * Returns the type of this namespace.
-   *
+   * 输出row的类型,包含输出列的名字以及类型
    * @return Row type converted to struct
    */
   RelDataType getType();
@@ -88,6 +96,7 @@ public interface SqlValidatorNamespace {
    * <p>Implicitly also sets the row type. If the type is not a struct, then
    * the row type is the type wrapped as a struct with a single column,
    * otherwise the type and row type are the same.</p>
+   * 设置输出类型
    */
   void setType(RelDataType type);
 
@@ -100,8 +109,9 @@ public interface SqlValidatorNamespace {
 
   /**
    * Validates this namespace.
-   *
+   * 校验该命名空间 ---命名空间作为一个实体,肯定也需要被校验的? 主要校验状态、校验输出row的类型,包含输出列的名字以及类型
    * <p>If the scope has already been validated, does nothing.</p>
+   * 如果已经被校验过了,则什么也不用做了,不需要再次校验
    *
    * <p>Please call {@link SqlValidatorImpl#validateNamespace} rather than
    * calling this method directly.</p>
@@ -110,6 +120,7 @@ public interface SqlValidatorNamespace {
 
   /**
    * Returns the parse tree node at the root of this namespace.
+   * 该命名空间持有的根节点,比如SelectNode
    *
    * @return parse tree node; null for {@link TableNamespace}
    */
@@ -119,6 +130,8 @@ public interface SqlValidatorNamespace {
    * Returns the parse tree node that at is at the root of this namespace and
    * includes all decorations. If there are no decorations, returns the same
    * as {@link #getNode()}.
+   * 返回root根节点的Node,包含所有的装饰对象,如果没有装饰对象,则与返回getNode结果相同
+   * 封闭节点
    */
   SqlNode getEnclosingNode();
 
@@ -131,6 +144,7 @@ public interface SqlValidatorNamespace {
    *
    * @param name Name of namespace
    * @return Namespace
+   * 找到子空间,可能是一个字段,因此拿字段的类型组成字段子空间FieldNamespace
    */
   SqlValidatorNamespace lookupChild(String name);
 
@@ -147,29 +161,33 @@ public interface SqlValidatorNamespace {
    * example, if the namespace represents a relation ordered by a column
    * called "TIMESTAMP", then the list would contain a
    * {@link org.apache.calcite.sql.SqlIdentifier} called "TIMESTAMP".
+   * 返回空间内有单调性的表达式集合 --- 表达式Node与单调性
    */
   List<Pair<SqlNode, SqlMonotonicity>> getMonotonicExprs();
 
   /**
    * Returns whether and how a given column is sorted.
+   * 字段是否是排序的,以及如何排序的
    */
   SqlMonotonicity getMonotonicity(String columnName);
 
   /**
    * Makes all fields in this namespace nullable (typically because it is on
    * the outer side of an outer join.
+   * 强制所有的属性字段都支持 nullable
    */
   void makeNullable();
 
   /**
    * Translates a field name to the name in the underlying namespace.
+   * 将一个名字转换成命名空间下的名字。
    */
   String translate(String name);
 
   /**
    * Returns this namespace, or a wrapped namespace, cast to a particular
    * class.
-   *
+   * 相当于强转成具体实现的命名空间,比如SelectNamespace
    * @param clazz Desired type
    * @return This namespace cast to desired type
    * @throws ClassCastException if no such interface is available
@@ -182,6 +200,7 @@ public interface SqlValidatorNamespace {
    *
    * @param clazz Interface
    * @return Whether namespace implements given interface
+   * 返回class是否是该空间的实现类,或者子类
    */
   boolean isWrapperFor(Class<?> clazz);
 

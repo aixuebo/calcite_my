@@ -24,7 +24,7 @@ import java.util.Comparator;
 /**
  * Binary search for the implementation of
  * RANGE BETWEEN XXX PRECEDING/FOLLOWING clause.
- *
+ * 二分查找
  */
 public class BinarySearch {
   // Even though this is a utility class (all methods are static), we cannot
@@ -45,7 +45,7 @@ public class BinarySearch {
    * @return minimal index of the element that is
    *   greater or equal to the given key. Returns -1 when all elements exceed
    *   the given key or the array is empty. Returns {@code a.length} when all
-   *   elements are less than the given key.
+   *   elements are less than the given key.返回元素的位置下标
    */
   public static <T> int lowerBound(T[] a, T key, Comparator<T> comparator) {
     return lowerBound(a, key, 0, a.length - 1,

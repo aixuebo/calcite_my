@@ -28,6 +28,7 @@ import org.apache.calcite.rex.RexNode;
 /**
  * Sub-class of {@link org.apache.calcite.rel.core.Filter}
  * not targeted at any particular engine or calling convention.
+ * where过滤
  */
 public final class LogicalFilter extends Filter {
   //~ Constructors -----------------------------------------------------------
@@ -36,14 +37,14 @@ public final class LogicalFilter extends Filter {
    * Creates a LogicalFilter.
    *
    * @param cluster   Cluster that this relational expression belongs to
-   * @param child     Input relational expression
+   * @param child     Input relational expression,root节点
    * @param condition Boolean expression which determines whether a row is
-   *                  allowed to pass
+   *                  allowed to pass ,where表达式
    */
   public LogicalFilter(
       RelOptCluster cluster,
-      RelNode child,
-      RexNode condition) {
+      RelNode child,//父节点--数据源
+      RexNode condition) {//过滤表达式
     super(
         cluster,
         cluster.traitSetOf(Convention.NONE),

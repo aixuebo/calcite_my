@@ -26,7 +26,7 @@ import java.util.List;
  * {@link java.util.Iterator} that
  * returns a record for each row. The record is a synthetic class whose fields
  * are all public.
- *
+ * 表示一行数据是一个java对象
  * @param <E> Element type
  */
 public class RecordIteratorCursor<E> extends IteratorCursor<E> {

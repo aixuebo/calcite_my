@@ -25,12 +25,14 @@ import java.util.List;
  *
  * <p>An ordering consists of a list of one or more column ordinals and the
  * direction of the ordering.
+ * 描述 关系表达式的物理顺序
  */
 public interface RelCollation extends RelTrait {
   //~ Methods ----------------------------------------------------------------
 
   /**
    * Returns the ordinals and directions of the columns in this ordering.
+   * 返回排序后的列的顺序
    */
   List<RelFieldCollation> getFieldCollations();
 }

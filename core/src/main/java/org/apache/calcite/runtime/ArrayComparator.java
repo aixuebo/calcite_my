@@ -23,6 +23,7 @@ import java.util.Comparator;
 
 /**
  * Compares arrays.
+ * 一组比较器进行比较,相当于order by xx,xx,xx
  */
 public class ArrayComparator implements Comparator<Object[]> {
   private final Comparator[] comparators;

@@ -21,11 +21,12 @@ import org.apache.calcite.rel.type.RelDataTypeFamily;
 
 /**
  * SQL array type.
+ * 数组类型 即list类型
  */
 public class ArraySqlType extends AbstractSqlType {
   //~ Instance fields --------------------------------------------------------
 
-  private final RelDataType elementType;
+  private final RelDataType elementType;//存储object的sql类型元素--元素类型
 
   //~ Constructors -----------------------------------------------------------
 

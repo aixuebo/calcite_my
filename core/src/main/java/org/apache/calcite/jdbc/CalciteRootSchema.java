@@ -20,6 +20,7 @@ import org.apache.calcite.schema.Schema;
 
 /**
  * Root schema.
+ * 特殊的CalciteSchema,即没有父节点
  */
 public class CalciteRootSchema extends CalciteSchema {
   /** Creates a root schema. */

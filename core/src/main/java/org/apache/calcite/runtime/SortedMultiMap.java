@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Map that allows you to partition values into lists according to a common
  * key, and then convert those lists into an iterator of sorted arrays.
- *
+ * 一个key,value是多个值的list
  * @param <K> Key type
  * @param <V> Value type
  */
@@ -44,6 +44,7 @@ public class SortedMultiMap<K, V> extends HashMap<K, List<V>> {
     put(key, list);
   }
 
+  //迭代器,返回key对应的数组--并且该数组被排序后被返回
   public Iterator<V[]> arrays(final Comparator<V> comparator) {
     final Iterator<List<V>> iterator = values().iterator();
     return new Iterator<V[]>() {

@@ -340,11 +340,11 @@ public abstract class SqlAbstractParserImpl {
   /**
    * Creates a call.
    *
-   * @param funName           Name of function
+   * @param funName           Name of function 函数名称
    * @param pos               Position in source code
    * @param funcType          Type of function
-   * @param functionQualifier Qualifier
-   * @param operands          Operands to call
+   * @param functionQualifier Qualifier  distinct/all,
+   * @param operands          Operands to call 函数参数
    * @return Call
    */
   protected SqlCall createCall(
@@ -526,6 +526,7 @@ public abstract class SqlAbstractParserImpl {
      * Set of all tokens.
      */
     private final SortedSet<String> tokenSet = new TreeSet<String>();
+
 
     /**
      * Immutable list of all tokens, in alphabetical order.

@@ -33,6 +33,7 @@ import org.apache.calcite.sql.SqlNodeList;
  * methods it chooses.
  *
  * @param <R> Return type
+ * 属于代理类
  */
 public class SqlBasicVisitor<R> implements SqlVisitor<R> {
   //~ Methods ----------------------------------------------------------------
@@ -95,6 +96,7 @@ public class SqlBasicVisitor<R> implements SqlVisitor<R> {
   /**
    * Default implementation of {@link ArgHandler} which merely calls
    * {@link SqlNode#accept} on each operand.
+   * 默认的一个实现类
    */
   public static class ArgHandlerImpl<R> implements ArgHandler<R> {
     private static final ArgHandler INSTANCE = new ArgHandlerImpl();

@@ -97,23 +97,25 @@ abstract class CalciteConnectionImpl
    * @param info Other connection properties
    * @param rootSchema Root schema, or null
    * @param typeFactory Type factory, or null
+   * 创建rootSchema以及JavaTypeFactory
    */
   protected CalciteConnectionImpl(Driver driver, AvaticaFactory factory,
       String url, Properties info, CalciteRootSchema rootSchema,
       JavaTypeFactory typeFactory) {
     super(driver, factory, url, info);
-    CalciteConnectionConfig cfg = new CalciteConnectionConfigImpl(info);
+    CalciteConnectionConfig cfg = new CalciteConnectionConfigImpl(info);//info是从Url中解析出来的
     this.prepareFactory = driver.prepareFactory;
     if (typeFactory != null) {
       this.typeFactory = typeFactory;
     } else {
       final RelDataTypeSystem typeSystem =
-          cfg.typeSystem(RelDataTypeSystem.class, RelDataTypeSystem.DEFAULT);
+          cfg.typeSystem(RelDataTypeSystem.class, RelDataTypeSystem.DEFAULT);//支持的数据类型
       this.typeFactory = new JavaTypeFactoryImpl(typeSystem);
     }
     this.rootSchema =
-        rootSchema != null ? rootSchema : CalciteSchema.createRootSchema(true);
+        rootSchema != null ? rootSchema : CalciteSchema.createRootSchema(true);//选择数据库
 
+    //覆盖默认属性
     this.properties.put(InternalProperty.CASE_SENSITIVE, cfg.caseSensitive());
     this.properties.put(InternalProperty.UNQUOTED_CASING, cfg.unquotedCasing());
     this.properties.put(InternalProperty.QUOTED_CASING, cfg.quotedCasing());
@@ -227,12 +229,12 @@ abstract class CalciteConnectionImpl
     Map<String, Object> map = Maps.newLinkedHashMap();
     AvaticaStatement statement = lookupStatement(handle);
     final List<Object> parameterValues =
-        TROJAN.getParameterValues(statement);
+        TROJAN.getParameterValues(statement);//获取动态参数值
     for (Ord<Object> o : Ord.zip(parameterValues)) {
-      map.put("?" + o.i, o.e);
+      map.put("?" + o.i, o.e);//添加key?1 value动态值序号对应的数值
     }
-    map.putAll(signature.internalParameters);
-    final DataContext dataContext = createDataContext(map);
+    map.putAll(signature.internalParameters);//追加其他请求参数信息
+    final DataContext dataContext = createDataContext(map);//如果是prepare动态参数,则key是?index序号 value是index位置对应的具体动态值。否则是connect中所有的请求参数映射
     return signature.enumerable(dataContext);
   }
 
@@ -298,9 +300,12 @@ abstract class CalciteConnectionImpl
     }
   }
 
-  /** Implementation of DataContext. */
+  /** Implementation of DataContext.
+   * 数据上下文---该上下文的数据内容会一直伴随整个儿查询周期
+   * 相当于生命周期内有一个大的缓存map，随时获取值以及存储值
+   **/
   static class DataContextImpl implements DataContext {
-    private final ImmutableMap<Object, Object> map;
+    private final ImmutableMap<Object, Object> map; //如果是prepare动态参数,则key是?index序号 value是index位置对应的具体动态值。否则是connect中所有的请求参数映射
     private final CalciteSchema rootSchema;
     private final QueryProvider queryProvider;
     private final JavaTypeFactory typeFactory;
@@ -317,12 +322,14 @@ abstract class CalciteConnectionImpl
       final Holder<Long> timeHolder = Holder.of(System.currentTimeMillis());
 
       // Give a hook chance to alter the clock.
-      Hook.CURRENT_TIME.run(timeHolder);
-      final long time = timeHolder.get();
-      final TimeZone timeZone = connection.getTimeZone();
-      final long localOffset = timeZone.getOffset(time);
-      final long currentOffset = localOffset;
+      Hook.CURRENT_TIME.run(timeHolder); //调用钩子
 
+      final long time = timeHolder.get();
+      final TimeZone timeZone = connection.getTimeZone();//时区
+      final long localOffset = timeZone.getOffset(time);
+      final long currentOffset = localOffset;//本地时区时间戳
+
+      //向map中添加执行时间戳
       ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
       builder.put(Variable.UTC_TIMESTAMP.camelName, time)
           .put(Variable.CURRENT_TIMESTAMP.camelName, time + currentOffset)
@@ -338,6 +345,7 @@ abstract class CalciteConnectionImpl
       map = builder.build();
     }
 
+    //获取参数值
     public synchronized Object get(String name) {
       Object o = map.get(name);
       if (o == AvaticaParameter.DUMMY_VALUE) {
@@ -377,7 +385,9 @@ abstract class CalciteConnectionImpl
     }
   }
 
-  /** Implementation of Context. */
+  /** Implementation of Context.
+   * 生命周期内对象的上下文 ---通过connection 可以获取对应的 rootSchema、JavaTypeFactory、CalciteConnectionConfig、DataContext数据上下文等信息
+   **/
   static class ContextImpl implements CalcitePrepare.Context {
     private final CalciteConnectionImpl connection;
 

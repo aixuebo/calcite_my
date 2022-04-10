@@ -39,6 +39,7 @@ import java.util.List;
 
 /**
  * Definition of the "TRIM" builtin SQL function.
+ * trim(both ' ' from e.name)
  */
 public class SqlTrimFunction extends SqlFunction {
   //~ Enums ------------------------------------------------------------------
@@ -80,18 +81,18 @@ public class SqlTrimFunction extends SqlFunction {
     super(
         "TRIM",
         SqlKind.TRIM,
-        ReturnTypes.cascade(
-            ReturnTypes.ARG2,
-            SqlTypeTransforms.TO_NULLABLE,
-            SqlTypeTransforms.TO_VARYING),
+        ReturnTypes.cascade(//设置返回值
+            ReturnTypes.ARG2,//基于第三个参数的类型作为返回值,即第三个参数是string,因此返回值是string
+            SqlTypeTransforms.TO_NULLABLE,//允许值为null
+            SqlTypeTransforms.TO_VARYING),//转换成string类型
         null,
-        OperandTypes.and(
+        OperandTypes.and(//设置参数校验器
             OperandTypes.family(
-                SqlTypeFamily.ANY, SqlTypeFamily.STRING, SqlTypeFamily.STRING),
+                SqlTypeFamily.ANY, SqlTypeFamily.STRING, SqlTypeFamily.STRING),//接受参数三个,分别是任意类型、string、string
             // Arguments 1 and 2 must have same type
-            new SameOperandTypeChecker(3) {
+            new SameOperandTypeChecker(3) {//要求3个参数都相同类型
               @Override protected List<Integer>
-              getOperandList(int operandCount) {
+              getOperandList(int operandCount) {//参数需要是1和2,即只校验1和2类型相同即可
                 return ImmutableList.of(1, 2);
               }
             }),
@@ -114,6 +115,7 @@ public class SqlTrimFunction extends SqlFunction {
     writer.endFunCall(frame);
   }
 
+  //方法签名描述
   public String getSignatureTemplate(final int operandsCount) {
     switch (operandsCount) {
     case 3:
@@ -126,21 +128,21 @@ public class SqlTrimFunction extends SqlFunction {
   public SqlCall createCall(
       SqlLiteral functionQualifier,
       SqlParserPos pos,
-      SqlNode... operands) {
+      SqlNode... operands) {//最终是3个参数,第一个flag、第二个" "、第三个具体trim要处理的字段
     assert functionQualifier == null;
     switch (operands.length) {
     case 1:
       // This variant occurs when someone writes TRIM(string)
       // as opposed to the sugared syntax TRIM(string FROM string).
       operands = new SqlNode[]{
-        Flag.BOTH.symbol(SqlParserPos.ZERO),
-        SqlLiteral.createCharString(" ", pos),
-        operands[0]
+        Flag.BOTH.symbol(SqlParserPos.ZERO),//默认是2边都trim
+        SqlLiteral.createCharString(" ", pos),//创建一个字符串常量
+        operands[0] //待替换的字段
       };
       break;
     case 3:
       assert operands[0] instanceof SqlLiteral
-          && ((SqlLiteral) operands[0]).getValue() instanceof Flag;
+          && ((SqlLiteral) operands[0]).getValue() instanceof Flag;//第一个参数一定是flag
       if (operands[1] == null) {
         operands[1] = SqlLiteral.createCharString(" ", pos);
       }
@@ -152,13 +154,15 @@ public class SqlTrimFunction extends SqlFunction {
     return super.createCall(functionQualifier, pos, operands);
   }
 
+  //校验参数类型是否合法
   public boolean checkOperandTypes(
       SqlCallBinding callBinding,
       boolean throwOnFailure) {
-    if (!super.checkOperandTypes(callBinding, throwOnFailure)) {
+    if (!super.checkOperandTypes(callBinding, throwOnFailure)) {//校验参数1和2都是字符串类型
       return false;
     }
     final List<SqlNode> operands = callBinding.getCall().getOperandList();
+    //参数必须是可以比较的字符串类型
     return SqlTypeUtil.isCharTypeComparable(
         callBinding,
         ImmutableList.of(operands.get(1), operands.get(2)), throwOnFailure);

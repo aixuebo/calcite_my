@@ -29,13 +29,14 @@ import java.util.List;
 /**
  * Sub-class of {@link org.apache.calcite.rel.core.Minus}
  * not targeted at any particular engine or calling convention.
+ * 差值,table1存在 && table2不存在的数据--输出,即table1 - table1与table2的交集
  */
 public final class LogicalMinus extends Minus {
   //~ Constructors -----------------------------------------------------------
 
   public LogicalMinus(
       RelOptCluster cluster,
-      List<RelNode> inputs,
+      List<RelNode> inputs,//比如持有一组LogicalProject
       boolean all) {
     super(
         cluster,

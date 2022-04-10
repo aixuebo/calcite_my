@@ -24,6 +24,41 @@ import java.util.List;
 /**
  * An item in a WITH clause of a query.
  * It has a name, an optional column list, and a query.
+ * 代表with中的一个item
+ *
+ * 比如with语法:
+ 临时表后面跟字段，不过感觉意义不大，暂时可忽略
+ with table1 (lable,b) as (
+   select label,1 b
+   from biao
+   where label = 1
+ ),
+ table2 (lable,b) as (
+   select label,2 b
+   from biao
+   where label = 0
+ )
+ select label,count(*)
+ from
+ (
+ select * from table1
+ union all
+ select * from table2
+ ) a
+ group by label
+
+ 一个with后面跟了多个子查询，每一个子查询都是一个SqlWithItem
+ SqlWithItem由子查询别名、可选择的列字段集合、查询sql语法组成
+
+ * SimpleIdentifier (xx,xx,xx) 具体表达式
+ *
+ *
+ 1.语法—参见with
+ 2.操作:new SqlWithItemOperator(“WITH_ITEM”, SqlKind.WITH_ITEM)
+ 3.参数:
+ name(SqlIdentifier临时表别名)、columnList(SqlNodeList可选择的列名集合)、query(SqlNode临时表sql)
+ 4.SqlKind:SqlKind.WITH_ITEM
+
  */
 public class SqlWithItem extends SqlCall {
   public SqlIdentifier name;

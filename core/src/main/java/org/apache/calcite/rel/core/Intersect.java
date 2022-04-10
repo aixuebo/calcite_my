@@ -32,6 +32,7 @@ import java.util.List;
  *
  * <p>If "all" is true, performs then multiset intersection; otherwise,
  * performs set set intersection (implying no duplicates in the results).
+ * 交集
  */
 public abstract class Intersect extends SetOp {
   /**

@@ -59,6 +59,7 @@ public class Driver extends UnregisteredDriver {
         "unknown version");
   }
 
+  //连接的属性集合
   @Override protected Collection<ConnectionProperty> getConnectionProperties() {
     final List<ConnectionProperty> list = new ArrayList<ConnectionProperty>();
     Collections.addAll(list, BuiltInConnectionProperty.values());
@@ -70,9 +71,9 @@ public class Driver extends UnregisteredDriver {
     final ConnectionConfig config = connection.config();
     final Service.Factory metaFactory = config.factory();
     final Service service;
-    if (metaFactory != null) {
+    if (metaFactory != null) {//本地创建服务对象
       service = metaFactory.create(connection);
-    } else if (config.url() != null) {
+    } else if (config.url() != null) {//通过URL远程获取服务对象
       final URL url;
       try {
         url = new URL(config.url());
@@ -80,7 +81,7 @@ public class Driver extends UnregisteredDriver {
         throw new RuntimeException(e);
       }
       service = new RemoteService(url);
-    } else {
+    } else {//通过json方式mock服务对象
       service = new MockJsonService(Collections.<String, String>emptyMap());
     }
     return new RemoteMeta(connection, service);

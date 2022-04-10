@@ -24,6 +24,7 @@ import java.util.List;
 
 /**
  * Type factory that can register Java classes as record types.
+ * java类型与sql类型之间的映射
  */
 public interface JavaTypeFactory extends RelDataTypeFactory {
   /**

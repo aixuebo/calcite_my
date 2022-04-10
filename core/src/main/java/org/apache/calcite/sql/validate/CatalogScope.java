@@ -30,18 +30,22 @@ import java.util.Set;
 /**
  * Implementation of {@link SqlValidatorScope} that can see all schemas in the
  * current catalog.
+ * 可以访问所有的schema的实现
  *
  * <p>Occurs near the root of the scope stack; its parent is typically
  * {@link EmptyScope}.
+ * 发生靠近在root节点上,他的父节点大多数情况是EmptyScope,即他是最上层节点，因为最上层节点可以访问schema
  *
  * <p>Helps resolve {@code schema.table.column} column references, such as
- *
  * <blockquote><pre>select sales.emp.empno from sales.emp</pre></blockquote>
+ * 用于解决表的column的引用问题
+ *
+ * 描述了有哪些schema可以用
  */
 class CatalogScope extends DelegatingScope {
   /** Fully-qualified name of the catalog. Typically empty or ["CATALOG"]. */
-  final ImmutableList<String> names;
-  private final Set<List<String>> schemaNames;
+  final ImmutableList<String> names;//catalog
+  private final Set<List<String>> schemaNames;//每一个schema可能由xx.xx组成,因此是List<String>代表一个schema,Set表示全部schema
 
   //~ Constructors -----------------------------------------------------------
 
@@ -51,11 +55,11 @@ class CatalogScope extends DelegatingScope {
     this.schemaNames =
         Linq4j.asEnumerable(
             validator.getCatalogReader()
-                .getAllSchemaObjectNames(ImmutableList.<String>of()))
+                .getAllSchemaObjectNames(ImmutableList.<String>of()))//给一个schema的全路径,读取参数schema下的所有子schema、子table、子function
             .where(
                 new Predicate1<SqlMoniker>() {
                   public boolean apply(SqlMoniker input) {
-                    return input.getType() == SqlMonikerType.SCHEMA;
+                    return input.getType() == SqlMonikerType.SCHEMA;//只要schema
                   }
                 })
             .select(
@@ -73,11 +77,10 @@ class CatalogScope extends DelegatingScope {
     throw new UnsupportedOperationException();
   }
 
+  //查找catalog/schema对应的命名空间
   public SqlValidatorNamespace resolve(List<String> names,
       SqlValidatorScope[] ancestorOut, int[] offsetOut) {
-    final ImmutableList<String> nameList =
-        ImmutableList.<String>builder().addAll(this.names).addAll(names)
-            .build();
+    final ImmutableList<String> nameList = ImmutableList.<String>builder().addAll(this.names).addAll(names).build();
     if (schemaNames.contains(nameList)) {
       return new SchemaNamespace(validator, nameList);
     }

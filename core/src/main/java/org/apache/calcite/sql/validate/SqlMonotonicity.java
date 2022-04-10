@@ -18,27 +18,30 @@ package org.apache.calcite.sql.validate;
 
 /**
  * Enumeration of types of monotonicity.
+ * 字段类型值是否是单调递增护着递减的
+ * 字段是否是排序的,以及如何排序的
  */
 public enum SqlMonotonicity {
-  STRICTLY_INCREASING,
-  INCREASING,
-  STRICTLY_DECREASING,
+  STRICTLY_INCREASING,//严格 增量
+  INCREASING,//增量
+  STRICTLY_DECREASING,//严格 减少
   DECREASING,
-  CONSTANT,
+  CONSTANT,//常量
   /**
    * Catch-all value for expressions that have some monotonic properties.
    * Maybe it isn't known whether the expression is increasing or decreasing;
    * or maybe the value is neither increasing nor decreasing but the value
    * never repeats.
    */
-  MONOTONIC,
-  NOT_MONOTONIC;
+  MONOTONIC,//单调的
+  NOT_MONOTONIC;//非单调的
 
   /**
    * If this is a strict monotonicity (StrictlyIncreasing, StrictlyDecreasing)
    * returns the non-strict equivalent (Increasing, Decreasing).
    *
    * @return non-strict equivalent monotonicity
+   * 将严格的转换成不严格类型
    */
   public SqlMonotonicity unstrict() {
     switch (this) {
@@ -55,6 +58,7 @@ public enum SqlMonotonicity {
    * Returns the reverse monotonicity.
    *
    * @return reverse monotonicity
+   * 取反义词
    */
   public SqlMonotonicity reverse() {
     switch (this) {
@@ -77,6 +81,7 @@ public enum SqlMonotonicity {
    * have a value greater than X.
    *
    * @return whether values are decreasing
+   * 是否是降低的
    */
   public boolean isDecreasing() {
     switch (this) {
@@ -97,6 +102,7 @@ public enum SqlMonotonicity {
    * progress before all of the input has been seen.
    *
    * @return whether values repeat
+   * 只有常量、非单调的，才允许重复，其他都不允许重复
    */
   public boolean mayRepeat() {
     switch (this) {

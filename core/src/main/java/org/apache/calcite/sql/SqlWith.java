@@ -26,10 +26,36 @@ import java.util.List;
 
 /**
  * The WITH clause of a query. It wraps a SELECT, UNION, or INTERSECT.
+ * with语句
+ 1.语法:
+ with table1 (lable,b) as (
+ select label,1 b
+ from biao
+ where label = 1
+ ),
+ table2 (lable,b) as (
+ select label,2 b
+ from biao
+ where label = 0
+ )
+ select label,count(*)
+ from
+ (
+ select * from table1
+ union all
+ select * from table2
+ ) a
+ group by label
+
+ 2.操作:new SqlWithOperator(“with”, SqlKind.WITH)
+ 3.参数:
+ withList(SqlNodeList),sqlBody(SqlNode)
+ 由with语法以及具体查询sql组成。
+ 4.SqlKind:SqlKind.WITH
  */
 public class SqlWith extends SqlCall {
-  public final SqlNodeList withList;
-  public final SqlNode body;
+  public final SqlNodeList withList;//持有SqlWithItem集合,即执行每一个子查询
+  public final SqlNode body;//查询语法,该语法会用到withList中的子查询结果
 
   //~ Constructors -----------------------------------------------------------
 

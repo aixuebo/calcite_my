@@ -136,6 +136,8 @@ public class Util {
    * Does nothing with its argument. Call this method when you have a value
    * you are not interested in, but you don't want the compiler to warn that
    * you are not using it.
+   * 当一个值,你对他没有兴趣，即不会被任何地方使用,但编译器会报警说没有被用到。
+   * 为了解决该问题,使用该方法,方法本身不做任何处理,但编译器会觉得该值被用到了，因此不会报警
    */
   public static void discard(Object o) {
     if (false) {
@@ -1955,15 +1957,17 @@ public class Util {
 
   /** Looks for a string within a list of strings, using a given
    * case-sensitivity policy, and returns the position at which the first match
-   * is found, or -1 if there are no matches. */
+   * is found, or -1 if there are no matches.
+   * 找到seek第一次出现在strings中的位置
+   **/
   public static int findMatch(List<String> strings, String seek,
       boolean caseSensitive) {
-    if (caseSensitive) {
+    if (caseSensitive) {//敏感
       return strings.indexOf(seek);
     }
     for (int i = 0; i < strings.size(); i++) {
       String s = strings.get(i);
-      if (s.equalsIgnoreCase(seek)) {
+      if (s.equalsIgnoreCase(seek)) {//不敏感,忽略大小写
         return i;
       }
     }
@@ -1971,7 +1975,9 @@ public class Util {
   }
 
   /** Returns whether a name matches another according to a given
-   * case-sensitivity policy. */
+   * case-sensitivity policy.
+   * 返回两个字符串参数是否相同
+   **/
   public static boolean matches(boolean caseSensitive, String s0, String s1) {
     return caseSensitive ? s1.equals(s0) : s1.equalsIgnoreCase(s0);
   }

@@ -17,6 +17,7 @@
 
 /**
  * Provides a core set of planner rules.
+ * 提供计划的核心规则
  *
  * <p>Consider this package to be the "standard library" of planner rules.
  * Most of the common rewrites that you would want to perform on logical

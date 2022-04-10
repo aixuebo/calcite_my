@@ -72,9 +72,12 @@ public class RelFactories {
    * appropriate type for this rule's calling convention.
    */
   public interface ProjectFactory {
-    /** Creates a project. */
-    RelNode createProject(RelNode child, List<? extends RexNode> childExprs,
-        List<String> fieldNames);
+    /** Creates a project.
+     * 创建一个投影
+     **/
+    RelNode createProject(RelNode child,//可能是TableScan
+                          List<? extends RexNode> childExprs,//准备投影哪些列---包含列的类型和序号
+        List<String> fieldNames);//列的名字
   }
 
   /**

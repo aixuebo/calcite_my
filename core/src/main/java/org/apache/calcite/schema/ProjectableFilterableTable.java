@@ -32,6 +32,7 @@ import java.util.List;
  *
  * @see ScannableTable
  * @see FilterableTable
+ * 带有select的投影处理的table
  */
 public interface ProjectableFilterableTable extends Table {
   /** Returns an enumerable over the rows in this Table.

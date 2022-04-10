@@ -50,14 +50,17 @@ import java.util.Map;
 
 /**
  * API for a service that prepares statements for execution.
+ * 提供执行语句的api---下游去实现
  */
 public interface CalcitePrepare {
   Function0<CalcitePrepare> DEFAULT_FACTORY =
       new Function0<CalcitePrepare>() {
         public CalcitePrepare apply() {
-          return new CalcitePrepareImpl();
+          return new CalcitePrepareImpl();//实现类
         }
       };
+
+  //线程内持有的ArrayList<Context>>,即持有一组上下文,采用堆栈的方式一次一次push进来的
   ThreadLocal<ArrayList<Context>> THREAD_CONTEXT_STACK =
       new ThreadLocal<ArrayList<Context>>() {
         @Override protected ArrayList<Context> initialValue() {
@@ -65,8 +68,10 @@ public interface CalcitePrepare {
         }
       };
 
+  //解析sql,返回结果集
   ParseResult parse(Context context, String sql);
 
+  //校验sql语法,解析sql,转换成关系表达式
   ConvertResult convert(Context context, String sql);
 
   <T> CalciteSignature<T> prepareSql(
@@ -80,7 +85,7 @@ public interface CalcitePrepare {
       Context context,
       Queryable<T> queryable);
 
-  /** Context for preparing a statement. */
+  /** Context for preparing a statement. 上下文信息*/
   interface Context {
     JavaTypeFactory getTypeFactory();
 
@@ -209,7 +214,9 @@ public interface CalcitePrepare {
   }
 
   /** The result of parsing and validating a SQL query and converting it to
-   * relational algebra. */
+   * relational algebra.
+   * 校验sql语法,解析sql,转换成关系表达式
+   **/
   public static class ConvertResult extends ParseResult {
     public final RelNode relNode;
 
@@ -222,7 +229,9 @@ public interface CalcitePrepare {
 
   /** The result of preparing a query. It gives the Avatica driver framework
    * the information it needs to create a prepared statement, or to execute a
-   * statement directly, without an explicit prepare step. */
+   * statement directly, without an explicit prepare step.
+   * 对查询的结果的元数据进行封装，知道每一个结果该如何解析
+   **/
   public static class CalciteSignature<T> extends Meta.Signature {
     @JsonIgnore public final RelDataType rowType;
     private final int maxRowCount;
@@ -230,24 +239,25 @@ public interface CalcitePrepare {
 
     public CalciteSignature(String sql,
         List<AvaticaParameter> parameterList,
-        Map<String, Object> internalParameters,
+        Map<String, Object> internalParameters,//参数信息--一般情况是空
         RelDataType rowType,
-        List<ColumnMetaData> columns,
-        Meta.CursorFactory cursorFactory,
-        int maxRowCount,
-        Bindable<T> bindable) {
+        List<ColumnMetaData> columns,//每一个列的元数据内容
+        Meta.CursorFactory cursorFactory,//如何解析每一个元素
+        int maxRowCount,//最大行数
+        Bindable<T> bindable) {//元素迭代器
       super(columns, sql, parameterList, internalParameters, cursorFactory);
       this.rowType = rowType;
       this.maxRowCount = maxRowCount;
       this.bindable = bindable;
     }
 
+    //参数是上下文环境变量信息
     public Enumerable<T> enumerable(DataContext dataContext) {
-      Enumerable<T> enumerable = bindable.bind(dataContext);
+      Enumerable<T> enumerable = bindable.bind(dataContext);//org.apache.calcite.linq4j.EnumerableDefaults
       if (maxRowCount >= 0) {
         // Apply limit. In JDBC 0 means "no limit". But for us, -1 means
         // "no limit", and 0 is a valid limit.
-        enumerable = EnumerableDefaults.take(enumerable, maxRowCount);
+        enumerable = EnumerableDefaults.take(enumerable, maxRowCount);//设置最大获取行数 org.apache.calcite.linq4j.EnumerableDefaults
       }
       return enumerable;
     }

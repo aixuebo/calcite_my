@@ -36,10 +36,13 @@ import java.util.List;
  * ORDER BY x</code></blockquote>
  *
  * <p>is valid.</p>
+ *
+ * 因为order by 的字段是别名,所以需要从命名空间查找
  */
 public class OrderByScope extends DelegatingScope {
   //~ Instance fields --------------------------------------------------------
 
+  //order by 语法包含select和order by
   private final SqlNodeList orderList;
   private final SqlSelect select;
 
@@ -60,6 +63,7 @@ public class OrderByScope extends DelegatingScope {
     return orderList;
   }
 
+  //输出select的输出字段到result中
   public void findAllColumnNames(List<SqlMoniker> result) {
     final SqlValidatorNamespace ns = validator.getNamespace(select);
     addColumnNames(ns, result);
@@ -80,10 +84,11 @@ public class OrderByScope extends DelegatingScope {
     return super.fullyQualify(identifier);
   }
 
+  //获取某一个列的类型
   public RelDataType resolveColumn(String name, SqlNode ctx) {
-    final SqlValidatorNamespace selectNs = validator.getNamespace(select);
-    final RelDataType rowType = selectNs.getRowType();
-    final RelDataTypeField field = validator.catalogReader.field(rowType, name);
+    final SqlValidatorNamespace selectNs = validator.getNamespace(select);//select的输出表空间
+    final RelDataType rowType = selectNs.getRowType();//表字段类型
+    final RelDataTypeField field = validator.catalogReader.field(rowType, name);//找到列对象
     if (field != null) {
       return field.getType();
     }

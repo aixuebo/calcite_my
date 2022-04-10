@@ -55,6 +55,7 @@ import java.util.TreeSet;
  * Schema.
  *
  * <p>Wrapper around user-defined schema used internally.</p>
+ * 只是Calcite内部对schema进行了封装.---针对原有的schema进行了父子关系的封装
  */
 public class CalciteSchema {
   /** Comparator that compares all strings differently, but if two strings are
@@ -74,24 +75,34 @@ public class CalciteSchema {
       };
 
   private final CalciteSchema parent;
-  public final Schema schema;
-  public final String name;
+  public final Schema schema;//真正的schema
+  public final String name;//schema对应的name
   /** Tables explicitly defined in this schema. Does not include tables in
-   *  {@link #schema}. */
+   *  {@link #schema}.
+   * 内存中存储该schema下已明确使用到的table、function等数据结构
+   **/
   public final NavigableMap<String, TableEntry> tableMap =
       new TreeMap<String, TableEntry>(COMPARATOR);
   private final Multimap<String, FunctionEntry> functionMap =
       LinkedListMultimap.create();
   private final NavigableMap<String, LatticeEntry> latticeMap =
       new TreeMap<String, LatticeEntry>(COMPARATOR);
+
+  //functionMap中的key,即函数名称
   private final NavigableSet<String> functionNames =
       new TreeSet<String>(COMPARATOR);
+  //functionMap的子集,即无参数的function集合
   private final NavigableMap<String, FunctionEntry> nullaryFunctionMap =
       new TreeMap<String, FunctionEntry>(COMPARATOR);
-  private final NavigableMap<String, CalciteSchema> subSchemaMap =
-      new TreeMap<String, CalciteSchema>(COMPARATOR);
-  private ImmutableList<ImmutableList<String>> path;
-  private boolean cache = true;
+
+  //存储子schema
+  private final NavigableMap<String, CalciteSchema> subSchemaMap = new TreeMap<String, CalciteSchema>(COMPARATOR);
+
+  private ImmutableList<ImmutableList<String>> path;//schema全路径
+
+  //NavigableMap 用于按照某种排序取提取一部分元素,非常适用于缓存，因为缓存是基于时间的存储,可以过滤某一部分数据外的数据
+  private boolean cache = true;//是否启动缓存
+  //隐藏的信息,即真实存在schema中,但没有实际上被用到的表信息，比如有表a,但截止到目前为止,都没有任何sql使用过该表,因此他就是存在隐藏表集合中,不存在在tableMap中
   private final Cached<SubSchemaCache> implicitSubSchemaCache;
   private final Cached<NavigableSet<String>> implicitTableCache;
   private final Cached<NavigableSet<String>> implicitFunctionCache;
@@ -101,9 +112,11 @@ public class CalciteSchema {
     this.schema = schema;
     this.name = name;
     assert (parent == null) == (this instanceof CalciteRootSchema);
+
+    //加载隐藏信息---定期的生成一个缓存对象
     this.implicitSubSchemaCache =
         new AbstractCached<SubSchemaCache>() {
-          public SubSchemaCache build() {
+          public SubSchemaCache build() {//实现build方法,每次缓存找不到的时候,都生成一个新的对象
             return new SubSchemaCache(CalciteSchema.this,
                 Compatible.INSTANCE.navigableSet(
                     ImmutableSortedSet.copyOf(COMPARATOR,
@@ -130,7 +143,9 @@ public class CalciteSchema {
 
   /** Creates a root schema. When <code>addMetadataSchema</code> argument is
    * true a "metadata" schema containing definitions of tables, columns etc. is
-   * added to root schema. */
+   * added to root schema.
+   * 为CalciteConnectionImpl创建跟schema,以及是否追加名称为metadata的schema
+   **/
   public static CalciteRootSchema createRootSchema(boolean addMetadataSchema) {
     CalciteRootSchema rootSchema =
         new CalciteRootSchema(new CalciteConnectionImpl.RootSchema());
@@ -174,6 +189,7 @@ public class CalciteSchema {
     return entry;
   }
 
+  //向上冒泡,找到root节点
   public CalciteRootSchema root() {
     for (CalciteSchema schema = this;;) {
       if (schema.parent == null) {
@@ -183,7 +199,9 @@ public class CalciteSchema {
     }
   }
 
-  /** Returns the path of an object in this schema. */
+  /** Returns the path of an object in this schema.
+   * schema全路径---向上冒泡的方式不断追加schema信息
+   **/
   public List<String> path(String name) {
     final List<String> list = new ArrayList<String>();
     if (name != null) {
@@ -196,7 +214,7 @@ public class CalciteSchema {
         list.add(s.name);
       }
     }
-    return ImmutableList.copyOf(Lists.reverse(list));
+    return ImmutableList.copyOf(Lists.reverse(list));//翻转
   }
 
   private void setCache(boolean cache) {
@@ -244,14 +262,18 @@ public class CalciteSchema {
     }
   }
 
-  /** Adds a child schema of this schema. */
+  /** Adds a child schema of this schema.
+   * 添加子schema
+   **/
   public CalciteSchema add(String name, Schema schema) {
     final CalciteSchema calciteSchema = new CalciteSchema(this, schema, name);
     subSchemaMap.put(name, calciteSchema);
     return calciteSchema;
   }
 
-  /** Returns a table that materializes the given SQL statement. */
+  /** Returns a table that materializes the given SQL statement.
+   * 通过sql查找对应的已经查询到的table
+   **/
   public final Pair<String, Table> getTableBySql(String sql) {
     for (TableEntry tableEntry : tableMap.values()) {
       if (tableEntry.sqls.contains(sql)) {
@@ -261,18 +283,20 @@ public class CalciteSchema {
     return null;
   }
 
-  /** Returns a table with the given name. Does not look for views. */
+  /** Returns a table with the given name. Does not look for views.
+   * 从已使用或者隐藏的表中查找
+   **/
   public final Pair<String, Table> getTable(String tableName,
       boolean caseSensitive) {
     if (caseSensitive) {
       // Check explicit tables, case-sensitive.
-      final TableEntry entry = tableMap.get(tableName);
+      final TableEntry entry = tableMap.get(tableName);//已用到的表中查找
       if (entry != null) {
         return Pair.of(tableName, entry.getTable());
       }
       // Check implicit tables, case-sensitive.
       final long now = System.currentTimeMillis();
-      if (implicitTableCache.get(now).contains(tableName)) {
+      if (implicitTableCache.get(now).contains(tableName)) {//隐藏的未使用的表中查找
         final Table table = schema.getTable(tableName);
         if (table != null) {
           return Pair.of(tableName, table);
@@ -516,6 +540,7 @@ public class CalciteSchema {
    * respect, it is like an inode in a Unix file system.</p>
    *
    * <p>The members of a schema must have unique names.
+   * 定义一个schema下一个name,确保同一个schema下name是唯一的
    */
   public abstract static class Entry {
     public final CalciteSchema schema;
@@ -572,7 +597,9 @@ public class CalciteSchema {
   }
 
   /** Implementation of {@link SchemaPlus} based on a
-   * {@link org.apache.calcite.jdbc.CalciteSchema}. */
+   * {@link org.apache.calcite.jdbc.CalciteSchema}.
+   * 对外提供了一个线程安全(可读取信息)的schema扩展对象
+   **/
   private class SchemaPlusImpl implements SchemaPlus {
     CalciteSchema calciteSchema() {
       return CalciteSchema.this;
@@ -744,33 +771,38 @@ public class CalciteSchema {
    * value is out of date as of a given timestamp.
    *
    * @param <T> Type of cached object
+   * 一种缓存策略,如果值没有过期,则从缓存取值。
+   * 泛型T表示要缓存的值类型
    */
   private interface Cached<T> {
-    /** Returns the value; uses cached value if valid. */
+    /** Returns the value; uses cached value if valid. 从缓存内取值(如果时间允许)*/
     T get(long now);
 
-    /** Creates a new value. */
+    /** Creates a new value.创建新值 */
     T build();
 
-    /** Called when CalciteSchema caching is enabled or disabled. */
+    /** Called when CalciteSchema caching is enabled or disabled. 使缓存生效或者失效*/
     void enable(long now, boolean enabled);
   }
 
   /** Implementation of {@link CalciteSchema.Cached}
-   * that drives from {@link CalciteSchema#cache}. */
+   * that drives from {@link CalciteSchema#cache}.
+   * 缓存的抽象方法---T表示缓存的值类型
+   **/
   private abstract class AbstractCached<T> implements Cached<T> {
-    T t;
-    long checked = Long.MIN_VALUE;
+    T t;//缓存的内容
+    long checked = Long.MIN_VALUE;//上一次缓存时间
 
+    //获取now时刻的数据---如果是有缓存,则从缓存取，如果没有则build
     public T get(long now) {
-      if (!CalciteSchema.this.cache) {
-        return build();
+      if (!CalciteSchema.this.cache) {//不使用缓存
+        return build();//创建新的值
       }
       if (checked == Long.MIN_VALUE
-          || schema.contentsHaveChangedSince(checked, now)) {
+          || schema.contentsHaveChangedSince(checked, now)) {//检查是否schema在lastCheck时间之后有更改,有更改则build
         t = build();
       }
-      checked = now;
+      checked = now;//记录获取缓存的时间
       return t;
     }
 

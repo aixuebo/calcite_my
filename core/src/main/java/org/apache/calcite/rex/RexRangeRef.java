@@ -20,6 +20,7 @@ import org.apache.calcite.rel.type.RelDataType;
 
 /**
  * Reference to a range of columns.
+ * 表达式:代表一个范围的列集合
  *
  * <p>This construct is used only during the process of translating a
  * {@link org.apache.calcite.sql.SqlNode SQL} tree to a

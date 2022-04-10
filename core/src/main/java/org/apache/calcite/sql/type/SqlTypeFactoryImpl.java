@@ -41,7 +41,7 @@ public class SqlTypeFactoryImpl extends RelDataTypeFactoryImpl {
 
   //~ Methods ----------------------------------------------------------------
 
-  // implement RelDataTypeFactory
+  // implement RelDataTypeFactory 创建一个简单的sql类型对象
   public RelDataType createSqlType(SqlTypeName typeName) {
     if (typeName.allowsPrec()) {
       return createSqlType(typeName, typeSystem.getDefaultPrecision(typeName));
@@ -139,6 +139,8 @@ public class SqlTypeFactoryImpl extends RelDataTypeFactoryImpl {
   }
 
   // implement RelDataTypeFactory
+   //这个规则用于union、except、intersect等场景,返回类型中公共的类型,即共同父类。
+   //如果没有公共父类,即任意两个类型不能互相转换,则结果返回null
   public RelDataType leastRestrictive(List<RelDataType> types) {
     assert types != null;
     assert types.size() >= 1;
@@ -155,32 +157,35 @@ public class SqlTypeFactoryImpl extends RelDataTypeFactoryImpl {
     return super.leastRestrictive(types);
   }
 
+
+   //这个规则用于union、except、intersect等场景,返回类型中公共的类型,即共同父类。
+   //如果没有公共父类,即任意两个类型不能互相转换,则结果返回null
   private RelDataType leastRestrictiveByCast(List<RelDataType> types) {
-    RelDataType resultType = types.get(0);
-    boolean anyNullable = resultType.isNullable();
-    for (int i = 1; i < types.size(); i++) {
+    RelDataType resultType = types.get(0);//第一个类型
+    boolean anyNullable = resultType.isNullable();//是否允许为null
+    for (int i = 1; i < types.size(); i++) {//循环每一个类型
       RelDataType type = types.get(i);
-      if (type.getSqlTypeName() == SqlTypeName.NULL) {
+      if (type.getSqlTypeName() == SqlTypeName.NULL) {//如果该类型是null,说明结果允许为null
         anyNullable = true;
         continue;
       }
 
-      if (type.isNullable()) {
+      if (type.isNullable()) {//说明结果允许为null
         anyNullable = true;
       }
 
-      if (SqlTypeUtil.canCastFrom(type, resultType, false)) {
+      if (SqlTypeUtil.canCastFrom(type, resultType, false)) {//将resultType是否可以强转成type,如果可以,说明type是父类,因此结果是type
         resultType = type;
       } else {
-        if (!SqlTypeUtil.canCastFrom(resultType, type, false)) {
+        if (!SqlTypeUtil.canCastFrom(resultType, type, false)) {//如果不能强转,则返回来看，如果依然不能强转,说明两个类型不同,则直接返回null
           return null;
         }
       }
     }
     if (anyNullable) {
-      return createTypeWithNullability(resultType, true);
+      return createTypeWithNullability(resultType, true);//创建共同的父类,并且允许值是null的类型
     } else {
-      return resultType;
+      return resultType;//创建共同的父类
     }
   }
 

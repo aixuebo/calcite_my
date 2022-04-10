@@ -34,6 +34,7 @@ import java.util.Collection;
  * factory.</p>
  *
  * <p>All sub-classes of RexNode are immutable.</p>
+ * 表示一个表达式
  */
 public abstract class RexNode {
   //~ Instance fields --------------------------------------------------------
@@ -43,6 +44,7 @@ public abstract class RexNode {
 
   //~ Methods ----------------------------------------------------------------
 
+  //表达式返回类型
   public abstract RelDataType getType();
 
   /**

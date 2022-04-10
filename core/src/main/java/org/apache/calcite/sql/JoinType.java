@@ -51,6 +51,7 @@ public enum JoinType implements SqlLiteral.SqlSymbol {
    * Comma join: the good old-fashioned SQL <code>FROM</code> clause,
    * where table expressions are specified with commas between them, and
    * join conditions are specified in the <code>WHERE</code> clause.
+   * 原始的使用逗号去join
    */
   COMMA;
 

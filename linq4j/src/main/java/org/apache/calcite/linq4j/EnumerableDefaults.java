@@ -1472,9 +1472,10 @@ public abstract class EnumerableDefaults {
         Functions.<TSource, TResult>ofTypePredicate(clazz));
   }
 
-  /**
+  /**selectMany
    * Sorts the elements of a sequence in ascending
    * order according to a key.
+   * 正序排序
    */
   public static <TSource, TKey extends Comparable> Enumerable<TSource> orderBy(
       Enumerable<TSource> source, Function1<TSource, TKey> keySelector) {
@@ -1484,6 +1485,9 @@ public abstract class EnumerableDefaults {
   /**
    * Sorts the elements of a sequence in ascending
    * order by using a specified comparer.
+   * 将所有的元素排序
+   *
+   * 考虑到有一些元素是相同的,因此将其抓换成map<k,list<v>>类型,对key排序,然后相同的内容存储到list中,按照顺序输出map元素即可
    */
   public static <TSource, TKey> Enumerable<TSource> orderBy(
       Enumerable<TSource> source, Function1<TSource, TKey> keySelector,
@@ -1491,8 +1495,7 @@ public abstract class EnumerableDefaults {
     // NOTE: TreeMap allows null comparator. But the caller of this method
     // must supply a comparator if the key does not extend Comparable.
     // Otherwise there will be a ClassCastException while retrieving.
-    final Map<TKey, List<TSource>> map = new TreeMap<TKey, List<TSource>>(
-        comparator);
+    final Map<TKey, List<TSource>> map = new TreeMap<TKey, List<TSource>>(comparator);//排序集合
     LookupImpl<TKey, TSource> lookup = toLookup_(map, source, keySelector,
         Functions.<TSource>identitySelector());
     return lookup.valuesEnumerable();
@@ -1501,6 +1504,7 @@ public abstract class EnumerableDefaults {
   /**
    * Sorts the elements of a sequence in descending
    * order according to a key.
+   * 倒叙排序
    */
   public static <TSource, TKey extends Comparable> Enumerable<TSource>
   orderByDescending(
@@ -1511,6 +1515,7 @@ public abstract class EnumerableDefaults {
   /**
    * Sorts the elements of a sequence in descending
    * order by using a specified comparer.
+   * 倒叙排序
    */
   public static <TSource, TKey> Enumerable<TSource> orderByDescending(
       Enumerable<TSource> source, Function1<TSource, TKey> keySelector,
@@ -1615,6 +1620,7 @@ public abstract class EnumerableDefaults {
    * Projects each element of a sequence to an
    * {@code Enumerable<TSource>} and flattens the resulting sequences into one
    * sequence.
+   * 每一个元素转换成多个元素,相当于flatMap
    */
   public static <TSource, TResult> Enumerable<TResult> selectMany(
       final Enumerable<TSource> source,

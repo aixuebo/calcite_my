@@ -31,33 +31,34 @@ import org.apache.calcite.rel.logical.LogicalValues;
 
 /**
  * Visitor that has methods for the common logical relational expressions.
+ * 处理逻辑表达式
  */
 public interface RelShuttle {
-  RelNode visit(TableScan scan);
+  RelNode visit(TableScan scan);//扫描全表
 
-  RelNode visit(TableFunctionScan scan);
+  RelNode visit(TableFunctionScan scan);//使用函数创建rows数据集合
 
-  RelNode visit(LogicalValues values);
+  RelNode visit(LogicalValues values);//属于sql中values,用于生产静态的数据源
 
-  RelNode visit(LogicalFilter filter);
+  RelNode visit(LogicalFilter filter);//追加where
 
-  RelNode visit(LogicalProject project);
+  RelNode visit(LogicalProject project);//select 投影
 
-  RelNode visit(LogicalJoin join);
+  RelNode visit(LogicalJoin join);//join表
 
-  RelNode visit(LogicalCorrelate correlate);
+  RelNode visit(LogicalCorrelate correlate);//关联查询 select (select id from biao1) from biao2
 
-  RelNode visit(LogicalUnion union);
+  RelNode visit(LogicalUnion union);//并集,比如持有一组LogicalProject
 
-  RelNode visit(LogicalIntersect intersect);
+  RelNode visit(LogicalIntersect intersect);//交集,比如持有一组LogicalProject
 
-  RelNode visit(LogicalMinus minus);
+  RelNode visit(LogicalMinus minus);//差值,table1存在 && table2不存在的数据--输出,即table1 - table1与table2的交集,比如持有一组LogicalProject
 
-  RelNode visit(LogicalAggregate aggregate);
+  RelNode visit(LogicalAggregate aggregate);//相当于group by操作
 
-  RelNode visit(Sort sort);
+  RelNode visit(Sort sort);//如何排序,支持order by offset limit语法
 
-  RelNode visit(RelNode other);
+  RelNode visit(RelNode other);//其他表达式---基本上没有了
 }
 
 // End RelShuttle.java

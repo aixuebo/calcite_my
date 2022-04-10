@@ -34,11 +34,12 @@ import static org.apache.calcite.util.Static.RESOURCE;
 
 /**
  * Parameter type-checking strategy where all operand types must be the same.
+ * 参数校验策略 -- 所有的参数必须相同类型,并且不允许为null,一旦出现null,也说明参数不同,返回false,校验失败
  */
 public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
   //~ Instance fields --------------------------------------------------------
 
-  protected final int nOperands;
+  protected final int nOperands;//参数数量,-1表示无限参数数量
 
   //~ Constructors -----------------------------------------------------------
 
@@ -50,6 +51,7 @@ public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
   //~ Methods ----------------------------------------------------------------
 
   // implement SqlOperandTypeChecker
+  //校验所有参数
   public boolean checkOperandTypes(
       SqlCallBinding callBinding,
       boolean throwOnFailure) {
@@ -59,26 +61,27 @@ public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
         callBinding);
   }
 
+  //返回参数序号集合
   protected List<Integer> getOperandList(int operandCount) {
     return nOperands == -1
         ? Util.range(0, operandCount)
         : Util.range(0, nOperands);
   }
 
+  //校验所有参数
   private boolean checkOperandTypesImpl(
       SqlOperatorBinding operatorBinding,
       boolean throwOnFailure,
       SqlCallBinding callBinding) {
     int nOperandsActual = nOperands;
     if (nOperandsActual == -1) {
-      nOperandsActual = operatorBinding.getOperandCount();
+      nOperandsActual = operatorBinding.getOperandCount();//真实传递的参数数量
     }
     assert !(throwOnFailure && (callBinding == null));
-    RelDataType[] types = new RelDataType[nOperandsActual];
-    final List<Integer> operandList =
-        getOperandList(operatorBinding.getOperandCount());
+    RelDataType[] types = new RelDataType[nOperandsActual];//存储每一个参数的返回值
+    final List<Integer> operandList = getOperandList(operatorBinding.getOperandCount());//参数序号
     for (int i : operandList) {
-      if (operatorBinding.isOperandNull(i, false)) {
+      if (operatorBinding.isOperandNull(i, false)) {//参数是否是null
         if (throwOnFailure) {
           throw callBinding.getValidator().newValidationError(
               callBinding.getCall().operand(i), RESOURCE.nullIllegal());
@@ -86,12 +89,12 @@ public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
           return false;
         }
       }
-      types[i] = operatorBinding.getOperandType(i);
+      types[i] = operatorBinding.getOperandType(i);//返回参数类型
     }
-    int prev = -1;
+    int prev = -1;//前一个参数序号
     for (int i : operandList) {
       if (prev >= 0) {
-        if (!SqlTypeUtil.isComparable(types[i], types[prev])) {
+        if (!SqlTypeUtil.isComparable(types[i], types[prev])) {//确保当前参数类型与前一个参数类型相同,如果不同,则抛异常
           if (!throwOnFailure) {
             return false;
           }
@@ -112,13 +115,14 @@ public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
    * Similar functionality to
    * {@link #checkOperandTypes(SqlCallBinding, boolean)}, but not part of the
    * interface, and cannot throw an error.
+   * 校验全部参数
    */
   public boolean checkOperandTypes(
       SqlOperatorBinding operatorBinding) {
     return checkOperandTypesImpl(operatorBinding, false, null);
   }
 
-  // implement SqlOperandTypeChecker
+  // implement SqlOperandTypeChecker 无限个参数
   public SqlOperandCountRange getOperandCountRange() {
     if (nOperands == -1) {
       return SqlOperandCountRanges.any();
@@ -128,6 +132,7 @@ public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
   }
 
   // implement SqlOperandTypeChecker
+  //设置(EQUIVALENT_TYPE),告诉使用者,每一个参数都是相同的类型,如果是-1则用..表示无穷个参数,所有参数都是相同类型
   public String getAllowedSignatures(SqlOperator op, String opName) {
     return SqlUtil.getAliasedSignature(op, opName,
         nOperands == -1
@@ -135,6 +140,7 @@ public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
             : Collections.nCopies(nOperands, "EQUIVALENT_TYPE"));
   }
 
+  //不支持,因为一个参数是没有办法比较相等的
   public boolean checkSingleOperandType(
       SqlCallBinding callBinding,
       SqlNode operand,

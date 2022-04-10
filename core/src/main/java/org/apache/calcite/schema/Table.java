@@ -35,6 +35,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
  * filesystem.)</p>
  *
  * @see TableMacro
+ * 定义表---字段、什么类型的表、统计信息
  */
 public interface Table {
   /** Returns this table's row type.
@@ -48,13 +49,15 @@ public interface Table {
    *
    * @param typeFactory Type factory with which to create the type
    * @return Row type
+   * 返回一个表的class实例,该实例有该表的字段集合
+   * 代表表的类型，即包含哪些字段，每一个字段类型
    */
   RelDataType getRowType(RelDataTypeFactory typeFactory);
 
-  /** Returns a provider of statistics about this table. */
+  /** Returns a provider of statistics about this table. 表的统计信息*/
   Statistic getStatistic();
 
-  /** Type of table. */
+  /** Type of table. 表类型,是join表还是视图还是什么*/
   Schema.TableType getJdbcTableType();
 }
 

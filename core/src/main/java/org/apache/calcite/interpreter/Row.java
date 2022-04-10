@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 /**
  * Row.
+ * 代表一行数据---以及如何构造一行数据
  */
 public class Row {
   private final Object[] values;
@@ -35,17 +36,22 @@ public class Row {
    * <p>Makes a defensive copy of the array, so the Row is immutable.
    * (If you're worried about the extra copy, call {@link #of(Object)}.
    * But the JIT probably avoids the copy.)
+   * 复制一行数据
    */
   public static Row asCopy(Object... values) {
     return new Row(values.clone());
   }
 
-  /** Creates a Row with one column value. */
+  /** Creates a Row with one column value.
+   * 一个元素组成一行数据
+   **/
   public static Row of(Object value0) {
     return new Row(new Object[] {value0});
   }
 
-  /** Creates a Row with two column values. */
+  /** Creates a Row with two column values.
+   * 2个元素组成一行数据
+   **/
   public static Row of(Object value0, Object value1) {
     return new Row(new Object[] {value0, value1});
   }
@@ -74,6 +80,7 @@ public class Row {
     return Arrays.toString(values);
   }
 
+  //获取某一列数据
   public Object getObject(int index) {
     return values[index];
   }
@@ -83,6 +90,7 @@ public class Row {
     return values;
   }
 
+  //获取列数
   public int size() {
     return values.length;
   }
@@ -111,6 +119,7 @@ public class Row {
      * Set the value of a particular column.
      * @param index Zero-indexed position of value.
      * @param value Desired column value.
+     * 设置某一列的值
      */
     public void set(int index, Object value) {
       values[index] = value;

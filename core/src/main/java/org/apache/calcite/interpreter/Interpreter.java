@@ -48,7 +48,7 @@ import java.util.NoSuchElementException;
  * assembled.</p>
  */
 public class Interpreter extends AbstractEnumerable<Object[]> {
-  final Map<RelNode, NodeInfo> nodes = Maps.newLinkedHashMap();
+  final Map<RelNode, NodeInfo> nodes = Maps.newLinkedHashMap();//存储每一个关系表达式节点与sink输出的关系
   private final DataContext dataContext;
   private final RelNode rootRel;
   private final Map<RelNode, List<RelNode>> relInputs = Maps.newHashMap();
@@ -206,11 +206,12 @@ public class Interpreter extends AbstractEnumerable<Object[]> {
           results[0] = execute(context);
         }
 
+        //返回列对应的值
         public Object execute(Context context) {
           switch (node.getKind()) {
-          case LITERAL:
+          case LITERAL://直接获取常数值
             return ((RexLiteral) node).getValue();
-          case INPUT_REF:
+          case INPUT_REF://获取某一个字段对应的值
             return context.values[((RexInputRef) node).getIndex()];
           default:
             throw new RuntimeException("unknown expression type " + node);
@@ -237,9 +238,10 @@ public class Interpreter extends AbstractEnumerable<Object[]> {
     return rel.getInput(ordinal);
   }
 
+  //为rel分配一个输出
   public Sink sink(RelNode rel) {
     final ArrayDeque<Row> queue = new ArrayDeque<Row>(1);
-    final ListSink sink = new ListSink(queue);
+    final ListSink sink = new ListSink(queue);//存储到内存
     final NodeInfo nodeInfo = new NodeInfo(rel, sink);
     nodes.put(rel, nodeInfo);
     return sink;
@@ -253,7 +255,10 @@ public class Interpreter extends AbstractEnumerable<Object[]> {
     return dataContext;
   }
 
-  /** Information about a node registered in the data flow graph. */
+  /** Information about a node registered in the data flow graph.
+   * 用于图计算
+   * 每一个节点与输出sink的关系
+   **/
   private static class NodeInfo {
     final RelNode rel;
     final ListSink sink;
@@ -265,7 +270,9 @@ public class Interpreter extends AbstractEnumerable<Object[]> {
     }
   }
 
-  /** Implementation of {@link Sink} using a {@link java.util.ArrayDeque}. */
+  /** Implementation of {@link Sink} using a {@link java.util.ArrayDeque}.
+   * 输出一个list--存储到内存
+   **/
   private static class ListSink implements Sink {
     final ArrayDeque<Row> list;
 
@@ -274,14 +281,17 @@ public class Interpreter extends AbstractEnumerable<Object[]> {
     }
 
     public void send(Row row) throws InterruptedException {
-      list.add(row);
+      list.add(row);//输出一行数据
     }
 
+    //对结果做一些额外处理
     public void end() throws InterruptedException {
     }
   }
 
-  /** Implementation of {@link Source} using a {@link java.util.ArrayDeque}. */
+  /** Implementation of {@link Source} using a {@link java.util.ArrayDeque}.
+   * 传入sink代表数据源
+   **/
   private static class ListSource implements Source {
     private final ArrayDeque<Row> list;
 
@@ -291,7 +301,7 @@ public class Interpreter extends AbstractEnumerable<Object[]> {
 
     public Row receive() {
       try {
-        return list.remove();
+        return list.remove();//循环获取每一行数据
       } catch (NoSuchElementException e) {
         return null;
       }

@@ -30,6 +30,8 @@ import java.util.List;
 
 /**
  * A <code>SqlIdentifier</code> is an identifier, possibly compound.
+ * 标识符节点
+ * 相当于字符串
  */
 public class SqlIdentifier extends SqlNode {
   //~ Instance fields --------------------------------------------------------
@@ -42,6 +44,8 @@ public class SqlIdentifier extends SqlNode {
    * If you assign to this member, please use
    * {@link #setNames(java.util.List, java.util.List)}.
    * And yes, we'd like to make identifiers immutable one day.
+   * xx 或者 xx.xx.xx 或者 xx.xx.xx.*(无限个xx)
+   *
    */
   public ImmutableList<String> names;
 
@@ -52,6 +56,7 @@ public class SqlIdentifier extends SqlNode {
 
   /**
    * A list of the positions of the components of compound identifiers.
+   * 每一个xx对应的token信息
    */
   private ImmutableList<SqlParserPos> componentPositions;
 
@@ -65,7 +70,7 @@ public class SqlIdentifier extends SqlNode {
   public SqlIdentifier(
       List<String> names,
       SqlCollation collation,
-      SqlParserPos pos,
+      SqlParserPos pos,//整个xx.xx.xx的全部token信息
       List<SqlParserPos> componentPositions) {
     super(pos);
     this.names = ImmutableList.copyOf(names);
@@ -290,6 +295,7 @@ public class SqlIdentifier extends SqlNode {
   /**
    * Returns whether this is a simple identifier. "FOO" is simple; "*",
    * "FOO.*" and "FOO.BAR" are not.
+   * 只有一个name,并且不是*
    */
   public boolean isSimple() {
     return (names.size() == 1) && !names.get(0).equals("*");
@@ -299,10 +305,7 @@ public class SqlIdentifier extends SqlNode {
     // First check for builtin functions which don't have parentheses,
     // like "LOCALTIME".
     final SqlValidator validator = scope.getValidator();
-    SqlCall call =
-        SqlUtil.makeCall(
-            validator.getOperatorTable(),
-            this);
+    SqlCall call = SqlUtil.makeCall(validator.getOperatorTable(),this);
     if (call != null) {
       return call.getMonotonicity(scope);
     }

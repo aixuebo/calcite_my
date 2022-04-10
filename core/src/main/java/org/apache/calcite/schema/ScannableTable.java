@@ -22,10 +22,13 @@ import org.apache.calcite.linq4j.Enumerable;
 /**
  * Table that can be scanned without creating an intermediate relational
  * expression.
+ * 如何扫描一个表
  */
 public interface ScannableTable extends Table {
   /** Returns an enumerator over the rows in this Table. Each row is represented
-   * as an array of its column values. */
+   * as an array of its column values.
+   * 返回迭代器，迭代器每一个元素表示一行数据的数组
+   **/
   Enumerable<Object[]> scan(DataContext root);
 }
 

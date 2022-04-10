@@ -36,6 +36,7 @@ public interface DefaultValueFactory {
   /**
    * Whether a column is always generated. If a column is always generated,
    * then non-generated values cannot be inserted into the column.
+   * 是否该列一定需要被存在,如果true,则缺少该列的时候不能insert操作
    */
   boolean isGeneratedAlways(
       RelOptTable table,
@@ -47,7 +48,7 @@ public interface DefaultValueFactory {
    *
    * @param table   the table containing the column
    * @param iColumn the 0-based offset of the column in the table
-   * @return default value expression
+   * @return default value expression 为列赋予默认值
    */
   RexNode newColumnDefaultValue(
       RelOptTable table,

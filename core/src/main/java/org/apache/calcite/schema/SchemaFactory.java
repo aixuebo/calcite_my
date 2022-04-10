@@ -59,18 +59,19 @@ import java.util.Map;
  *
  * <p>A class that implements SchemaFactory specified in a schema must have a
  * public default constructor.</p>
+ * schema工厂,允许通过各种方式自定义的创建Schema
  */
 public interface SchemaFactory {
   /** Creates a Schema.
    *
-   * @param parentSchema Parent schema
+   * @param parentSchema Parent schema 父数据库
    * @param name Name of this schema
-   * @param operand The "operand" JSON property
-   * @return Created schema
+   * @param operand The "operand" JSON property 创建库时候用的特殊参数
+   * @return Created schema 如何创建一个数据库
    */
   Schema create(
       SchemaPlus parentSchema,
-      String name,
+      String name,//数据库名字
       Map<String, Object> operand);
 }
 

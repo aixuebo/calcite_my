@@ -756,6 +756,7 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Sorts the elements of a sequence in ascending
    * order according to a key.
+   * 将k转换成可以排序的value
    */
   <TKey extends Comparable> Enumerable<TSource> orderBy(
       Function1<TSource, TKey> keySelector);

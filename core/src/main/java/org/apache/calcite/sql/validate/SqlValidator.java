@@ -152,7 +152,7 @@ public interface SqlValidator {
 
   /**
    * Checks that a query is valid.
-   *
+   * 校验查询query的有效性
    * <p>Valid queries include:
    *
    * <ul>
@@ -165,7 +165,7 @@ public interface SqlValidator {
    *
    * @param node  Query node
    * @param scope Scope in which the query occurs
-   * @throws RuntimeException if the query is not valid
+   * @throws RuntimeException if the query is not valid 校验失败,则抛异常
    */
   void validateQuery(SqlNode node, SqlValidatorScope scope);
 
@@ -306,6 +306,7 @@ public interface SqlValidator {
    * @param scope   Syntactic scope
    * @param operand Parse tree node
    * @return Type of the SqlNode. Should never return <code>NULL</code>
+   * 推测参数类型
    */
   RelDataType deriveType(
       SqlValidatorScope scope,
@@ -389,10 +390,13 @@ public interface SqlValidator {
    * @param ordinal Ordinal of expression
    * @return derived alias, or null if no alias can be derived and ordinal is
    * less than zero
+   * foo.bar 返回bar。
+   * bar 返回bar
+   * 如果是一个表达式,min(xx) 但ordinal>0,则返回EXPR$+ordinal.否则返回null
    */
   String deriveAlias(
-      SqlNode node,
-      int ordinal);
+      SqlNode node,//节点本身
+      int ordinal);//节点序号
 
   /**
    * Returns a list of expressions, with every occurrence of "&#42;" or

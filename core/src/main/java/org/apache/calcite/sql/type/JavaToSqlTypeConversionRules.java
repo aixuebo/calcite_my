@@ -29,6 +29,7 @@ import java.util.Map;
 /**
  * JavaToSqlTypeConversionRules defines mappings from common Java types to
  * corresponding SQL types.
+ * java to sql类型映射关系
  */
 public class JavaToSqlTypeConversionRules {
   //~ Static fields/initializers ---------------------------------------------

@@ -84,9 +84,9 @@ public enum CalciteConnectionProperty implements ConnectionProperty {
   private final String camelName;
   private final Type type;
   private final Object defaultValue;
-  private final boolean required;
+  private final boolean required;//是否必须属性
 
-  private static final Map<String, CalciteConnectionProperty> NAME_TO_PROPS;
+  private static final Map<String, CalciteConnectionProperty> NAME_TO_PROPS;//name和CalciteConnectionProperty对象的映射
 
   static {
     NAME_TO_PROPS = new HashMap<String, CalciteConnectionProperty>();
@@ -121,6 +121,7 @@ public enum CalciteConnectionProperty implements ConnectionProperty {
     return required;
   }
 
+  //返回该属性对应的属性值,属性值可以是string、boolean、class、枚举
   public PropEnv wrap(Properties properties) {
     return new PropEnv(parse(properties, NAME_TO_PROPS), this);
   }

@@ -37,6 +37,7 @@ import java.util.List;
  * <p>This object is both a {@link SqlValidatorScope} and a
  * {@link SqlValidatorNamespace}. In the query</p>
  *
+ *
  * <blockquote>
  * <pre>SELECT name FROM (
  *     SELECT *
@@ -46,6 +47,7 @@ import java.util.List;
  * <p>we need to use the {@link SelectScope} as a
  * {@link SqlValidatorNamespace} when resolving 'name', and
  * as a {@link SqlValidatorScope} when resolving 'gender'.</p>
+ * name来自子查询时,我们用name别名映射一个子查询
  *
  * <h3>Scopes</h3>
  *
@@ -64,15 +66,15 @@ import java.util.List;
  * <p>The scopes available at various points of the query are as follows:</p>
  *
  * <ul>
- * <li>expr1 can see t1, t2, q3</li>
- * <li>expr2 can see t3</li>
- * <li>expr3 can see t4, t1, t2</li>
+ * <li>expr1 can see t1, t2, q3</li> expr1一定在t1, t2, q3表存在
+ * <li>expr2 can see t3</li> expr2一定在t3表存在
+ * <li>expr3 can see t4, t1, t2</li> ### 不太认同,我感觉expr3只需要在t4存在就可以了
  * <li>expr4 can see t1, t2, q3, plus (depending upon the dialect) any aliases
- * defined in the SELECT clause</li>
+ * defined in the SELECT clause</li> 因为expr4一定在t1, t2, q3三个表里面,不需要在t4表里
  * </ul>
  *
  * <h3>Namespaces</h3>
- *
+ * 命名空间 -- 以上查询有4个子表空间,
  * <p>In the above query, there are 4 namespaces:</p>
  *
  * <ul>
@@ -88,13 +90,14 @@ public class SelectScope extends ListScope {
   //~ Instance fields --------------------------------------------------------
 
   private final SqlSelect select;
-  protected final List<String> windowNames = new ArrayList<String>();
+  protected final List<String> windowNames = new ArrayList<String>();//window的name集合
 
   private List<SqlNode> expandedSelectList = null;
 
   /**
    * List of column names which sort this scope. Empty if this scope is not
    * sorted. Null if has not been computed yet.
+   * 排序的列集合，如果没有排序,则是Empty,null说明尚未完成
    */
   private SqlNodeList orderList;
 
@@ -131,6 +134,7 @@ public class SelectScope extends ListScope {
     return select;
   }
 
+  //通过name找到SqlWindow对象
   public SqlWindow lookupWindow(String name) {
     final SqlNodeList windowList = select.getWindowList();
     for (int i = 0; i < windowList.size(); i++) {
@@ -143,6 +147,7 @@ public class SelectScope extends ListScope {
     }
 
     // if not in the select scope, then check window scope
+    //父类查找
     if (windowParent != null) {
       return windowParent.lookupWindow(name);
     } else {
@@ -150,14 +155,15 @@ public class SelectScope extends ListScope {
     }
   }
 
+  //返回表达式的单调性
   public SqlMonotonicity getMonotonicity(SqlNode expr) {
-    SqlMonotonicity monotonicity = expr.getMonotonicity(this);
-    if (monotonicity != SqlMonotonicity.NOT_MONOTONIC) {
+    SqlMonotonicity monotonicity = expr.getMonotonicity(this);//表达式的单调性
+    if (monotonicity != SqlMonotonicity.NOT_MONOTONIC) {//有单调性
       return monotonicity;
     }
 
     // TODO: compare fully qualified names
-    final SqlNodeList orderList = getOrderList();
+    final SqlNodeList orderList = getOrderList();//查看order by字段
     if (orderList.size() > 0) {
       SqlNode order0 = orderList.get(0);
       monotonicity = SqlMonotonicity.INCREASING;
@@ -181,8 +187,7 @@ public class SelectScope extends ListScope {
       orderList = new SqlNodeList(SqlParserPos.ZERO);
       if (children.size() == 1) {
         final SqlValidatorNamespace child = children.get(0).right;
-        final List<Pair<SqlNode, SqlMonotonicity>> monotonicExprs =
-            child.getMonotonicExprs();
+        final List<Pair<SqlNode, SqlMonotonicity>> monotonicExprs = child.getMonotonicExprs();
         if (monotonicExprs.size() > 0) {
           orderList.add(monotonicExprs.get(0).left);
         }
@@ -195,6 +200,7 @@ public class SelectScope extends ListScope {
     windowNames.add(winName);
   }
 
+  //是否存在name的window
   public boolean existingWindowName(String winName) {
     for (String windowName : windowNames) {
       if (windowName.equalsIgnoreCase(winName)) {

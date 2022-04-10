@@ -33,6 +33,7 @@ import static org.junit.Assert.fail;
  * Unit test for {@link org.apache.calcite.rel.externalize.RelJson}.
  */
 public class RelOptPlanReaderTest {
+  //测试类型匹配
   @Test public void testTypeToClass() {
     RelJson relJson = new RelJson(null);
 
@@ -49,7 +50,7 @@ public class RelOptPlanReaderTest {
         equalTo((Class) JdbcRules.JdbcProject.class));
 
     try {
-      Class clazz = relJson.typeNameToClass("NonExistentRel");
+      Class clazz = relJson.typeNameToClass("NonExistentRel");//测试无效的类,即不存在的类
       fail("expected exception, got " + clazz);
     } catch (RuntimeException e) {
       assertThat(e.getMessage(), is("unknown type NonExistentRel"));
@@ -65,7 +66,7 @@ public class RelOptPlanReaderTest {
 
     // In this class; no special treatment. Note: '$MyRel' not '.MyRel'.
     assertThat(relJson.classToTypeName(MyRel.class),
-        is("org.apache.calcite.plan.RelOptPlanReaderTest$MyRel"));
+        is("org.apache.calcite.plan.RelOptPlanReaderTest$MyRel"));//测试结果为全class路径
     assertThat(relJson.typeNameToClass(MyRel.class.getName()),
         equalTo((Class) MyRel.class));
 

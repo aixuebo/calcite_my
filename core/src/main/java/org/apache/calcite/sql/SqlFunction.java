@@ -61,9 +61,9 @@ public class SqlFunction extends SqlOperator {
   public SqlFunction(
       String name,
       SqlKind kind,
-      SqlReturnTypeInference returnTypeInference,
-      SqlOperandTypeInference operandTypeInference,
-      SqlOperandTypeChecker operandTypeChecker,
+      SqlReturnTypeInference returnTypeInference,//返回值类型
+      SqlOperandTypeInference operandTypeInference,//参数类型
+      SqlOperandTypeChecker operandTypeChecker,//如何校验参数
       SqlFunctionCategory category) {
     // We leave sqlIdentifier as null to indicate
     // that this is a builtin.  Same for paramTypes.

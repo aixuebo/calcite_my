@@ -35,6 +35,7 @@ import java.util.List;
  * <p>If "all" is true, then multiset subtraction is
  * performed; otherwise, set subtraction is performed (implying no duplicates in
  * the results).
+ * 差值,table1存在 && table2不存在的数据--输出,即table1 - table1与table2的交集
  */
 public abstract class Minus extends SetOp {
   public Minus(RelOptCluster cluster, RelTraitSet traits, List<RelNode> inputs,

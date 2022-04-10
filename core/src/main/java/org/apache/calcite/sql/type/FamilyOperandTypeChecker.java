@@ -33,11 +33,12 @@ import static org.apache.calcite.util.Static.RESOURCE;
 /**
  * Operand type-checking strategy which checks operands for inclusion in type
  * families.
+ * 校验参数策略:必须是给定类型中 依次对应的关系
  */
 public class FamilyOperandTypeChecker implements SqlSingleOperandTypeChecker {
   //~ Instance fields --------------------------------------------------------
 
-  protected final ImmutableList<SqlTypeFamily> families;
+  protected final ImmutableList<SqlTypeFamily> families;//需要支持哪些字段类型,一一对应的关系
 
   //~ Constructors -----------------------------------------------------------
 
@@ -51,17 +52,18 @@ public class FamilyOperandTypeChecker implements SqlSingleOperandTypeChecker {
   //~ Methods ----------------------------------------------------------------
 
   // implement SqlSingleOperandTypeChecker
+  //校验某一个参数
   public boolean checkSingleOperandType(
       SqlCallBinding callBinding,
       SqlNode node,
       int iFormalOperand,
       boolean throwOnFailure) {
-    SqlTypeFamily family = families.get(iFormalOperand);
+    SqlTypeFamily family = families.get(iFormalOperand);//获取要求的参数类型
     if (family == SqlTypeFamily.ANY) {
       // no need to check
       return true;
     }
-    if (SqlUtil.isNullLiteral(node, false)) {
+    if (SqlUtil.isNullLiteral(node, false)) {//如果是null,则不允许
       if (throwOnFailure) {
         throw callBinding.getValidator().newValidationError(node,
             RESOURCE.nullIllegal());
@@ -69,10 +71,8 @@ public class FamilyOperandTypeChecker implements SqlSingleOperandTypeChecker {
         return false;
       }
     }
-    RelDataType type =
-        callBinding.getValidator().deriveType(
-            callBinding.getScope(),
-            node);
+    RelDataType type = callBinding.getValidator().deriveType(callBinding.getScope(), node);//返回真实该节点的类型
+
     SqlTypeName typeName = type.getSqlTypeName();
 
     // Pass type checking for operators if it's of type 'ANY'.
@@ -93,13 +93,13 @@ public class FamilyOperandTypeChecker implements SqlSingleOperandTypeChecker {
   public boolean checkOperandTypes(
       SqlCallBinding callBinding,
       boolean throwOnFailure) {
-    if (families.size() != callBinding.getOperandCount()) {
+    if (families.size() != callBinding.getOperandCount()) {//参数数量不对
       // assume this is an inapplicable sub-rule of a composite rule;
       // don't throw
       return false;
     }
 
-    for (Ord<SqlNode> op : Ord.zip(callBinding.getCall().getOperandList())) {
+    for (Ord<SqlNode> op : Ord.zip(callBinding.getCall().getOperandList())) {//一个一个参数校验
       if (!checkSingleOperandType(
           callBinding,
           op.e,
@@ -111,12 +111,13 @@ public class FamilyOperandTypeChecker implements SqlSingleOperandTypeChecker {
     return true;
   }
 
-  // implement SqlOperandTypeChecker
+  // implement SqlOperandTypeChecker 需要的参数数量取决于families的数量
   public SqlOperandCountRange getOperandCountRange() {
     return SqlOperandCountRanges.of(families.size());
   }
 
   // implement SqlOperandTypeChecker
+  //families 确定了每一个参数的类型
   public String getAllowedSignatures(SqlOperator op, String opName) {
     return SqlUtil.getAliasedSignature(op, opName, families);
   }

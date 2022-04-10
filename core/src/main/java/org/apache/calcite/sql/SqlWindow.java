@@ -52,6 +52,10 @@ import static org.apache.calcite.util.Static.RESOURCE;
  *
  * <p>declares windows w and w1, and uses a window in an OVER clause. It thus
  * contains 3 {@link SqlWindow} objects.</p>
+ *
+ * 1.语法:
+ * SUM(pv) OVER(PARTITION BY cookieid ORDER BY createtime ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)
+ *
  */
 public class SqlWindow extends SqlCall {
   /**
@@ -71,16 +75,18 @@ public class SqlWindow extends SqlCall {
 
   //~ Instance fields --------------------------------------------------------
 
-  /** The name of the window being declared. */
+  /** The name of the window being declared. 暂时无用,已经废弃*/
   SqlIdentifier declName;
 
-  /** The name of the window being referenced, or null. */
+  /** The name of the window being referenced, or null. 暂时无用,经常用null代替 */
   SqlIdentifier refName;
 
   /** The list of partitioning columns. */
+  //用于PARTITION BY cookieid
   SqlNodeList partitionList;
 
   /** The list of ordering columns. */
+  //用于ORDER BY
   SqlNodeList orderList;
 
   /** Whether it is a physical (rows) or logical (values) range. */

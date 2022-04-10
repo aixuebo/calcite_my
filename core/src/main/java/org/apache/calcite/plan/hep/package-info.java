@@ -18,6 +18,7 @@
 /**
  * Provides a heuristic planner implementation for the interfaces in
  * {@link org.apache.calcite.plan}.
+ * 提供启发式计划实现方案
  */
 @PackageMarker
 package org.apache.calcite.plan.hep;

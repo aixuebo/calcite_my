@@ -21,14 +21,15 @@ import org.apache.calcite.util.Util;
 /**
  * Enumeration of the categories of
  * SQL-invoked routines.
+ * 函数类型
  */
 public enum SqlFunctionCategory {
-  STRING("STRING", "String function"),
-  NUMERIC("NUMERIC", "Numeric function"),
-  TIMEDATE("TIMEDATE", "Time and date function"),
-  SYSTEM("SYSTEM", "System function"),
+  STRING("STRING", "String function"),//字符串处理函数
+  NUMERIC("NUMERIC", "Numeric function"),//数字处理函数
+  TIMEDATE("TIMEDATE", "Time and date function"),//时间函数
+  SYSTEM("SYSTEM", "System function"),//系统函数
   USER_DEFINED_FUNCTION("UDF", "User-defined function"),
-  USER_DEFINED_PROCEDURE("UDP", "User-defined procedure"),
+  USER_DEFINED_PROCEDURE("UDP", "User-defined procedure"),//定义存储过程
   USER_DEFINED_CONSTRUCTOR("UDC", "User-defined constructor"),
   USER_DEFINED_SPECIFIC_FUNCTION("UDF_SPECIFIC",
       "User-defined function with SPECIFIC name");

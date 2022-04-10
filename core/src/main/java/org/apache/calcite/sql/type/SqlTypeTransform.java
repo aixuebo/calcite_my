@@ -27,6 +27,7 @@ import org.apache.calcite.sql.SqlOperatorBinding;
  *
  * <p>This class is an example of the
  * {@link org.apache.calcite.util.Glossary#STRATEGY_PATTERN strategy pattern}.
+ * 类型转换,从一个类型 转换成另外一个类型。
  */
 public interface SqlTypeTransform {
   //~ Methods ----------------------------------------------------------------
@@ -36,8 +37,8 @@ public interface SqlTypeTransform {
    *
    * @param opBinding       call context in which transformation is being
    *                        performed
-   * @param typeToTransform type to be transformed, never null
-   * @return transformed type, never null
+   * @param typeToTransform type to be transformed, never null 目标结果类型
+   * @return transformed type, never null 返回转换后的类型,一定不允许是null
    */
   RelDataType transformType(
       SqlOperatorBinding opBinding,

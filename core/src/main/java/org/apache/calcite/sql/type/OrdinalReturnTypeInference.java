@@ -21,6 +21,7 @@ import org.apache.calcite.sql.SqlOperatorBinding;
 
 /**
  * Returns the type of the operand at a particular 0-based ordinal position.
+ * 基于第几个参数的类型,作为返回值类型
  */
 public class OrdinalReturnTypeInference implements SqlReturnTypeInference {
   //~ Instance fields --------------------------------------------------------

@@ -72,6 +72,7 @@ public abstract class AbstractRelNode implements RelNode {
 
   /**
    * Cached type of this relational expression.
+   * 数据类型
    */
   protected RelDataType rowType;
 

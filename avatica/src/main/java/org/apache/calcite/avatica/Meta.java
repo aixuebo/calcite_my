@@ -32,32 +32,38 @@ import java.util.Map;
  *
  * <p>Also holds other abstract methods that are not related to metadata
  * that each provider must implement. This is not ideal.</p>
+ * 获取数据库级别的元数据信息---每一个connect都可以关联到该对象
  */
 public interface Meta {
-  String getSqlKeywords();
+  String getSqlKeywords();//所有系统支持的关键词
 
-  String getNumericFunctions();
+  String getNumericFunctions();//所有数字处理的函数
 
-  String getStringFunctions();
+  String getStringFunctions();//所有字符串处理的函数
 
-  String getSystemFunctions();
+  String getSystemFunctions();//所有系统函数
 
-  String getTimeDateFunctions();
+  String getTimeDateFunctions();//所有日期函数
 
+  //所有的表信息
   MetaResultSet getTables(String catalog,
       Pat schemaPattern,
       Pat tableNamePattern,
       List<String> typeList);
 
+  //所有的列信息
   MetaResultSet getColumns(String catalog,
       Pat schemaPattern,
       Pat tableNamePattern,
       Pat columnNamePattern);
 
+  //所有的schema信息,一般情况是空
   MetaResultSet getSchemas(String catalog, Pat schemaPattern);
 
+  //所有的catalog信息
   MetaResultSet getCatalogs();
 
+  //所有的table类型--目前只支持table和view
   MetaResultSet getTableTypes();
 
   MetaResultSet getProcedures(String catalog,
@@ -200,8 +206,8 @@ public interface Meta {
   class MetaResultSet {
     public final int statementId;
     public final boolean ownStatement;
-    public final Iterable<Object> iterable;
-    public final Signature signature;
+    public final Iterable<Object> iterable;//集合,每一个元素存储的只有每一个元素具体的值
+    public final Signature signature;//描述每一个元素的列schema等信息
 
     public MetaResultSet(int statementId, boolean ownStatement,
         Signature signature, Iterable<Object> iterable) {
@@ -246,7 +252,7 @@ public interface Meta {
       case RECORD:
         return record(clazz);
       case RECORD_PROJECTION:
-        return record(clazz, null, fieldNames);
+        return record(clazz, null, fieldNames);//fieldNames是class的属性name
       case MAP:
         return map(fieldNames);
       default:
@@ -302,12 +308,12 @@ public interface Meta {
   /** How logical fields are represented in the objects returned by the
    * iterator. */
   enum Style {
-    OBJECT,
-    RECORD,
-    RECORD_PROJECTION,
-    ARRAY,
-    LIST,
-    MAP
+    OBJECT,//一行数据只有一个值
+    RECORD,//一行数据是一个对象
+    RECORD_PROJECTION,//对象中某几个属性组成的一行数据,即一行数据不是整个对象,而是部分字段
+    ARRAY,//一行数据是数组
+    LIST,//一行数据是List
+    MAP //一行数据是Map
   }
 
   /** Result of preparing a statement. */

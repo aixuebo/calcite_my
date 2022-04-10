@@ -21,6 +21,7 @@ import org.apache.calcite.rel.type.RelDataTypeFamily;
 
 /**
  * MultisetSqlType represents a standard SQL2003 multiset type.
+ * 表示Array类型,该类型支持递归类型嵌套
  */
 public class MultisetSqlType extends AbstractSqlType {
   //~ Instance fields --------------------------------------------------------

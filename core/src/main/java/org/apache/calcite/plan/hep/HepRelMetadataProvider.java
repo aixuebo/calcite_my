@@ -39,9 +39,7 @@ class HepRelMetadataProvider implements RelMetadataProvider {
 
         HepRelVertex vertex = (HepRelVertex) rel;
         final RelNode rel2 = vertex.getCurrentRel();
-        Function<RelNode, Metadata> function =
-            rel.getCluster().getMetadataProvider().apply(
-                rel2.getClass(), metadataClass);
+        Function<RelNode, Metadata> function = rel.getCluster().getMetadataProvider().apply(rel2.getClass(), metadataClass);
         return function.apply(rel2);
       }
     };

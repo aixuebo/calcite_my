@@ -39,13 +39,14 @@ import java.util.List;
  *
  * <p>Identity is based upon the {@link #digest} field, which each derived class
  * should set during construction.</p>
+ * 表示一个表的数据类型--即包含多个字段
  */
 public abstract class RelDataTypeImpl
     implements RelDataType, RelDataTypeFamily {
   //~ Instance fields --------------------------------------------------------
 
-  protected final List<RelDataTypeField> fieldList;
-  protected String digest;
+  protected final List<RelDataTypeField> fieldList;//表示字段集合
+  protected String digest;//输出数据类型字符串信息，比如doble(precision,scala) CHARACTER SET "" COLLATE ""
 
   //~ Constructors -----------------------------------------------------------
 
@@ -77,6 +78,7 @@ public abstract class RelDataTypeImpl
 
   //~ Methods ----------------------------------------------------------------
 
+  //找到某一个子field对象
   public RelDataTypeField getField(String fieldName, boolean caseSensitive,
       boolean elideRecord) {
     for (RelDataTypeField field : fieldList) {
@@ -248,6 +250,7 @@ public abstract class RelDataTypeImpl
    * @param withDetail when true, all detail information needed to compute a
    *                   unique digest (and return from getFullTypeString) should
    *                   be included;
+   * 输出数据类型，比如doble(precision,scala) CHARACTER SET "" COLLATE ""
    */
   protected abstract void generateTypeString(
       StringBuilder sb,
@@ -301,6 +304,7 @@ public abstract class RelDataTypeImpl
    * Returns an implementation of
    * {@link RelProtoDataType}
    * that copies a given type using the given type factory.
+   * 复制参数类型
    */
   public static RelProtoDataType proto(final RelDataType protoType) {
     assert protoType != null;

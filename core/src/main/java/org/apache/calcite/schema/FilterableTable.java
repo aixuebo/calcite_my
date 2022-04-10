@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Table that can be scanned, optionally applying supplied filter expressions,
  * without creating an intermediate relational expression.
- *
+ * 带有过滤的形式读取表数据 where
  * @see ScannableTable
  */
 public interface FilterableTable extends Table {
@@ -37,7 +37,9 @@ public interface FilterableTable extends Table {
    * filter from the list.
    * If it cannot implement a filter, it should leave it in the list.
    * Any filters remaining will be implemented by the consuming Calcite
-   * operator. */
+   * operator.
+   * filters 表示where条件中关于列的表达式。列必须满足该表达式
+   **/
   Enumerable<Object[]> scan(DataContext root, List<RexNode> filters);
 }
 

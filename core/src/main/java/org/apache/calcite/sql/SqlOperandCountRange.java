@@ -19,10 +19,12 @@ package org.apache.calcite.sql;
 
 /**
  * A class that describes how many operands an operator can take.
+ * 一个操作包含多少个参数
  */
 public interface SqlOperandCountRange {
   /**
    * Returns whether {@code count} is a valid number of operands.
+   * 返回count是否是一个有效的参数数量
    */
   boolean isValidCount(int count);
 

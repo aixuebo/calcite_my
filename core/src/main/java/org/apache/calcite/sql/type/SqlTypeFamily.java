@@ -39,6 +39,8 @@ import java.util.Map;
  * with the primary categorization. It is used in type strategies for more
  * specific or more general categorization than the primary families. Secondary
  * families are never returned by RelDataType.getFamily().
+ *
+ * SqlTypeName集合,比如int、bigint等等都是NUMERIC这个SqlTypeFamily,即一个SqlTypeFamily代表一组具体的sql类型
  */
 public enum SqlTypeFamily implements RelDataTypeFamily {
   // Primary families.

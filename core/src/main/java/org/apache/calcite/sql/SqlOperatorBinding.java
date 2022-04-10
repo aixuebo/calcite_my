@@ -29,11 +29,12 @@ import java.util.List;
  * <code>SqlOperatorBinding</code> represents the binding of an
  * {@link SqlOperator} to actual operands, along with any additional information
  * required to validate those operands if needed.
+ * 处理每一个参数,包含获取参数类型、参数具体的值、参数值是否是null
  */
 public abstract class SqlOperatorBinding {
   //~ Instance fields --------------------------------------------------------
 
-  protected final RelDataTypeFactory typeFactory;
+  protected final RelDataTypeFactory typeFactory;//
   private final SqlOperator sqlOperator;
 
   //~ Constructors -----------------------------------------------------------
@@ -69,6 +70,7 @@ public abstract class SqlOperatorBinding {
 
   /**
    * @return bound operator
+   * 返回绑定的SqlOperator操作对象
    */
   public SqlOperator getOperator() {
     return sqlOperator;
@@ -86,6 +88,7 @@ public abstract class SqlOperatorBinding {
    *
    * @param ordinal zero-based ordinal of operand of interest
    * @return string value
+   * 返回第ordinal个参数值,他是string类型的
    */
   public String getStringLiteralOperand(int ordinal) {
     throw new UnsupportedOperationException();
@@ -96,6 +99,7 @@ public abstract class SqlOperatorBinding {
    *
    * @param ordinal zero-based ordinal of operand of interest
    * @return integer value
+   * 返回第ordinal个参数值,他是int类型的
    */
   public int getIntLiteralOperand(int ordinal) {
     throw new UnsupportedOperationException();
@@ -110,6 +114,7 @@ public abstract class SqlOperatorBinding {
    * @param allowCast whether to regard CAST(constant) as a constant
    * @return whether operand is null; false for everything except SQL
    * validation
+   * 返回第ordinal个参数值是否是null
    */
   public boolean isOperandNull(int ordinal, boolean allowCast) {
     throw new UnsupportedOperationException();
@@ -117,6 +122,7 @@ public abstract class SqlOperatorBinding {
 
   /**
    * @return the number of bound operands
+   * 参数数量
    */
   public abstract int getOperandCount();
 
@@ -125,6 +131,7 @@ public abstract class SqlOperatorBinding {
    *
    * @param ordinal zero-based ordinal of operand of interest
    * @return bound operand type
+   * 参数类型
    */
   public abstract RelDataType getOperandType(int ordinal);
 
@@ -132,6 +139,7 @@ public abstract class SqlOperatorBinding {
    * Collects the types of the bound operands into a list.
    *
    * @return collected list
+   * 收集每一个参数的具体类型
    */
   public List<RelDataType> collectOperandTypes() {
     return new AbstractList<RelDataType>() {

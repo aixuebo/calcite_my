@@ -26,6 +26,15 @@ import java.util.List;
 /**
  * A <code>SqlInsert</code> is a node of a parse tree which represents an INSERT
  * statement.
+ * 1.语法:
+ * INSERT INTO targetTable(SqlNode) columnList(SqlNodeList) source(SqlNode)
+ * UPSERT INTO targetTable(SqlNode) columnList(SqlNodeList) source(SqlNode)
+ * columnList表示插入的列名字集合，如果是null表示插入所有列
+ * 2.操作:new SqlSpecialOperator("INSERT", SqlKind.INSERT)
+ * 3.参数:
+ * keywords, targetTable, source, columnList
+ * 其中keywords识别是否包含UPSERT这个SqlLiteral常量node—具体参见SqlInsertKeyword
+ * 4.SqlKind:SqlKind.INSERT
  */
 public class SqlInsert extends SqlCall {
   public static final SqlSpecialOperator OPERATOR =

@@ -31,6 +31,12 @@ import java.util.List;
  * A <code>SqlCase</code> is a node of a parse tree which represents a case
  * statement. It warrants its own node type just because we have a lot of
  * methods to put somewhere.
+ * 1.语法:
+ * case when then else end
+ * 2.操作:SqlStdOperatorTable.CASE
+ * 3.参数:
+ * value(SqlNode)、whenList(SqlNodeList)、thenList(SqlNodeList)、elseExpr(SqlNode)
+ * 4.SqlKind:SqlKind.case
  */
 public class SqlCase extends SqlCall {
   SqlNode value;

@@ -25,10 +25,11 @@ import java.util.Map;
 /**
  * Definitions of properties that drive the behavior of
  * {@link org.apache.calcite.avatica.AvaticaDatabaseMetaData}.
+ * 内部的一些属性对应的类型---可以从url的配置中解析对应的value
  */
 public enum InternalProperty {
   /** Whether identifiers are matched case-sensitively. */
-  CASE_SENSITIVE(Type.BOOLEAN, true),
+  CASE_SENSITIVE(Type.BOOLEAN, true),//类型boolean,默认值true
 
   /** Character that quotes identifiers. */
   SQL_KEYWORDS(Type.STRING, null),

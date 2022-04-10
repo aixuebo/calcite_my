@@ -45,6 +45,7 @@ import java.util.logging.Logger;
  *   <li>{@link Meta#prepare(org.apache.calcite.avatica.Meta.StatementHandle, String, int)}
  *   <li>{@link Meta#createIterable(org.apache.calcite.avatica.Meta.StatementHandle, org.apache.calcite.avatica.Meta.Signature, Iterable)}
  * </ul>
+ * JDBC的驱动
  */
 public abstract class UnregisteredDriver implements java.sql.Driver {
   final DriverVersion version;

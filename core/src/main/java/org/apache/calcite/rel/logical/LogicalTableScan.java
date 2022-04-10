@@ -29,6 +29,7 @@ import java.util.List;
 /**
  * A <code>LogicalTableScan</code> reads all the rows from a
  * {@link RelOptTable}.
+ * 读取所有行信息
  *
  * <p>If the table is a <code>net.sf.saffron.ext.JdbcTable</code>, then this is
  * literally possible. But for other kinds of tables, there may be many ways to
@@ -72,6 +73,7 @@ public final class LogicalTableScan extends TableScan {
 
   /**
    * Creates a LogicalTableScan by parsing serialized output.
+   * 参数是关系表达式
    */
   public LogicalTableScan(RelInput input) {
     super(input);

@@ -45,8 +45,8 @@ public class DriverVersion {
   public final int minorVersion;
   public final String name;
   public final String versionString;
-  public final String productName;
-  public final String productVersion;
+  public final String productName;//谁实现的该driver,比如mysql还是calcite
+  public final String productVersion;//实现的版本号
   public final boolean jdbcCompliant;
   public final int databaseMajorVersion;
   public final int databaseMinorVersion;

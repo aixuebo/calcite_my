@@ -26,6 +26,7 @@ import java.util.Set;
 
 /**
  * Expression combined with sort flags (DESCENDING, NULLS LAST).
+ * 表示排序的一个字段,该字段是正序/倒叙、null是在前面/后面
  */
 public class RexFieldCollation extends Pair<RexNode, ImmutableSet<SqlKind>> {
   public RexFieldCollation(RexNode left, Set<SqlKind> right) {

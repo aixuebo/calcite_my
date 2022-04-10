@@ -24,11 +24,12 @@ import com.google.common.collect.ImmutableList;
 /**
  * ExplicitOperandTypeInferences implements {@link SqlOperandTypeInference} by
  * explicitly supplying a type for each parameter.
+ * 准确的还原参数类型
  */
 public class ExplicitOperandTypeInference implements SqlOperandTypeInference {
   //~ Instance fields --------------------------------------------------------
 
-  private final ImmutableList<RelDataType> paramTypes;
+  private final ImmutableList<RelDataType> paramTypes;//准确的参数值
 
   //~ Constructors -----------------------------------------------------------
 
@@ -43,9 +44,9 @@ public class ExplicitOperandTypeInference implements SqlOperandTypeInference {
   public void inferOperandTypes(
       SqlCallBinding callBinding,
       RelDataType returnType,
-      RelDataType[] operandTypes) {
+      RelDataType[] operandTypes) {//预测参数值
     assert operandTypes.length == paramTypes.size();
-    paramTypes.toArray(operandTypes);
+    paramTypes.toArray(operandTypes);//将准确的参数值复制给预测参数值类型
   }
 }
 

@@ -18,8 +18,10 @@ package org.apache.calcite.sql.validate;
 
 /**
  * An enumeration of moniker types.
+ * sql绰号类型--标识一个绰号是为什么类型起的
  *
  * <p>Used in {@link SqlMoniker}.
+ * 是列、表、视图、schema、还是函数、关键词
  */
 public enum SqlMonikerType {
   COLUMN, TABLE, VIEW, SCHEMA, CATALOG, REPOSITORY, FUNCTION, KEYWORD

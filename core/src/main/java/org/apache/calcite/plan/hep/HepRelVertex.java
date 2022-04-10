@@ -32,12 +32,15 @@ import java.util.List;
 /**
  * HepRelVertex wraps a real {@link RelNode} as a vertex in a DAG representing
  * the entire query expression.
+ * 对关系表达式的一个封装,持有真实的关系表达式。
+ * 属于代理类,只是目前没有应用的子类
  */
 public class HepRelVertex extends AbstractRelNode {
   //~ Instance fields --------------------------------------------------------
 
   /**
    * Wrapped rel currently chosen for implementation of expression.
+   * 真实的关系表达式
    */
   private RelNode currentRel;
 

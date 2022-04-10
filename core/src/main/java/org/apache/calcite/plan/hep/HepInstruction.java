@@ -26,19 +26,23 @@ import java.util.Set;
  * HepInstruction represents one instruction in a HepProgram. The actual
  * instruction set is defined here via inner classes; if these grow too big,
  * they should be moved out to top-level classes.
+ * 代表HepProgram的一个指令。
  */
 abstract class HepInstruction {
   //~ Methods ----------------------------------------------------------------
 
-  void initialize(boolean clearCache) {
+  //初始化
+  void initialize(boolean clearCache) {//参数表示是否清理缓存
   }
 
-  // typesafe dispatch via the visitor pattern
+  // typesafe dispatch via the visitor pattern 执行
   abstract void execute(HepPlanner planner);
 
   //~ Inner Classes ----------------------------------------------------------
 
-  /** Instruction that executes all rules of a given class. */
+  /** Instruction that executes all rules of a given class.
+   * 执行给定class的所有规则
+   **/
   static class RuleClass<R extends RelOptRule> extends HepInstruction {
     Class<R> ruleClass;
 
@@ -48,7 +52,7 @@ abstract class HepInstruction {
      */
     Set<RelOptRule> ruleSet;
 
-    void initialize(boolean clearCache) {
+    void initialize(boolean clearCache) {//true重新设置ruleSet
       if (!clearCache) {
         return;
       }
@@ -61,7 +65,9 @@ abstract class HepInstruction {
     }
   }
 
-  /** Instruction that executes all rules in a given collection. */
+  /** Instruction that executes all rules in a given collection.
+   * 执行规则集合
+   **/
   static class RuleCollection extends HepInstruction {
     /**
      * Collection of rules to apply.

@@ -19,23 +19,27 @@ package org.apache.calcite.plan.hep;
 /**
  * HepMatchOrder specifies the order of graph traversal when looking for rule
  * matches.
+ * 匹配顺序
  */
 public enum HepMatchOrder {
   /**
    * Match in arbitrary order. This is the default because it is the most
    * efficient, and most rules don't care about order.
+   * 匹配任意的顺序
    */
   ARBITRARY,
 
   /**
    * Match from leaves up. A match attempt at a descendant precedes all match
    * attempts at its ancestors.
+   * 从叶子节点开始向上匹配,后代优先所有祖先，先匹配
    */
   BOTTOM_UP,
 
   /**
    * Match from root down. A match attempt at an ancestor always precedes all
    * match attempts at its descendants.
+   * 从root开始向到下匹配
    */
   TOP_DOWN
 }

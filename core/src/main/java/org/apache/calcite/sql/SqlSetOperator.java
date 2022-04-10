@@ -33,7 +33,7 @@ import org.apache.calcite.sql.validate.SqlValidatorScope;
 public class SqlSetOperator extends SqlBinaryOperator {
   //~ Instance fields --------------------------------------------------------
 
-  private final boolean all;
+  private final boolean all;//全部 / 过滤重复
 
   //~ Constructors -----------------------------------------------------------
 
@@ -41,7 +41,7 @@ public class SqlSetOperator extends SqlBinaryOperator {
       String name,
       SqlKind kind,
       int prec,
-      boolean all) {
+      boolean all) {//是否过滤重复
     super(
         name,
         kind,

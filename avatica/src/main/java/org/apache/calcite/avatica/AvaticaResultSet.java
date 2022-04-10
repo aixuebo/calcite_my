@@ -50,8 +50,8 @@ public class AvaticaResultSet implements ResultSet, ArrayImpl.Factory {
   protected final AvaticaStatement statement;
   protected final Meta.Signature signature;
   protected final Iterable<Object> iterable;
-  protected final List<ColumnMetaData> columnMetaDataList;
-  protected final ResultSetMetaData resultSetMetaData;
+  protected final List<ColumnMetaData> columnMetaDataList;//查询的列信息
+  protected final ResultSetMetaData resultSetMetaData;//列信息的元数据
   protected final Calendar localCalendar;
 
   protected Cursor cursor;
@@ -85,6 +85,7 @@ public class AvaticaResultSet implements ResultSet, ArrayImpl.Factory {
     this.localCalendar = Calendar.getInstance(timeZone);
   }
 
+  //通过label名字找到第几个列
   private int findColumn0(String columnLabel) throws SQLException {
     for (ColumnMetaData columnMetaData : columnMetaDataList) {
       // Per JDBC 3.0 specification, match is case-insensitive and if there is

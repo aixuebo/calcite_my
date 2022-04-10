@@ -31,6 +31,7 @@ import java.util.Set;
 
 /**
  * Base class for any join whose condition is based on column equality.
+ * where条件是列的值相同
  */
 public abstract class EquiJoin extends Join {
   public final ImmutableIntList leftKeys;

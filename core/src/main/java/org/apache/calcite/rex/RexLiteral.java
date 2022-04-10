@@ -44,6 +44,7 @@ import java.util.TimeZone;
 
 /**
  * Constant value in a row-expression.
+ * 表示一个常量
  *
  * <p>There are several methods for creating literals in {@link RexBuilder}:
  * {@link RexBuilder#makeLiteral(boolean)} and so forth.</p>
@@ -125,6 +126,7 @@ import java.util.TimeZone;
  * <td>An enum class</td>
  * </tr>
  * </table>
+ * 表示一个常量
  */
 public class RexLiteral extends RexNode {
   //~ Instance fields --------------------------------------------------------
@@ -136,12 +138,12 @@ public class RexLiteral extends RexNode {
    * represented by a {@link BigDecimal}. But since this field is private, it
    * doesn't really matter how the values are stored.
    */
-  private final Comparable value;
+  private final Comparable value;//具体的值
 
   /**
    * The real type of this literal, as reported by {@link #getType}.
    */
-  private final RelDataType type;
+  private final RelDataType type;//值类型
 
   // TODO jvs 26-May-2006:  Use SqlTypeFamily instead; it exists
   // for exactly this purpose (to avoid the confusion which results
@@ -153,7 +155,7 @@ public class RexLiteral extends RexNode {
    * {@link SqlTypeName#DECIMAL}. See {@link #valueMatchesType} for the
    * definitive story.
    */
-  private final SqlTypeName typeName;
+  private final SqlTypeName typeName;//值的SqlType类型
 
   //~ Constructors -----------------------------------------------------------
 
@@ -179,11 +181,12 @@ public class RexLiteral extends RexNode {
   /**
    * @return whether value is appropriate for its type (we have rules about
    * these things)
+   * 校验value值与SqlTypeName类型是否匹配
    */
   public static boolean valueMatchesType(
       Comparable value,
       SqlTypeName typeName,
-      boolean strict) {
+      boolean strict) {//要求强制匹配
     if (value == null) {
       return true;
     }
@@ -192,7 +195,7 @@ public class RexLiteral extends RexNode {
       // Unlike SqlLiteral, we do not allow boolean null.
       return value instanceof Boolean;
     case NULL:
-      return false; // value should have been null
+      return false; // value should have been null,null与任何类型都不匹配
     case INTEGER: // not allowed -- use Decimal
     case TINYINT:
     case SMALLINT:
@@ -558,11 +561,13 @@ public class RexLiteral extends RexNode {
     return com.google.common.base.Objects.hashCode(value, type);
   }
 
+  //表达式值是int
   public static int intValue(RexNode node) {
     final Comparable value = findValue(node);
     return ((Number) value).intValue();
   }
 
+  //表达式值是string
   public static String stringValue(RexNode node) {
     final Comparable value = findValue(node);
     return (value == null) ? null : ((NlsString) value).getValue();

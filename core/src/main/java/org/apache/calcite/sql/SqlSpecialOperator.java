@@ -25,10 +25,12 @@ import java.util.List;
 
 /**
  * Generic operator for nodes with special syntax.
+ * sql操作
  */
 public class SqlSpecialOperator extends SqlOperator {
   //~ Constructors -----------------------------------------------------------
 
+  //比如delete操作,name=delete,sqlKind=SqlKind.DELETE
   public SqlSpecialOperator(
       String name,
       SqlKind kind) {

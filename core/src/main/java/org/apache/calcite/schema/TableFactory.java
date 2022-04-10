@@ -73,6 +73,7 @@ import java.util.Map;
  * public default constructor.</p>
  *
  * @param <T> Sub-type of table created by this factory
+ * 通过schema等信息,加载返回一张表
  */
 public interface TableFactory<T extends Table> {
   /** Creates a Table.

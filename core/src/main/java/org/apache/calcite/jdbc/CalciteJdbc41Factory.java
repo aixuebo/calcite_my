@@ -59,6 +59,7 @@ public class CalciteJdbc41Factory extends CalciteFactory {
         (Driver) driver, factory, url, info, rootSchema, typeFactory);
   }
 
+  //返回数据库级别的元数据信息
   public CalciteJdbc41DatabaseMetaData newDatabaseMetaData(
       AvaticaConnection connection) {
     return new CalciteJdbc41DatabaseMetaData(
@@ -100,6 +101,7 @@ public class CalciteJdbc41Factory extends CalciteFactory {
         iterable);
   }
 
+  //返回ResultSet结果集的元数据信息
   public ResultSetMetaData newResultSetMetaData(AvaticaStatement statement,
       Meta.Signature signature) {
     return new AvaticaResultSetMetaData(statement, null, signature);

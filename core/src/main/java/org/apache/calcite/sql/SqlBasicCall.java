@@ -23,11 +23,17 @@ import java.util.List;
 
 /**
  * Implementation of {@link SqlCall} that keeps its operands in an array.
+ * SqlBasicCall 基础实现类
+ * 1.只需要构造函数传递 操作对象、参数对象即可。
+ * 2.SqlKind取operator.getKind();
+ * 3.额外提供参数
+ * boolean expanded
+ * SqlLiteral functionQuantifier;//DISTINCT等关键词常量
  */
 public class SqlBasicCall extends SqlCall {
-  private SqlOperator operator;
-  public final SqlNode[] operands;
-  private final SqlLiteral functionQuantifier;
+  private SqlOperator operator;//具体的操作对象,比如具体的函数、具体的insert操作对象---真正执行函数的实现体--主要createCall和acceptCall方法
+  public final SqlNode[] operands;//实际参数数组
+  private final SqlLiteral functionQuantifier;//DISTINCT等关键词 可能表示函数名
   private final boolean expanded;
 
   public SqlBasicCall(
@@ -78,11 +84,13 @@ public class SqlBasicCall extends SqlCall {
     return UnmodifiableArrayList.of(operands); // not immutable, but quick
   }
 
+  //获取第几个参数
   @SuppressWarnings("unchecked")
   @Override public <S extends SqlNode> S operand(int i) {
     return (S) operands[i];
   }
 
+  //参数数量
   @Override public int operandCount() {
     return operands.length;
   }

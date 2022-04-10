@@ -25,6 +25,7 @@ import java.io.StringWriter;
  * Implementation of {@link org.apache.calcite.avatica.remote.Handler}
  * that decodes JSON requests, sends them to a {@link Service},
  * and encodes the responses into JSON.
+ * 传入json形式的Request对象,返回string类型的Request对象
  *
  * @see org.apache.calcite.avatica.remote.JsonService
  */

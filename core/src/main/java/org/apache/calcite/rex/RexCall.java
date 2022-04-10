@@ -44,9 +44,9 @@ import java.util.List;
 public class RexCall extends RexNode {
   //~ Instance fields --------------------------------------------------------
 
-  private final SqlOperator op;
-  public final ImmutableList<RexNode> operands;
-  private final RelDataType type;
+  private final SqlOperator op;//function等操作
+  public final ImmutableList<RexNode> operands;//具体参数
+  private final RelDataType type;//返回类型
 
   //~ Constructors -----------------------------------------------------------
 

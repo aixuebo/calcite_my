@@ -72,6 +72,28 @@ import java.util.Set;
  *
  * <p>(If we were using Scala, {@link SqlOperator} would be a case
  * class, and we wouldn't need {@code SqlKind}. But we're not.)</p>
+ * sqlNode节点类型---基本上把sql中关键字都枚举出来了
+ 1.框架关键词DDL:SELECT、INSERT、DELETE、UPDATE、EXPLAIN、MERGE、PROCEDURE_CALL(存储过程)、SET_OPTION(设置环境变量值)
+ 2.sql关键词:ORDER_BY、WITH、WITH_ITEM、AS、OVER、WINDOW、TABLESAMPLE、VALUES、JOIN、DESCENDING、
+ NULLS_FIRST、NULLS_LAST、PRECEDING、FOLLOWING、NEXT_VALUE、CURRENT_VALUE、
+ CUBE、ROLLUP、GROUPING_SETS、GROUPING、GROUPING_ID、GROUP_ID、LATERAL
+ a.UNION、EXCEPT、INTERSECT
+ 3.操作运算符:
+ a.二元运算:PLUS、MINUS、TIMES(*)、DIVIDE(/)
+ b.比较运算符:IN、LESS_THAN、GREATER_THAN、LESS_THAN_OR_EQUAL、GREATER_THAN_OR_EQUAL、EQUALS、NOT_EQUALS
+ c.逻辑运算符:OR、AND
+ d.其他操作符:IS_DISTINCT_FROM、IS_NOT_DISTINCT_FROM
+ e.中缀操作符:LIKE、BETWEEN、CASE、DOT、SIMILAR、OVERLAPS
+ f.前缀操作符:NOT、EXISTS、PLUS_PREFIX、MINUS_PREFIX
+ g.常数:IS_TRUE、IS_FALSE、IS_NOT_TRUE、IS_NOT_FALSE、IS_NULL、IS_NOT_NULL
+ h.函数操作:CAST、ROW、COLUMN_LIST、TRIM、JDBC_FN、
+ 4.特殊含义的关键词
+ LITERAL(常量)、IDENTIFIER(标识号--xx 或者 xx.xx.xx 或者 xx.xx.xx.*(无限个xx))、OTHER_FUNCTION(其他未事先定义的方法)、OTHER(其他未知类型)、 DYNAMIC_PARAM(动态参数?)、
+ 5.未知关键词
+ IS_UNKNOWN、EXPLICIT_TABLE(精准引用table)、NEW_SPECIFICATION、SCALAR_QUERY、INPUT_REF、LOCAL_REF、FIELD_ACCESS、CORREL_VARIABLE、
+ MULTISET_VALUE_CONSTRUCTOR、MULTISET_QUERY_CONSTRUCTOR、UNNEST、COLLECTION_TABLE
+ ARRAY_VALUE_CONSTRUCTOR、ARRAY_QUERY_CONSTRUCTOR、MAP_VALUE_CONSTRUCTOR、
+ MAP_QUERY_CONSTRUCTOR、CURSOR、LITERAL_CHAIN、ESCAPE、REINTERPRET、EXTEND
  */
 public enum SqlKind {
   //~ Static fields/initializers ---------------------------------------------
@@ -101,11 +123,12 @@ public enum SqlKind {
 
   /**
    * Identifier
+   * 标识号--xx 或者 xx.xx.xx 或者 xx.xx.xx.*(无限个xx)
    */
   IDENTIFIER,
 
   /**
-   * A literal.
+   * A literal.常量
    */
   LITERAL,
 
@@ -138,6 +161,7 @@ public enum SqlKind {
 
   /**
    * "ALTER scope SET option = value" statement.
+   * 设置环境变量值
    */
   SET_OPTION,
 
@@ -325,14 +349,14 @@ public enum SqlKind {
 
   /**
    * The unary plus operator, as in "+1".
-   *
+   * 正数方法
    * @see #PLUS
    */
   PLUS_PREFIX,
 
   /**
    * The unary minus operator, as in "-1".
-   *
+   * 负数方法
    * @see #MINUS
    */
   MINUS_PREFIX,
@@ -350,6 +374,7 @@ public enum SqlKind {
   /**
    * Explicit table, e.g. <code>select * from (TABLE t)</code> or <code>TABLE
    * t</code>. See also {@link #COLLECTION_TABLE}.
+   * 精准引用table
    */
   EXPLICIT_TABLE,
 
@@ -722,6 +747,7 @@ public enum SqlKind {
    *
    * @param category Category
    * @return Whether this kind belongs to the given category
+   * 判断当前sqlKind是否在参数容器内
    */
   public final boolean belongsTo(Collection<SqlKind> category) {
     return category.contains(this);

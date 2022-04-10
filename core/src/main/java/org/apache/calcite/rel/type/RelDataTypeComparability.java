@@ -25,11 +25,12 @@ import org.apache.calcite.util.Util;
  * <p>NOTE jvs 17-Mar-2005: the order of values of this enumeration is
  * significant (from least inclusive to most inclusive) and should not be
  * changed.
+ * 比较方式
  */
 public enum RelDataTypeComparability {
-  NONE("No comparisons allowed"),
-  UNORDERED("Only equals/not-equals allowed"),
-  ALL("All comparisons allowed");
+  NONE("No comparisons allowed"),//不允许比较,作为默认值,表示不能参与比较的列
+  UNORDERED("Only equals/not-equals allowed"),//仅允许=或者!=,即不支持排序
+  ALL("All comparisons allowed");//允许所有的比较形式
 
   RelDataTypeComparability(String description) {
     Util.discard(description);

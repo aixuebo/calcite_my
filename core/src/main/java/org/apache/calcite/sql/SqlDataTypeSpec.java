@@ -52,6 +52,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  *
  * <p>Currently it only supports simple datatypes like CHAR, VARCHAR and DOUBLE,
  * with optional precision and scale.</p>
+ * 用于描述sql类型的节点。
+ * 包含字段描述符、类型、精准度、字符串编码、时间分区、是否允许null，将这些信息都解析后生成该SqlDataTypeSpec节点
  */
 public class SqlDataTypeSpec extends SqlNode {
   //~ Instance fields --------------------------------------------------------

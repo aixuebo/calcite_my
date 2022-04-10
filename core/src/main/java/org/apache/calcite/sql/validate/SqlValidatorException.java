@@ -30,6 +30,7 @@ import java.util.logging.Logger;
  * <p>Unlike {@link org.apache.calcite.runtime.CalciteException}, this is a
  * checked exception, which reminds code authors to wrap it in another exception
  * containing the line/column context.
+ * 异常
  */
 public class SqlValidatorException extends Exception
     implements CalciteValidatorException {

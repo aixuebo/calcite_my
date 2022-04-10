@@ -59,11 +59,15 @@ import java.util.Map;
 /**
  * Implementation of {@link org.apache.calcite.schema.Schema} that exposes the
  * public fields and methods in a Java object.
+ * 参考org.apache.calcite.examples.foodmart.java.JdbcExample
+ *
+ * 一个class表示一个schema数据库
+ * field属性如果是数组或者是迭代器，说明可以表示成一个表，因为表里面有多条数据
  */
 public class ReflectiveSchema
     extends AbstractSchema {
-  final Class clazz;
-  private Object target;
+  final Class clazz;//数据库class
+  private Object target;//具体数据库实例类
 
   /**
    * Creates a ReflectiveSchema.
@@ -89,7 +93,9 @@ public class ReflectiveSchema
     return target;
   }
 
+  //数据库内所有的表
   @Override protected Map<String, Table> getTableMap() {
+    //数据库内的属性名为tableName,对象为table对象
     final ImmutableMap.Builder<String, Table> builder = ImmutableMap.builder();
     for (Field field : clazz.getFields()) {
       final String fieldName = field.getName();
@@ -105,7 +111,7 @@ public class ReflectiveSchema
   @Override protected Multimap<String, Function> getFunctionMultimap() {
     final ImmutableMultimap.Builder<String, Function> builder =
         ImmutableMultimap.builder();
-    for (Method method : clazz.getMethods()) {
+    for (Method method : clazz.getMethods()) {//方法是function
       final String methodName = method.getName();
       if (method.getDeclaringClass() == Object.class
           || methodName.equals("toString")) {
@@ -135,7 +141,7 @@ public class ReflectiveSchema
   /** Returns a table based on a particular field of this schema. If the
    * field is not of the right type to be a relation, returns null. */
   private <T> Table fieldRelation(final Field field) {
-    final Type elementType = getElementType(field.getType());
+    final Type elementType = getElementType(field.getType());//必须是数组或者迭代器类型对象
     if (elementType == null) {
       return null;
     }
@@ -155,17 +161,18 @@ public class ReflectiveSchema
    * same logic as {@link #toEnumerable} */
   private static Type getElementType(Class clazz) {
     if (clazz.isArray()) {
-      return clazz.getComponentType();
+      return clazz.getComponentType();//数组的内部对象
     }
-    if (Iterable.class.isAssignableFrom(clazz)) {
+    if (Iterable.class.isAssignableFrom(clazz)) {//或者是迭代器
       return Object.class;
     }
     return null; // not a collection/array/iterable
   }
 
+  //表内容的迭代器
   private static Enumerable toEnumerable(final Object o) {
-    if (o.getClass().isArray()) {
-      if (o instanceof Object[]) {
+    if (o.getClass().isArray()) {//参数是数组或者迭代器
+      if (o instanceof Object[]) {//数组的时候，看参数是否有对应的类型
         return Linq4j.asEnumerable((Object[]) o);
       } else {
         return Linq4j.asEnumerable(Primitive.asList(o));
@@ -178,12 +185,15 @@ public class ReflectiveSchema
         "Cannot convert " + o.getClass() + " into a Enumerable");
   }
 
-  /** Table that is implemented by reading from a Java object. */
+  /** Table that is implemented by reading from a Java object.
+   * 表示一个table内容
+   **/
   private static class ReflectiveTable
       extends AbstractQueryableTable
       implements Table, ScannableTable {
-    private final Type elementType;
-    private final Enumerable enumerable;
+
+    private final Type elementType;//表属于哪个class
+    private final Enumerable enumerable;//表内元素
 
     public ReflectiveTable(Type elementType, Enumerable enumerable) {
       super(elementType);
@@ -287,13 +297,13 @@ public class ReflectiveSchema
     }
   }
 
-  /** Table macro based on a Java method. */
+  /** Table macro based on a Java method. 基于java类定义的function*/
   private static class MethodTableMacro extends ReflectiveFunctionBase
       implements TableMacro {
-    private final ReflectiveSchema schema;
+    private final ReflectiveSchema schema;//该function属于哪个仓库schema
 
     public MethodTableMacro(ReflectiveSchema schema, Method method) {
-      super(method);
+      super(method);//具体function方法
       this.schema = schema;
       assert TranslatableTable.class.isAssignableFrom(method.getReturnType())
           : "Method should return TranslatableTable so the macro can be "
@@ -304,9 +314,10 @@ public class ReflectiveSchema
       return "Member {method=" + method + "}";
     }
 
+    //执行方法
     public TranslatableTable apply(final List<Object> arguments) {
       try {
-        final Object o = method.invoke(schema.getTarget(), arguments.toArray());
+        final Object o = method.invoke(schema.getTarget(), arguments.toArray());//仓库的class实例 以及 方法需要的参数,即执行方法
         return (TranslatableTable) o;
       } catch (IllegalAccessException e) {
         throw new RuntimeException(e);
@@ -318,8 +329,14 @@ public class ReflectiveSchema
 
   /** Table based on a Java field. */
   private static class FieldTable<T> extends ReflectiveTable {
-    private final Field field;
+    private final Field field;//表name
 
+    /**
+     *
+     * @param field 表name
+     * @param elementType 表类型
+     * @param enumerable 表数据
+     */
     public FieldTable(Field field, Type elementType, Enumerable<T> enumerable) {
       super(elementType, enumerable);
       this.field = field;
@@ -337,14 +354,17 @@ public class ReflectiveSchema
     }
   }
 
-  /** Function that returns an array of a given object's field values. */
+  /** Function that returns an array of a given object's field values.
+   * 如何扫描一行数据
+   **/
   private static class FieldSelector implements Function1<Object, Object[]> {
-    private final Field[] fields;
+    private final Field[] fields;//表的字段集合
 
     public FieldSelector(Class elementType) {
       this.fields = elementType.getFields();
     }
 
+    //一行数据,返回数据内容
     public Object[] apply(Object o) {
       try {
         final Object[] objects = new Object[fields.length];

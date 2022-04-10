@@ -29,13 +29,15 @@ import java.util.List;
 /**
  * Sub-class of {@link org.apache.calcite.rel.core.Union}
  * not targeted at any particular engine or calling convention.
+ * 比如持有一组LogicalProject
+ * 并集
  */
 public final class LogicalUnion extends Union {
   //~ Constructors -----------------------------------------------------------
 
   public LogicalUnion(
       RelOptCluster cluster,
-      List<RelNode> inputs,
+      List<RelNode> inputs,//比如持有一组LogicalProject
       boolean all) {
     super(
         cluster,

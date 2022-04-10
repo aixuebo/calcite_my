@@ -25,6 +25,7 @@ public enum JoinRelType {
   /**
    * Returns whether a join of this type may generate NULL values on the
    * right-hand side.
+   * 允许右侧值是null
    */
   public boolean generatesNullsOnRight() {
     return (this == LEFT) || (this == FULL);
@@ -33,6 +34,7 @@ public enum JoinRelType {
   /**
    * Returns whether a join of this type may generate NULL values on the
    * left-hand side.
+   * 允许左侧值是null
    */
   public boolean generatesNullsOnLeft() {
     return (this == RIGHT) || (this == FULL);

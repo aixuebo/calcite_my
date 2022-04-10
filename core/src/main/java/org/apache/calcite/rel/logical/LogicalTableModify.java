@@ -29,6 +29,7 @@ import java.util.List;
 /**
  * Sub-class of {@link org.apache.calcite.rel.core.TableModify}
  * not targeted at any particular engine or calling convention.
+ * 表的update、delete、insert等操作
  */
 public final class LogicalTableModify extends TableModify {
   //~ Constructors -----------------------------------------------------------

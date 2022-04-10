@@ -78,7 +78,7 @@ public final class LogicalJoin extends Join {
       RelOptCluster cluster,
       RelNode left,
       RelNode right,
-      RexNode condition,
+      RexNode condition,//`s`.`cust_id` = `e`.`empid`
       JoinRelType joinType,
       Set<String> variablesStopped) {
     this(

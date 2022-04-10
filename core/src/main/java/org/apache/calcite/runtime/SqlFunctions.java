@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
  * <p>Many of the functions do not check for null values. This is intentional.
  * If null arguments are possible, the code-generation framework checks for
  * nulls before calling the functions.</p>
+ * 用于sql的函数实现
  */
 @SuppressWarnings("UnnecessaryUnboxing")
 @Deterministic
@@ -83,7 +84,9 @@ public class SqlFunctions {
   private SqlFunctions() {
   }
 
-  /** SQL SUBSTRING(string FROM ... FOR ...) function. */
+  /** SQL SUBSTRING(string FROM ... FOR ...) function.
+   * 截取s,从from开始,到from+for结束
+   **/
   public static String substring(String s, int from, int for_) {
     return s.substring(from - 1, Math.min(from - 1 + for_, s.length()));
   }
@@ -103,7 +106,7 @@ public class SqlFunctions {
     return s.toLowerCase();
   }
 
-  /** SQL INITCAP(string) function. */
+  /** SQL INITCAP(string) function. 首字母大写*/
   public static String initcap(String s) {
     // Assumes Alpha as [A-Za-z0-9]
     // white space is treated as everything else.
@@ -171,7 +174,10 @@ public class SqlFunctions {
     return trim_(s, leading, trailing, seek.charAt(0));
   }
 
-  /** SQL {@code TRIM} function. */
+  /** SQL {@code TRIM} function.
+   * left = true 表示左边开始,与c相同的字符都要去除。
+   * 同理right
+   **/
   private static String trim_(String s, boolean left, boolean right, char c) {
     int j = s.length();
     if (right) {
@@ -1232,7 +1238,9 @@ public class SqlFunctions {
     return list;
   }
 
-  /** Support the ELEMENT function. */
+  /** Support the ELEMENT function.
+   * 从list中获取一个元素,要求list有且只有一个元素
+   **/
   public static Object element(List list) {
     switch (list.size()) {
     case 0:

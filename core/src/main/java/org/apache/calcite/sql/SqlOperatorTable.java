@@ -35,6 +35,7 @@ public interface SqlOperatorTable {
    *                 operator
    * @param syntax   syntax type of operator
    * @param operatorList mutable list to which to append matches
+   * 通过操作name去查找操作集合,找到的操作集合存储到operatorList参数中
    */
   void lookupOperatorOverloads(SqlIdentifier opName,
       SqlFunctionCategory category,
@@ -46,6 +47,7 @@ public interface SqlOperatorTable {
    * automated testing.
    *
    * @return list of SqlOperator objects
+   * 找到所有的操作集合
    */
   List<SqlOperator> getOperatorList();
 }

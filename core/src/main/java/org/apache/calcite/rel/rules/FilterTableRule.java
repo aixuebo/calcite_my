@@ -44,12 +44,15 @@ import static org.apache.calcite.util.Static.RESOURCE;
  * or {@link org.apache.calcite.schema.ProjectableFilterableTable}.
  */
 public class FilterTableRule extends RelOptRule {
+
+  //给定参数TableScan,返回值boolean类型
   private static final Predicate<TableScan> PREDICATE =
       new Predicate<TableScan>() {
         public boolean apply(TableScan scan) {
           // We can only push filters into a FilterableTable or
           // ProjectableFilterableTable.
           final RelOptTable table = scan.getTable();
+          //说明存在filter结构
           return table.unwrap(FilterableTable.class) != null
               || table.unwrap(ProjectableFilterableTable.class) != null;
         }
@@ -74,32 +77,24 @@ public class FilterTableRule extends RelOptRule {
     final Filter filter = call.rel(0);
     final EnumerableInterpreter interpreter = call.rel(1);
     final TableScan scan = call.rel(2);
-    final FilterableTable filterableTable =
-        scan.getTable().unwrap(FilterableTable.class);
-    final ProjectableFilterableTable projectableFilterableTable =
-        scan.getTable().unwrap(ProjectableFilterableTable.class);
+
+    final FilterableTable filterableTable = scan.getTable().unwrap(FilterableTable.class);
+    final ProjectableFilterableTable projectableFilterableTable = scan.getTable().unwrap(ProjectableFilterableTable.class);
 
     final FilterSplit filterSplit;
     if (filterableTable != null) {
-      filterSplit = FilterSplit.of(filterableTable, filter.getCondition(),
-          null);
+      filterSplit = FilterSplit.of(filterableTable, filter.getCondition(),null);
     } else if (projectableFilterableTable != null) {
-      filterSplit = FilterSplit.of(projectableFilterableTable,
-          filter.getCondition(), null);
+      filterSplit = FilterSplit.of(projectableFilterableTable,filter.getCondition(), null);
     } else {
       throw new AssertionError(scan.getTable());
     }
 
     // It's worth using the ProjectableFilterableTable interface even if it
     // refused all filters.
-    final RelNode newFilter =
-        RelOptUtil.createFilter(interpreter.getInput(),
-            filterSplit.acceptedFilters, EnumerableRel.FILTER_FACTORY);
-    final RelNode newInterpreter =
-        new EnumerableInterpreter(interpreter.getCluster(),
-            interpreter.getTraitSet(), newFilter, 0.15d);
-    final RelNode residue =
-        RelOptUtil.createFilter(newInterpreter, filterSplit.rejectedFilters);
+    final RelNode newFilter =  RelOptUtil.createFilter(interpreter.getInput(),filterSplit.acceptedFilters, EnumerableRel.FILTER_FACTORY);
+    final RelNode newInterpreter = new EnumerableInterpreter(interpreter.getCluster(),interpreter.getTraitSet(), newFilter, 0.15d);
+    final RelNode residue = RelOptUtil.createFilter(newInterpreter, filterSplit.rejectedFilters);
     call.transformTo(residue);
   }
 
@@ -119,7 +114,7 @@ public class FilterTableRule extends RelOptRule {
     public static FilterSplit of(FilterableTable table,
         RexNode condition, DataContext dataContext) {
       final List<RexNode> filters = Lists.newArrayList();
-      RelOptUtil.decomposeConjunction(condition, filters);
+      RelOptUtil.decomposeConjunction(condition, filters);//将表达式按照and拆分成list集合
       final List<RexNode> originalFilters = ImmutableList.copyOf(filters);
 
       final Enumerable<Object[]> enumerable =
@@ -134,18 +129,25 @@ public class FilterTableRule extends RelOptRule {
       final List<RexNode> originalFilters = ImmutableList.copyOf(filters);
 
       final Enumerable<Object[]> enumerable =
-          table.scan(dataContext, filters, null);
+          table.scan(dataContext, filters, null);//filters会被处理
       return rest(originalFilters, filters, enumerable);
     }
 
+    /**
+     *
+     * @param originalFilters 原始表达式中的条件
+     * @param filters 处理后的条件
+     * @param enumerable 迭代器
+     * @return
+     */
     private static FilterSplit rest(List<RexNode> originalFilters,
         List<RexNode> filters,
         Enumerable<Object[]> enumerable) {
       if (enumerable == null) {
         throw RESOURCE.filterableTableScanReturnedNull().ex();
       }
-      final ImmutableList.Builder<RexNode> accepted = ImmutableList.builder();
-      final ImmutableList.Builder<RexNode> rejected = ImmutableList.builder();
+      final ImmutableList.Builder<RexNode> accepted = ImmutableList.builder();//处理后与原始表达式一致
+      final ImmutableList.Builder<RexNode> rejected = ImmutableList.builder();//处理后与原始表达式不一致
       for (RexNode originalFilter : originalFilters) {
         if (filters.contains(originalFilter)) {
           rejected.add(originalFilter);

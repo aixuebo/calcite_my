@@ -29,13 +29,14 @@ import java.util.List;
 /**
  * Sub-class of {@link org.apache.calcite.rel.core.Intersect}
  * not targeted at any particular engine or calling convention.
+ * 交集
  */
 public final class LogicalIntersect extends Intersect {
   //~ Constructors -----------------------------------------------------------
 
   public LogicalIntersect(
       RelOptCluster cluster,
-      List<RelNode> inputs,
+      List<RelNode> inputs,//比如持有一组LogicalProject
       boolean all) {
     super(
         cluster,

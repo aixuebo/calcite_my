@@ -31,6 +31,7 @@ import java.util.List;
  * <p>This is a somewhat "fat" interface which unions the attributes of many
  * different type classes into one. Inelegant, but since our type system was
  * defined before the advent of Java generics, it avoids a lot of typecasting.
+ * 代表表的类型，即包含哪些字段，每一个字段类型
  */
 public interface RelDataType /*extends Type*/ {
   int SCALE_NOT_SPECIFIED = Integer.MIN_VALUE;
@@ -49,7 +50,7 @@ public interface RelDataType /*extends Type*/ {
   // NOTE jvs 17-Dec-2004:  once we move to Java generics, getFieldList()
   // will be declared to return a read-only List<RelDataTypeField>,
   // and getFields() will be eliminated.  Currently,
-  // anyone can mutate a type by poking into the array returned
+  // aRelDataTypenyone can mutate a type by poking into the array returned
   // by getFields!
 
   /**
@@ -100,6 +101,7 @@ public interface RelDataType /*extends Type*/ {
    * Queries whether this type allows null values.
    *
    * @return whether type allows null values
+   * 允许该值为null,即可空。即字段允许是null
    */
   boolean isNullable();
 
@@ -107,6 +109,7 @@ public interface RelDataType /*extends Type*/ {
    * Gets the component type if this type is a collection, otherwise null.
    *
    * @return canonical type descriptor for components
+   * List类型的时候,存储的真实类型是什么
    */
   RelDataType getComponentType();
 
@@ -225,6 +228,7 @@ public interface RelDataType /*extends Type*/ {
   /**
    * @return the category of comparison operators which make sense when
    * applied to values of this type
+   * 如何比较值的大小,默认值是不支持比较
    */
   RelDataTypeComparability getComparability();
 }

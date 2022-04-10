@@ -31,6 +31,7 @@ import java.util.List;
 
 /**
  * Simple implementation of {@link RelCollation}.
+ * 一个简单的实现
  */
 public class RelCollationImpl implements RelCollation {
   //~ Static fields/initializers ---------------------------------------------
@@ -57,7 +58,7 @@ public class RelCollationImpl implements RelCollation {
           });
 
   //~ Instance fields --------------------------------------------------------
-
+  //排序的列
   private final ImmutableList<RelFieldCollation> fieldCollations;
 
   //~ Constructors -----------------------------------------------------------
@@ -110,7 +111,9 @@ public class RelCollationImpl implements RelCollation {
 
   /** Returns a string representation of this collation, suitably terse given
    * that it will appear in plan traces. Examples:
-   * "[]", "[2]", "[0 DESC, 1]", "[0 DESC, 1 ASC NULLS LAST]". */
+   * "[]", "[2]", "[0 DESC, 1]", "[0 DESC, 1 ASC NULLS LAST]".
+   *  返回字符串描述字段的排序,
+   **/
   public String toString() {
     Iterator<RelFieldCollation> it = fieldCollations.iterator();
     if (! it.hasNext()) {
@@ -134,6 +137,7 @@ public class RelCollationImpl implements RelCollation {
 
   /**
    * Creates a list containing one collation containing one field.
+   * 只有一个列
    */
   public static List<RelCollation> createSingleton(int fieldIndex) {
     return ImmutableList.of(
@@ -145,7 +149,7 @@ public class RelCollationImpl implements RelCollation {
 
   /**
    * Checks that a collection of collations is valid.
-   *
+   * 校验排序的序号是否有效
    * @param rowType       Row type of the relational expression
    * @param collationList List of collations
    * @param fail          Whether to fail if invalid
@@ -153,11 +157,11 @@ public class RelCollationImpl implements RelCollation {
    */
   public static boolean isValid(
       RelDataType rowType,
-      List<RelCollation> collationList,
+      List<RelCollation> collationList,//若干组排序方式
       boolean fail) {
-    final int fieldCount = rowType.getFieldCount();
+    final int fieldCount = rowType.getFieldCount();//一共有多少个字段
     for (RelCollation collation : collationList) {
-      for (RelFieldCollation fieldCollation : collation.getFieldCollations()) {
+      for (RelFieldCollation fieldCollation : collation.getFieldCollations()) {//每一种排序方式的字段是否超过范围
         final int index = fieldCollation.getFieldIndex();
         if (index < 0 || index >= fieldCount) {
           assert !fail;
@@ -174,7 +178,9 @@ public class RelCollationImpl implements RelCollation {
     return collationList1.equals(collationList2);
   }
 
-  /** Returns the indexes of the field collations in a given collation. */
+  /** Returns the indexes of the field collations in a given collation.
+   * 返回字段的序号集合
+   **/
   public static List<Integer> ordinals(RelCollation collation) {
     return Lists.transform(collation.getFieldCollations(),
         new Function<RelFieldCollation, Integer>() {

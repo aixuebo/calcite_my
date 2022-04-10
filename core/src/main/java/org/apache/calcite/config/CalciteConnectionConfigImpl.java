@@ -29,7 +29,9 @@ public class CalciteConnectionConfigImpl extends ConnectionConfigImpl
     super(properties);
   }
 
-  /** Returns a copy of this configuration with one property changed. */
+  /** Returns a copy of this configuration with one property changed.
+   * 设置一个属性和属性值的映射
+   **/
   public CalciteConnectionConfigImpl set(CalciteConnectionProperty property,
       String value) {
     final Properties properties1 = new Properties(properties);

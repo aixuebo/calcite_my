@@ -27,12 +27,18 @@ import java.util.List;
  * A <code>SqlSelect</code> is a node of a parse tree which represents a select
  * statement. It warrants its own node type just because we have a lot of
  * methods to put somewhere.
+ * 1.语法:
+ * 2.操作:SqlSelectOperator
+ * 3.参数:
+ * keywordList(SqlNodeList关键词参数,比如distinct)、selectList(SqlNodeList)、from(SqlNode)、where(SqlNode)、
+ * groupBy(SqlNodeList)、having(SqlNode)、windowDecls(SqlNodeList)、orderBy(SqlNodeList)、offset(SqlNode)、fetch(SqlNode)
+ * 4.SqlKind:SqlKind.SELECT
  */
 public class SqlSelect extends SqlCall {
   //~ Static fields/initializers ---------------------------------------------
 
   // constants representing operand positions
-  public static final int FROM_OPERAND = 2;
+  public static final int FROM_OPERAND = 2;//参数的位置,比如from是参数第2个位置,从0开始计数
   public static final int WHERE_OPERAND = 3;
   public static final int HAVING_OPERAND = 5;
 

@@ -96,8 +96,10 @@ import static org.apache.calcite.rel.metadata.BuiltInMetadata.UniqueKeys;
 
 /**
  * Built-in methods.
+ * 内置的方法
  */
 public enum BuiltInMethod {
+  //class、method、参数类型
   QUERYABLE_SELECT(Queryable.class, "select", FunctionExpression.class),
   QUERYABLE_AS_ENUMERABLE(Queryable.class, "asEnumerable"),
   QUERYABLE_TABLE_AS_QUERYABLE(QueryableTable.class, "asQueryable",
@@ -306,10 +308,11 @@ public enum BuiltInMethod {
   PREDICATES(Predicates.class, "getPredicates"),
   METADATA_REL(Metadata.class, "rel");
 
-  public final Method method;
-  public final Constructor constructor;
-  public final Field field;
+  public final Method method;//类的一个方法
+  public final Constructor constructor;//类的一个构造函数
+  public final Field field;//类的一个属性
 
+  //method与BuiltInMethod的映射关系
   public static final ImmutableMap<Method, BuiltInMethod> MAP;
 
   static {

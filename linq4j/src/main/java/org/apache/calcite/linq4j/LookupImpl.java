@@ -46,6 +46,10 @@ class LookupImpl<K, V> extends AbstractEnumerable<Grouping<K, V>>
     this.map = map;
   }
 
+  /**
+   * 转换成Grouping<K, list<V>>>的迭代器
+   * @return
+   */
   public Enumerator<Grouping<K, V>> enumerator() {
     return new Enumerator<Grouping<K, V>>() {
       Enumerator<Entry<K, List<V>>> enumerator = Linq4j.enumerator(
@@ -71,8 +75,7 @@ class LookupImpl<K, V> extends AbstractEnumerable<Grouping<K, V>>
     };
   }
 
-  // Map methods
-
+  // Map methods 有多少个key
   public int size() {
     return map.size();
   }
@@ -176,6 +179,7 @@ class LookupImpl<K, V> extends AbstractEnumerable<Grouping<K, V>>
     };
   }
 
+  //参数是key和list<V>,转换成另外一个结果
   public <TResult> Enumerable<TResult> applyResultSelector(
       final Function2<K, Enumerable<V>, TResult> resultSelector) {
     return new AbstractEnumerable<TResult>() {
@@ -207,6 +211,7 @@ class LookupImpl<K, V> extends AbstractEnumerable<Grouping<K, V>>
   /**
    * Returns an enumerable over the values in this lookup, in map order.
    * If the map is sorted, the values will be emitted sorted by key.
+   * 将所有list<v>组成一个迭代器
    */
   public Enumerable<V> valuesEnumerable() {
     return new AbstractEnumerable<V>() {

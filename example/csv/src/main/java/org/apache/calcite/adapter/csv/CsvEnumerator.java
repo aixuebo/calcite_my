@@ -45,7 +45,7 @@ import java.util.zip.GZIPInputStream;
  */
 class CsvEnumerator<E> implements Enumerator<E> {
   private final CSVReader reader;
-  private final String[] filterValues;
+  private final String[] filterValues;//过滤条件,每一个列必须的值必须满足该条件,才能被保留,即属于where条件
   private final RowConverter<E> rowConverter;
   private E current;
 
@@ -76,7 +76,7 @@ class CsvEnumerator<E> implements Enumerator<E> {
     this.filterValues = filterValues;
     try {
       this.reader = openCsv(file);
-      this.reader.readNext(); // skip header row
+      this.reader.readNext(); // skip header row 因为第一行是schema,所以要跳过
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -93,7 +93,9 @@ class CsvEnumerator<E> implements Enumerator<E> {
   }
 
   /** Deduces the names and types of a table's columns by reading the first line
-   * of a CSV file. */
+   * of a CSV file.
+   * 第一行描述列名  格式:colName:colType,colName:colType,colName:colType
+   **/
   static RelDataType deduceRowType(JavaTypeFactory typeFactory, File file,
       List<CsvFieldType> fieldTypes) {
     final List<RelDataType> types = new ArrayList<RelDataType>();
@@ -170,17 +172,17 @@ class CsvEnumerator<E> implements Enumerator<E> {
     try {
     outer:
       for (;;) {
-        final String[] strings = reader.readNext();
+        final String[] strings = reader.readNext();//读取一行数据
         if (strings == null) {
           current = null;
           reader.close();
           return false;
         }
-        if (filterValues != null) {
+        if (filterValues != null) {//说明有where条件
           for (int i = 0; i < strings.length; i++) {
-            String filterValue = filterValues[i];
+            String filterValue = filterValues[i];//说明该列有where条件
             if (filterValue != null) {
-              if (!filterValue.equals(strings[i])) {
+              if (!filterValue.equals(strings[i])) {//必须要求相等
                 continue outer;
               }
             }
@@ -215,10 +217,13 @@ class CsvEnumerator<E> implements Enumerator<E> {
     return integers;
   }
 
-  /** Row converter. */
+  /** Row converter.
+   *  解析的是字符串,但最终结果每一行的列是有类型的,要转换成所属类型
+   **/
   abstract static class RowConverter<E> {
-    abstract E convertRow(String[] rows);
+    abstract E convertRow(String[] rows);//传入字符串形式的row信息
 
+    //把string字符串转换成CsvFieldType对应的类型值,返回object
     protected Object convert(CsvFieldType fieldType, String string) {
       if (fieldType == null) {
         return string;

@@ -343,11 +343,14 @@ public class ImmutableBitSet
   }
 
   /** Returns the number of bits set to {@code true} in this
-   * {@code ImmutableBitSet}. */
+   * {@code ImmutableBitSet}.
+   * 有多少个bit
+   **/
   public int cardinality() {
     return countBits(words);
   }
 
+  //有多少个bit
   private static int countBits(long[] words) {
     int sum = 0;
     for (long word : words) {

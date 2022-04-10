@@ -99,7 +99,7 @@ public abstract class SqlTypeUtil {
 
   /**
    * Returns whether the operands to a call are char type-comparable.
-   *
+   * 返回是否参数都是可以比较的字符串形式
    * @param binding        Binding of call to operands
    * @param operands       Operands to check for compatibility; usually the
    *                       operands of the bound call, but not always
@@ -108,7 +108,7 @@ public abstract class SqlTypeUtil {
    */
   public static boolean isCharTypeComparable(
       SqlCallBinding binding,
-      List<SqlNode> operands,
+      List<SqlNode> operands,//参数对象
       boolean throwOnFailure) {
     final SqlValidator validator = binding.getValidator();
     final SqlValidatorScope scope = binding.getScope();
@@ -193,7 +193,8 @@ public abstract class SqlTypeUtil {
 
   /**
    * Recreates a given RelDataType with nullability iff any of the param
-   * argTypes are nullable.
+   * argTypes are nullable.当且仅当参数中任意一个是nullable时候,即类型允许为null
+   * 如果参数中有任意一个字段允许为null,则返回值就允许为null
    */
   public static RelDataType makeNullableIfOperandsAre(
       final RelDataTypeFactory typeFactory,
@@ -208,6 +209,7 @@ public abstract class SqlTypeUtil {
 
   /**
    * Returns whether one or more of an array of types is nullable.
+   * true 表示参数中有至少一个参数是允许为null存在的。即字段允许是null
    */
   public static boolean containsNullable(List<RelDataType> types) {
     for (RelDataType type : types) {
@@ -221,6 +223,7 @@ public abstract class SqlTypeUtil {
   /**
    * Determines whether a type or any of its fields (if a structured type) are
    * nullable.
+   * 判断该类型是否允许为null
    */
   public static boolean containsNullable(RelDataType type) {
     if (type.isNullable()) {
@@ -281,6 +284,7 @@ public abstract class SqlTypeUtil {
 
   /**
    * @return true if type is in SqlTypeFamily.Character
+   * true表示类型是字符串类型
    */
   public static boolean inCharFamily(RelDataType type) {
     return type.getFamily() == SqlTypeFamily.CHARACTER;
@@ -673,6 +677,7 @@ public abstract class SqlTypeUtil {
    * @param toType   type of the target site
    * @param fromType type of the source value
    * @return true iff assignable
+   * from类型可以转换成to类型
    */
   public static boolean canAssignFrom(
       RelDataType toType,
@@ -741,6 +746,7 @@ public abstract class SqlTypeUtil {
    *                 rules are similar to Java; e.g. you can't assign short x =
    *                 (int) y, and you can't assign int x = (String) z.
    * @return true iff cast is legal
+   * 将fromType类型转换成toType类型
    */
   public static boolean canCastFrom(
       RelDataType toType,
@@ -1171,6 +1177,7 @@ public abstract class SqlTypeUtil {
    * @param type1 First type
    * @param type2 Second type
    * @return Whether types are comparable
+   * 判断两个参数类型是否相同
    */
   public static boolean isComparable(RelDataType type1, RelDataType type2) {
     if (type1.isStruct() != type2.isStruct()) {

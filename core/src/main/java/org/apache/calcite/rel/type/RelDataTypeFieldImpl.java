@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 /**
  * Default implementation of {@link RelDataTypeField}.
+ * 标识字段name、字段类型、表的第几个字段
  */
 public class RelDataTypeFieldImpl implements RelDataTypeField, Serializable {
   //~ Instance fields --------------------------------------------------------

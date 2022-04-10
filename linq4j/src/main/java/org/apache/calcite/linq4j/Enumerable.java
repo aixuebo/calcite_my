@@ -25,6 +25,7 @@ package org.apache.calcite.linq4j;
  * <p>Also implements {@link Iterable}, to enable use in Java foreach loops.</p>
  *
  * @param <T> Element type
+ *           一行一行的数据信息迭代器
  */
 public interface Enumerable<T>
     extends RawEnumerable<T>, Iterable<T>, ExtendedEnumerable<T> {

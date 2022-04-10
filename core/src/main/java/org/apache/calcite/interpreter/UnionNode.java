@@ -28,9 +28,9 @@ import java.util.Set;
  * {@link org.apache.calcite.rel.core.Union}.
  */
 public class UnionNode implements Node {
-  private final ImmutableList<Source> sources;
+  private final ImmutableList<Source> sources;//数据源是一组source集合
   private final Sink sink;
-  private final Union rel;
+  private final Union rel;//union 节点
 
   public UnionNode(Interpreter interpreter, Union rel) {
     ImmutableList.Builder<Source> builder = ImmutableList.builder();
@@ -42,6 +42,7 @@ public class UnionNode implements Node {
     this.rel = rel;
   }
 
+  //如果有union all操作,则全部数据都sink出去,如果无all关键词,则生产set,过滤重复
   public void run() throws InterruptedException {
     final Set<Row> rows = rel.all ? null : Sets.<Row>newHashSet();
     for (Source source : sources) {

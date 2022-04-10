@@ -29,6 +29,8 @@ import java.util.List;
  * <p>It is not required that two-input relational expressions use this
  * class as a base class. However, default implementations of methods make life
  * easier.
+ * 表示有2个输入的参数的表达式。
+ * 不强制要求所有2个输入参数的都使用该类做基类,但建议最好这样
  */
 public abstract class BiRel extends AbstractRelNode {
   protected RelNode left;
@@ -59,6 +61,7 @@ public abstract class BiRel extends AbstractRelNode {
     return right;
   }
 
+  //某一个输入的替换
   public void replaceInput(
       int ordinalInParent,
       RelNode p) {

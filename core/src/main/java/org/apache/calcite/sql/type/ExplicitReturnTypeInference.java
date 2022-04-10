@@ -23,11 +23,12 @@ import org.apache.calcite.sql.SqlOperatorBinding;
 
 /**
  * A {@link SqlReturnTypeInference} which always returns the same SQL type.
+ * 明确的返回一个类型--用于自定义返回类型
  */
 public class ExplicitReturnTypeInference implements SqlReturnTypeInference {
   //~ Instance fields --------------------------------------------------------
 
-  protected final RelProtoDataType protoType;
+  protected final RelProtoDataType protoType;//Function1<RelDataTypeFactory, RelDataType> 给定一个工厂,根据工厂返回需要的类型
 
   //~ Constructors -----------------------------------------------------------
 
@@ -43,6 +44,7 @@ public class ExplicitReturnTypeInference implements SqlReturnTypeInference {
    * canonical instances of each type.
    *
    * @param protoType Type object
+   * 参数是传入的是已经明确的类型了,比如你给我一个工厂,我就能造出来我想要的返回类型
    */
   protected ExplicitReturnTypeInference(RelProtoDataType protoType) {
     assert protoType != null;
@@ -51,6 +53,7 @@ public class ExplicitReturnTypeInference implements SqlReturnTypeInference {
 
   //~ Methods ----------------------------------------------------------------
 
+  //根据工厂自己造返回类型
   public RelDataType inferReturnType(SqlOperatorBinding opBinding) {
     return protoType.apply(opBinding.getTypeFactory());
   }

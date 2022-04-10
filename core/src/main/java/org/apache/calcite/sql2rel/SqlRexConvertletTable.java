@@ -20,12 +20,15 @@ import org.apache.calcite.sql.SqlCall;
 
 /**
  * Collection of {@link SqlRexConvertlet}s.
+ *
+ * 如何将一个sqlCall转换成表达式
  */
 public interface SqlRexConvertletTable {
   //~ Methods ----------------------------------------------------------------
 
   /**
    * Returns the convertlet applicable to a given expression.
+   * 先查找SqlOperator、然后查找SqlOperator的父类、最后查找SqlCall的父类
    */
   SqlRexConvertlet get(SqlCall call);
 }

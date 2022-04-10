@@ -20,16 +20,17 @@ import java.util.EnumSet;
 
 /**
  * SqlAccessType is represented by a set of allowed access types
+ * 定义访问类型--即支持增删改查哪几个操作
  */
 public class SqlAccessType {
   //~ Static fields/initializers ---------------------------------------------
 
-  public static final SqlAccessType ALL =
-      new SqlAccessType(EnumSet.allOf(SqlAccessEnum.class));
-  public static final SqlAccessType READ_ONLY =
-      new SqlAccessType(EnumSet.of(SqlAccessEnum.SELECT));
-  public static final SqlAccessType WRITE_ONLY =
-      new SqlAccessType(EnumSet.of(SqlAccessEnum.INSERT));
+  public static final SqlAccessType ALL = new SqlAccessType(EnumSet.allOf(SqlAccessEnum.class));//增删改查
+
+  public static final SqlAccessType READ_ONLY = new SqlAccessType(EnumSet.of(SqlAccessEnum.SELECT));//只查询
+
+  public static final SqlAccessType WRITE_ONLY = new SqlAccessType(EnumSet.of(SqlAccessEnum.INSERT));//只插入
+
 
   //~ Instance fields --------------------------------------------------------
 
@@ -42,7 +43,7 @@ public class SqlAccessType {
   }
 
   //~ Methods ----------------------------------------------------------------
-
+  //是否允许该操作
   public boolean allowsAccess(SqlAccessEnum access) {
     return accessEnums.contains(access);
   }

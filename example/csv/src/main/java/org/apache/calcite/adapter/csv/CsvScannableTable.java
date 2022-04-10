@@ -42,6 +42,7 @@ public class CsvScannableTable extends CsvTable
     return "CsvScannableTable";
   }
 
+  //一行一行读取信息
   public Enumerable<Object[]> scan(DataContext root) {
     final int[] fields = CsvEnumerator.identityList(fieldTypes.size());
     return new AbstractEnumerable<Object[]>() {

@@ -27,6 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * parts of the query preparation process.
  *
  * <p>For testing and debugging rather than for end-users.</p>
+ * 每一个事件上，可以监听若干个function
  */
 public enum Hook {
   /** Called to get the current time. Use this to return a predictable time
@@ -40,7 +41,7 @@ public enum Hook {
    * Janino. */
   JAVA_PLAN,
 
-  /** Called with the output of sql-to-rel-converter. */
+  /** Called with the output of sql-to-rel-converter.sql到rel转换时候被调用 */
   CONVERTED,
 
   /** Called after de-correlation and field trimming, but before
@@ -50,7 +51,7 @@ public enum Hook {
   /** Called by the planner after substituting a materialization. */
   SUB,
 
-  /** Called when a constant expression is being reduced. */
+  /** Called when a constant expression is being reduced.产生表达式的时候调用 */
   EXPRESSION_REDUCER,
 
   /** Called to create a Program to optimize the statement. */

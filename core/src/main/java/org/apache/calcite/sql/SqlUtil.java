@@ -138,6 +138,7 @@ public abstract class SqlUtil {
    * <li>For <code>CAST(CAST(NULL AS <i>type</i>) AS <i>type</i>))</code>,
    * returns false.
    * </ul>
+   * 值是否是null
    */
   public static boolean isNullLiteral(
       SqlNode node,
@@ -562,15 +563,17 @@ public abstract class SqlUtil {
    * If an identifier is a legitimate call to a function which has no
    * arguments and requires no parentheses (for example "CURRENT_USER"),
    * returns a call to that function, otherwise returns null.
+   * 如果一个identifier是一个合法的无参数的函数,则规格化该函数,否则返回null
+   * 即将一个字符串转换成SqlCall(其实字符串是function的name)
    */
   public static SqlCall makeCall(
       SqlOperatorTable opTab,
       SqlIdentifier id) {
-    if (id.names.size() == 1) {
+    if (id.names.size() == 1) {//可能是函数名
       final List<SqlOperator> list = Lists.newArrayList();
-      opTab.lookupOperatorOverloads(id, null, SqlSyntax.FUNCTION, list);
+      opTab.lookupOperatorOverloads(id, null, SqlSyntax.FUNCTION, list);//查找id的函数,添加到list中
       for (SqlOperator operator : list) {
-        if (operator.getSyntax() == SqlSyntax.FUNCTION_ID) {
+        if (operator.getSyntax() == SqlSyntax.FUNCTION_ID) {//说明是无参数的函数
           // Even though this looks like an identifier, it is a
           // actually a call to a function. Construct a fake
           // call to this function, so we can use the regular
@@ -615,11 +618,13 @@ public abstract class SqlUtil {
    * @param typeList list of {@link SqlTypeName} or {@link String} to use for
    *                 operands
    * @return constructed signature
+   * 打印方法需要哪些参数,一些参数类型,用于告诉调用者如何使用该方法。
+   * 比如 比如SUBSTR(VARCHAR, INTEGER, INTEGER)，即函数的描述内容,让下游知道如何使用。
    */
   public static String getAliasedSignature(
       SqlOperator op,
       String opName,
-      List<?> typeList) {
+      List<?> typeList) {//参数类型
     StringBuilder ret = new StringBuilder();
     String template = op.getSignatureTemplate(typeList.size());
     if (null == template) {
@@ -694,6 +699,7 @@ public abstract class SqlUtil {
   /**
    * Returns whether a {@link SqlNode node} is a {@link SqlCall call} to a
    * given {@link SqlOperator operator}.
+   * 是否SqlNode就是SqlCall,并且SqlCall的操作是operator
    */
   public static boolean isCallTo(SqlNode node, SqlOperator operator) {
     return (node instanceof SqlCall)
@@ -757,7 +763,9 @@ public abstract class SqlUtil {
   }
 
   /** If a node is "AS", returns the underlying expression; otherwise returns
-   * the node. */
+   * the node.
+   * 去除as节点
+   **/
   public static SqlNode stripAs(SqlNode node) {
     switch (node.getKind()) {
     case AS:

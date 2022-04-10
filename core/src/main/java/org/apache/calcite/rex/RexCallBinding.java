@@ -33,45 +33,47 @@ import java.util.List;
 /**
  * <code>RexCallBinding</code> implements {@link SqlOperatorBinding} by
  * referring to an underlying collection of {@link RexNode} operands.
+ *
+ * 通过参数、操作,表示一个操作的上下文信息
  */
 public class RexCallBinding extends SqlOperatorBinding {
   //~ Instance fields --------------------------------------------------------
 
-  private final List<RexNode> operands;
+  private final List<RexNode> operands;//具体参数
 
   //~ Constructors -----------------------------------------------------------
 
   public RexCallBinding(
       RelDataTypeFactory typeFactory,
-      SqlOperator sqlOperator,
-      List<? extends RexNode> operands) {
+      SqlOperator sqlOperator,//操作
+      List<? extends RexNode> operands) {//具体参数
     super(typeFactory, sqlOperator);
     this.operands = ImmutableList.copyOf(operands);
   }
 
   //~ Methods ----------------------------------------------------------------
 
-  // implement SqlOperatorBinding
+  // implement SqlOperatorBinding 返回第i个参数的值,该值是string类型
   public String getStringLiteralOperand(int ordinal) {
     return RexLiteral.stringValue(operands.get(ordinal));
   }
 
-  // implement SqlOperatorBinding
+  // implement SqlOperatorBinding 返回第i个参数的值,该值是int类型
   public int getIntLiteralOperand(int ordinal) {
     return RexLiteral.intValue(operands.get(ordinal));
   }
 
-  // implement SqlOperatorBinding
+  // implement SqlOperatorBinding 第i个参数是否是null
   public boolean isOperandNull(int ordinal, boolean allowCast) {
     return RexUtil.isNullLiteral(operands.get(ordinal), allowCast);
   }
 
-  // implement SqlOperatorBinding
+  // implement SqlOperatorBinding 参数数量
   public int getOperandCount() {
     return operands.size();
   }
 
-  // implement SqlOperatorBinding
+  // implement SqlOperatorBinding 第i个参数类型
   public RelDataType getOperandType(int ordinal) {
     return operands.get(ordinal).getType();
   }

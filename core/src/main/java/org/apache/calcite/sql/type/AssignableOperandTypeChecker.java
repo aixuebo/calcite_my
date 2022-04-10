@@ -32,11 +32,12 @@ import java.util.List;
  * AssignableOperandTypeChecker implements {@link SqlOperandTypeChecker} by
  * verifying that the type of each argument is assignable to a predefined set of
  * parameter types (under the SQL definition of "assignable").
+ * 分配参数类型,要求参数一定是这些类型的。顺序要一致
  */
 public class AssignableOperandTypeChecker implements SqlOperandTypeChecker {
   //~ Instance fields --------------------------------------------------------
 
-  private final List<RelDataType> paramTypes;
+  private final List<RelDataType> paramTypes;//校验参数依次是这些类型的,即他一定是具体参数值的父类类型
 
   //~ Constructors -----------------------------------------------------------
 
@@ -53,6 +54,7 @@ public class AssignableOperandTypeChecker implements SqlOperandTypeChecker {
   //~ Methods ----------------------------------------------------------------
 
   // implement SqlOperandTypeChecker
+  //参数数量
   public SqlOperandCountRange getOperandCountRange() {
     return SqlOperandCountRanges.of(paramTypes.size());
   }
@@ -61,14 +63,13 @@ public class AssignableOperandTypeChecker implements SqlOperandTypeChecker {
   public boolean checkOperandTypes(
       SqlCallBinding callBinding,
       boolean throwOnFailure) {
-    final List<SqlNode> operands = callBinding.getCall().getOperandList();
+    final List<SqlNode> operands = callBinding.getCall().getOperandList();//获取参数
     for (Pair<RelDataType, SqlNode> pair : Pair.zip(paramTypes, operands)) {
-      RelDataType argType =
-          callBinding.getValidator().deriveType(
+      RelDataType argType = callBinding.getValidator().deriveType(
               callBinding.getScope(),
-              pair.right);
-      if (!SqlTypeUtil.canAssignFrom(pair.left, argType)) {
-        if (throwOnFailure) {
+              pair.right);//推测参数类型
+      if (!SqlTypeUtil.canAssignFrom(pair.left, argType)) {//推测的参数类型,必须可以转换成给定的参数类型,即他一定是具体参数值的父类类型
+        if (throwOnFailure) {//如果不是,说明校验失败,抛异常
           throw callBinding.newValidationSignatureError();
         } else {
           return false;
@@ -79,6 +80,7 @@ public class AssignableOperandTypeChecker implements SqlOperandTypeChecker {
   }
 
   // implement SqlOperandTypeChecker
+  //打印每一个参数的给定父类类型
   public String getAllowedSignatures(SqlOperator op, String opName) {
     StringBuilder sb = new StringBuilder();
     sb.append(opName);

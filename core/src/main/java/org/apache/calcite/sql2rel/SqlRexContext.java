@@ -35,7 +35,7 @@ public interface SqlRexContext {
 
   /**
    * Converts an expression from {@link SqlNode} to {@link RexNode} format.
-   *
+   * 将SqlNode转换成表达式RexNode
    * @param expr Expression to translate
    * @return Converted expression
    */

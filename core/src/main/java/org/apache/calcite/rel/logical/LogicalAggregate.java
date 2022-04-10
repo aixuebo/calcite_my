@@ -39,6 +39,7 @@ import java.util.List;
  * <li>{@link org.apache.calcite.rel.rules.AggregateExpandDistinctAggregatesRule}
  * <li>{@link org.apache.calcite.rel.rules.AggregateReduceFunctionsRule}.
  * </ul>
+ * 相当于group by操作
  */
 public final class LogicalAggregate extends Aggregate {
   //~ Constructors -----------------------------------------------------------
@@ -54,11 +55,11 @@ public final class LogicalAggregate extends Aggregate {
    */
   public LogicalAggregate(
       RelOptCluster cluster,
-      RelNode child,
-      boolean indicator,
-      ImmutableBitSet groupSet,
-      List<ImmutableBitSet> groupSets,
-      List<AggregateCall> aggCalls) {
+      RelNode child,//数据源
+      boolean indicator,//true表示是一个复杂的窗口函数
+      ImmutableBitSet groupSet,//常规group by语法
+      List<ImmutableBitSet> groupSets,//窗口函数groupSet语法,如果该值null,说明只有group by常规分组操作
+      List<AggregateCall> aggCalls) {//聚合函数集合
     super(
         cluster,
         cluster.traitSetOf(Convention.NONE),

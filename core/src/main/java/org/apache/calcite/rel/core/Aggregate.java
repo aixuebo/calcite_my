@@ -50,13 +50,13 @@ import com.google.common.math.IntMath;
 import java.util.List;
 
 /**
- * Relational operator that eliminates
- * duplicates and computes totals.
+ * Relational operator that eliminates duplicates and computes totals.
+ *关系运算符:消除重复项(group by控制)并计算总数的(聚合函数控制)
  *
  * <p>It corresponds to the {@code GROUP BY} operator in a SQL query
  * statement, together with the aggregate functions in the {@code SELECT}
  * clause.
- *
+ * 关联group by语法,以及聚合函数
  * <p>Rules:
  *
  * <ul>
@@ -68,6 +68,7 @@ import java.util.List;
 public abstract class Aggregate extends SingleRel {
   /**
    * @see org.apache.calcite.util.Bug#CALCITE_461_FIXED
+   * 是否是简单的group by操作
    */
   public static final Predicate<Aggregate> IS_SIMPLE =
       new Predicate<Aggregate>() {
@@ -78,10 +79,10 @@ public abstract class Aggregate extends SingleRel {
 
   //~ Instance fields --------------------------------------------------------
 
-  public final boolean indicator;
-  protected final List<AggregateCall> aggCalls;
-  protected final ImmutableBitSet groupSet;
-  public final ImmutableList<ImmutableBitSet> groupSets;
+  public final boolean indicator;//true表示是一个复杂的窗口函数,用于表示某一些字段是否参与到cube计算了
+  protected final List<AggregateCall> aggCalls;//聚合函数集合
+  protected final ImmutableBitSet groupSet;//常规group by语法
+  public final ImmutableList<ImmutableBitSet> groupSets;//窗口函数groupSet语法,如果该值null,说明只有group by常规分组操作
 
   //~ Constructors -----------------------------------------------------------
 
@@ -92,8 +93,7 @@ public abstract class Aggregate extends SingleRel {
    * For a simple {@code GROUP BY}, {@code groupSets} is a singleton list
    * containing {@code groupSet}.
    *
-   * <p>If {@code GROUP BY} is not specified,
-   * or equivalently if {@code GROUP BY ()} is specified,
+   * <p>If {@code GROUP BY} is not specified,or equivalently if {@code GROUP BY ()} is specified,
    * {@code groupSet} will be the empty set,
    * and {@code groupSets} will have one element, that empty set.
    *
@@ -105,13 +105,13 @@ public abstract class Aggregate extends SingleRel {
    *
    * @param cluster  Cluster
    * @param traits   Traits
-   * @param child    Child
+   * @param child    Child 数据源
    * @param indicator Whether row type should include indicator fields to
    *                 indicate which grouping set is active; must be true if
-   *                 aggregate is not simple
-   * @param groupSet Bit set of grouping fields
-   * @param groupSets List of all grouping sets; null for just {@code groupSet}
-   * @param aggCalls Collection of calls to aggregate functions
+   *                 aggregate is not simple ,true表示是一个复杂的窗口函数
+   * @param groupSet Bit set of grouping fields,常规group by语法
+   * @param groupSets List of all grouping sets; null for just {@code groupSet} 窗口函数groupSet语法,如果该值null,说明只有group by常规分组操作
+   * @param aggCalls Collection of calls to aggregate functions 聚合函数集合
    */
   protected Aggregate(
       RelOptCluster cluster,
@@ -134,7 +134,7 @@ public abstract class Aggregate extends SingleRel {
         assert groupSet.contains(set);
       }
     }
-    assert groupSet.length() <= child.getRowType().getFieldCount();
+    assert groupSet.length() <= child.getRowType().getFieldCount();//group by的字段一定小于select字段数量
     for (AggregateCall aggCall : aggCalls) {
       assert typeMatchesInferred(aggCall, true);
     }
@@ -204,6 +204,7 @@ public abstract class Aggregate extends SingleRel {
    * input relational expression.
    *
    * @return number of grouping fields
+   * 有多少个字段参与group by,即有多少个bit
    */
   public int getGroupCount() {
     return groupSet.cardinality();
@@ -288,14 +289,15 @@ public abstract class Aggregate extends SingleRel {
    * Computes the row type of an {@code Aggregate} before it exists.
    *
    * @param typeFactory Type factory
-   * @param inputRowType Input row type
+   * @param inputRowType Input row type 数据源的字段类型
    * @param indicator Whether row type should include indicator fields to
    *                 indicate which grouping set is active; must be true if
    *                 aggregate is not simple
    * @param groupSet Bit set of grouping fields
    * @param groupSets List of all grouping sets; null for just {@code groupSet}
-   * @param aggCalls Collection of calls to aggregate functions
+   * @param aggCalls Collection of calls to aggregate functions 聚合函数
    * @return Row type of the aggregate
+   * 返回group by + select中聚合函数需要的字段 的集合
    */
   public static RelDataType deriveRowType(RelDataTypeFactory typeFactory,
       final RelDataType inputRowType, boolean indicator,
@@ -304,11 +306,11 @@ public abstract class Aggregate extends SingleRel {
     final IntList groupList = groupSet.toList();
     assert groupList.size() == groupSet.cardinality();
     final RelDataTypeFactory.FieldInfoBuilder builder = typeFactory.builder();
-    final List<RelDataTypeField> fieldList = inputRowType.getFieldList();
-    for (int groupKey : groupList) {
-      builder.add(fieldList.get(groupKey));
+    final List<RelDataTypeField> fieldList = inputRowType.getFieldList();//原始输入的字段
+    for (int groupKey : groupList) {//循环需要group by的字段
+      builder.add(fieldList.get(groupKey));//生成需要的schema类型
     }
-    if (indicator) {
+    if (indicator) {//为每一个group by的字段创建一个boolean类型的字段,用于确定是否该字段参与到cube的分组计算中
       for (int groupKey : groupList) {
         final RelDataType booleanType =
             typeFactory.createTypeWithNullability(
@@ -316,7 +318,7 @@ public abstract class Aggregate extends SingleRel {
         builder.add("i$" + fieldList.get(groupKey).getName(), booleanType);
       }
     }
-    for (Ord<AggregateCall> aggCall : Ord.zip(aggCalls)) {
+    for (Ord<AggregateCall> aggCall : Ord.zip(aggCalls)) {//为每一个聚合函数字段创建字段
       String name;
       if (aggCall.e.name != null) {
         name = aggCall.e.name;
@@ -354,6 +356,7 @@ public abstract class Aggregate extends SingleRel {
    * Returns whether any of the aggregates are DISTINCT.
    *
    * @return Whether any of the aggregates are DISTINCT
+   * 是否有某一个聚合字段包含了distinct关键词
    */
   public boolean containsDistinctCall() {
     for (AggregateCall call : aggCalls) {
@@ -368,12 +371,15 @@ public abstract class Aggregate extends SingleRel {
    * Returns the type of roll-up.
    *
    * @return Type of roll-up
+   * 返回group by类型
    */
   public Group getGroupType() {
     return Group.induce(groupSet, groupSets);
   }
 
-  /** What kind of roll-up is it? */
+  /** What kind of roll-up is it?
+   * 是否简单的group操作
+   **/
   public enum Group {
     SIMPLE,
     ROLLUP,
@@ -385,10 +391,10 @@ public abstract class Aggregate extends SingleRel {
       if (!ImmutableBitSet.ORDERING.isStrictlyOrdered(groupSets)) {
         throw new IllegalArgumentException("must be sorted: " + groupSets);
       }
-      if (groupSets.size() == 1 && groupSets.get(0).equals(groupSet)) {
+      if (groupSets.size() == 1 && groupSets.get(0).equals(groupSet)) {//只有group by一种语法
         return SIMPLE;
       }
-      if (groupSets.size() == IntMath.pow(2, groupSet.cardinality())) {
+      if (groupSets.size() == IntMath.pow(2, groupSet.cardinality())) {//全排列,所以是cube
         return CUBE;
       }
     checkRollup:

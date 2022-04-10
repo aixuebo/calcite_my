@@ -45,6 +45,7 @@ import static org.apache.calcite.util.Static.RESOURCE;
 /**
  * Definition of the SQL <code>IN</code> operator, which tests for a value's
  * membership in a subquery or a list of values.
+ * in操作
  */
 public class SqlInOperator extends SqlBinaryOperator {
   //~ Instance fields --------------------------------------------------------

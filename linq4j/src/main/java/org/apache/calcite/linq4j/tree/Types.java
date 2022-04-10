@@ -574,15 +574,17 @@ public abstract class Types {
    * loaded) Java {@link Class} objects. Gives the opportunity to generate
    * code that references temporary types, then generate classes for those
    * types along with the code that uses them.
+   * 代表一行数据，包含多个属性
    */
   public interface RecordType extends Type {
-    List<RecordField> getRecordFields();
+    List<RecordField> getRecordFields();//属性
 
     String getName();
   }
 
   /**
    * Field that belongs to a record.
+   * 一个记录的某一个字段
    */
   public interface RecordField extends PseudoField {
     boolean nullable();

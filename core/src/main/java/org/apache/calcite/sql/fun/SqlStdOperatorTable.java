@@ -64,7 +64,7 @@ public class SqlStdOperatorTable extends ReflectiveSqlOperatorTable {
   private static SqlStdOperatorTable instance;
 
   //-------------------------------------------------------------
-  //                   SET OPERATORS
+  //                   SET OPERATORS  用于sql中表关联的语法 union EXCEPT INTERSECT,常用的就是union
   //-------------------------------------------------------------
   // The set operators can be compared to the arithmetic operators
   // UNION -> +
@@ -75,7 +75,7 @@ public class SqlStdOperatorTable extends ReflectiveSqlOperatorTable {
       new SqlSetOperator("UNION", SqlKind.UNION, 14, false);
 
   public static final SqlSetOperator UNION_ALL =
-      new SqlSetOperator("UNION ALL", SqlKind.UNION, 14, true);
+      new SqlSetOperator("UNION ALL", SqlKind.UNION, 14, true);//true表示不过滤重复
 
   public static final SqlSetOperator EXCEPT =
       new SqlSetOperator("EXCEPT", SqlKind.EXCEPT, 14, false);
@@ -644,6 +644,7 @@ public class SqlStdOperatorTable extends ReflectiveSqlOperatorTable {
    * Keyword which allows an identifier to be explicitly flagged as a table.
    * For example, <code>select * from (TABLE t)</code> or <code>TABLE
    * t</code>. See also {@link #COLLECTION_TABLE}.
+   * 直接精准引用一个table
    */
   public static final SqlPrefixOperator EXPLICIT_TABLE =
       new SqlPrefixOperator(

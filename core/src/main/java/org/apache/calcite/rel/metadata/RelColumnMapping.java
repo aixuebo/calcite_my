@@ -19,6 +19,7 @@ package org.apache.calcite.rel.metadata;
 /**
  * Mapping from an input column of a {@link org.apache.calcite.rel.RelNode} to
  * one of its output columns.
+ * 输入列 --> 输出列的映射
  */
 public class RelColumnMapping {
   public RelColumnMapping(

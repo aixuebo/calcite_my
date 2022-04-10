@@ -67,7 +67,7 @@ public abstract class IteratorCursor<E> extends PositionedCursor<E> {
   }
 
   protected E current() {
-    if (position != Position.OK) {
+    if (position != Position.OK) { //必须next数据就绪后才能调用该方法，可以无限次调用该方法，返回一行数据本身
       throw new NoSuchElementException();
     }
     return current;
@@ -75,10 +75,10 @@ public abstract class IteratorCursor<E> extends PositionedCursor<E> {
 
   /** Are we positioned on a valid row? */
   private enum Position {
-    CLOSED,
-    BEFORE_START,
-    OK,
-    AFTER_END
+    CLOSED,//数据源被关闭
+    BEFORE_START,//迭代之前
+    OK,//已经准备好next元素
+    AFTER_END //全部迭代完成
   }
 }
 

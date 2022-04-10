@@ -25,7 +25,7 @@ package org.apache.calcite.linq4j.function;
 public interface Function1<T0, R> extends Function<R> {
   /**
    * The identity function.
-   *
+   * 原始值返回,即什么都不变
    * @see Functions#identitySelector()
    */
   Function1<Object, Object> IDENTITY = new Function1<Object, Object>() {

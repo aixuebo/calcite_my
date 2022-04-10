@@ -37,6 +37,7 @@ import java.util.List;
  *
  * <p>It implements the {@link FilterableTable} interface, so Calcite gets
  * data by calling the {@link #scan(DataContext, List)} method.
+ * 相当于where条件的扫描
  */
 public class CsvFilterableTable extends CsvTable
     implements FilterableTable {
@@ -50,10 +51,10 @@ public class CsvFilterableTable extends CsvTable
   }
 
   public Enumerable<Object[]> scan(DataContext root, List<RexNode> filters) {
-    final String[] filterValues = new String[fieldTypes.size()];
-    for (final Iterator<RexNode> i = filters.iterator(); i.hasNext();) {
+    final String[] filterValues = new String[fieldTypes.size()];//如果filterValues某一列有值,则要求行的数据中,该列必须有相同的值
+    for (final Iterator<RexNode> i = filters.iterator(); i.hasNext();) {//过滤每一个表达式
       final RexNode filter = i.next();
-      if (addFilter(filter, filterValues)) {
+      if (addFilter(filter, filterValues)) {//为filterValues填充值
         i.remove();
       }
     }
@@ -74,10 +75,10 @@ public class CsvFilterableTable extends CsvTable
         left = ((RexCall) left).operands.get(0);
       }
       final RexNode right = call.getOperands().get(1);
-      if (left instanceof RexInputRef
-          && right instanceof RexLiteral) {
+      if (left instanceof RexInputRef //列的引用
+          && right instanceof RexLiteral) {//值
         final int index = ((RexInputRef) left).getIndex();
-        if (filterValues[index] == null) {
+        if (filterValues[index] == null) {//为该列赋值
           filterValues[index] = ((RexLiteral) right).getValue2().toString();
           return true;
         }

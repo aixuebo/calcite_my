@@ -30,6 +30,7 @@ import java.util.List;
  * interest to the validator, we reduce the dependency on exact mechanism to
  * implement the repository. It is also possible to construct mock
  * implementations of this interface for testing purposes.
+ * 通过给定schema读取表对象、读取某一个字段的类型、提取select部分的project映射类型集合
  */
 public interface SqlValidatorCatalogReader {
   //~ Methods ----------------------------------------------------------------
@@ -52,6 +53,7 @@ public interface SqlValidatorCatalogReader {
    *
    * @param typeName Name of type
    * @return named type, or null if not found
+   * 返回用户自定义类型---通过类型名称,该方法暂时没发现什么用处
    */
   RelDataType getNamedType(SqlIdentifier typeName);
 
@@ -64,6 +66,7 @@ public interface SqlValidatorCatalogReader {
    *              list for root schema
    * @return the list of all object (schema, table, function,
    *         view) names under the above criteria
+   * 给一个schema的全路径,读取参数schema下的所有子schema、子table、子function
    */
   List<SqlMoniker> getAllSchemaObjectNames(List<String> names);
 
@@ -71,25 +74,31 @@ public interface SqlValidatorCatalogReader {
    * Returns the name of the current schema.
    *
    * @return name of the current schema
+   * 返回当前schema的数组形式
    */
   List<String> getSchemaName();
 
   /**
    * Finds a field with a given name, using the case-sensitivity of the current
    * session.
+   * 通过表的schema，找到name列对应的类型对象
    */
   RelDataTypeField field(RelDataType rowType, String alias);
 
   /**
    * Finds the ordinal of a field with a given name, using the case-sensitivity
    * of the current session.
+   * 获取该属性对应的序号下标
    */
   int fieldOrdinal(RelDataType rowType, String alias);
 
+  //返回两个字符串参数是否相同
   boolean matches(String string, String name);
 
+  //找到name出现在strings中的序号位置
   int match(List<String> strings, String name);
 
+  //type表示表的所有schema,从schema中提取columnNameList这些子属性类型后,组成新的struct,相当于提取select project操作
   RelDataType createTypeFromProjection(RelDataType type,
       List<String> columnNameList);
 }

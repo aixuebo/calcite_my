@@ -203,7 +203,7 @@ public class SqlToRelConverter {
   private final SqlOperatorTable opTab;
   private boolean shouldConvertTableAccess;
   protected final RelDataTypeFactory typeFactory;
-  private final SqlNodeToRexConverter exprConverter;
+  private final SqlNodeToRexConverter exprConverter;//负责具体的转换表达式的工作
   private boolean decorrelationEnabled;
   private boolean trimUnusedFields;
   private boolean shouldCreateValuesRel;
@@ -743,10 +743,12 @@ public class SqlToRelConverter {
    * @param bb            Blackboard
    * @param collation     Collation list
    * @param orderExprList Method populates this list with orderBy expressions
-   *                      not present in selectList
+   *                      not present in selectList 方法产生的,而不是在select里面存在的
    * @param offset        Expression for number of rows to discard before
    *                      returning first row
    * @param fetch         Expression for number of rows to fetch
+   *
+   * project(sort(root)) ---嵌套project和sort
    */
   protected void convertOrder(
       SqlSelect select,
@@ -755,7 +757,7 @@ public class SqlToRelConverter {
       List<SqlNode> orderExprList,
       SqlNode offset,
       SqlNode fetch) {
-    if (select.getOrderList() == null) {
+    if (select.getOrderList() == null) {//没有order b,也没有limit ,则不需要转换
       assert collation.getFieldCollations().isEmpty();
       if (offset == null && fetch == null) {
         return;
@@ -763,6 +765,7 @@ public class SqlToRelConverter {
     }
 
     // Create a sorter using the previously constructed collations.
+    //重新设置root节点,再原有基础上再加一层sort
     bb.setRoot(
         new Sort(
             cluster,
@@ -784,7 +787,7 @@ public class SqlToRelConverter {
         exprs.add(rexBuilder.makeInputRef(bb.root, i));
       }
       bb.setRoot(
-          new LogicalProject(
+          new LogicalProject(//投影
               cluster,
               cluster.traitSetOf(RelCollationImpl.PRESERVE),
               bb.root,
@@ -800,6 +803,7 @@ public class SqlToRelConverter {
    * Returns whether a given node contains a {@link SqlInOperator}.
    *
    * @param node a RexNode tree
+   * 是否包含in操作
    */
   private static boolean containsInOperator(
       SqlNode node) {
@@ -807,28 +811,28 @@ public class SqlToRelConverter {
       SqlVisitor<Void> visitor =
           new SqlBasicVisitor<Void>() {
             public Void visit(SqlCall call) {
-              if (call.getOperator() instanceof SqlInOperator) {
-                throw new Util.FoundOne(call);
+              if (call.getOperator() instanceof SqlInOperator) {//是in操作
+                throw new Util.FoundOne(call);//抛异常
               }
               return super.visit(call);
             }
           };
       node.accept(visitor);
       return false;
-    } catch (Util.FoundOne e) {
+    } catch (Util.FoundOne e) {//截获异常
       Util.swallow(e, null);
-      return true;
+      return true;//true,说明有in操作
     }
   }
 
   /**
    * Push down all the NOT logical operators into any IN/NOT IN operators.
-   *
+   * push down in 操作
    * @param sqlNode the root node from which to look for NOT operators
    * @return the transformed SqlNode representation with NOT pushed down.
    */
   private static SqlNode pushDownNotForIn(SqlNode sqlNode) {
-    if ((sqlNode instanceof SqlCall) && containsInOperator(sqlNode)) {
+    if ((sqlNode instanceof SqlCall) && containsInOperator(sqlNode)) {//是否包含in操作
       SqlCall sqlCall = (SqlCall) sqlNode;
       if ((sqlCall.getOperator() == SqlStdOperatorTable.AND)
           || (sqlCall.getOperator() == SqlStdOperatorTable.OR)) {
@@ -909,6 +913,8 @@ public class SqlToRelConverter {
    *
    * @param bb    Blackboard
    * @param where WHERE clause, may be null
+   * 处理where子句
+   * 新增LogicalFilter表达式
    */
   private void convertWhere(
       final Blackboard bb,
@@ -920,7 +926,7 @@ public class SqlToRelConverter {
     replaceSubqueries(bb, newWhere, RelOptUtil.Logic.UNKNOWN_AS_FALSE);
     final RexNode convertedWhere = bb.convertExpression(newWhere);
 
-    // only allocate filter if the condition is not TRUE
+    // only allocate filter if the condition is not TRUE 不总是true,即存在filter情况
     if (!convertedWhere.isAlwaysTrue()) {
       bb.setRoot(
           RelOptUtil.createFilter(bb.root, convertedWhere),
@@ -1849,9 +1855,8 @@ public class SqlToRelConverter {
       }
       return;
 
-    case IDENTIFIER:
-      final SqlValidatorNamespace fromNamespace =
-          validator.getNamespace(from).resolve();
+    case IDENTIFIER://SALES.EMP
+      final SqlValidatorNamespace fromNamespace = validator.getNamespace(from).resolve();//表空间--获取表的字段信息
       if (fromNamespace.getNode() != null) {
         convertFrom(bb, fromNamespace.getNode());
         return;
@@ -1859,8 +1864,8 @@ public class SqlToRelConverter {
       final String datasetName =
           datasetStack.isEmpty() ? null : datasetStack.peek();
       boolean[] usedDataset = {false};
-      RelOptTable table =
-          SqlValidatorUtil.getRelOptTable(
+      //将from语句转换成具体的table表
+      RelOptTable table = SqlValidatorUtil.getRelOptTable(
               fromNamespace,
               catalogReader,
               datasetName,
@@ -1876,23 +1881,15 @@ public class SqlToRelConverter {
         bb.setDataset(datasetName);
       }
       return;
-
     case JOIN:
       final SqlJoin join = (SqlJoin) from;
-      final Blackboard fromBlackboard =
-          createBlackboard(validator.getJoinScope(from), null);
+      final Blackboard fromBlackboard = createBlackboard(validator.getJoinScope(from), null);
       SqlNode left = join.getLeft();
       SqlNode right = join.getRight();
       final boolean isNatural = join.isNatural();
       final JoinType joinType = join.getJoinType();
-      final Blackboard leftBlackboard =
-          createBlackboard(
-              Util.first(validator.getJoinScope(left),
-                  ((DelegatingScope) bb.scope).getParent()), null);
-      final Blackboard rightBlackboard =
-          createBlackboard(
-              Util.first(validator.getJoinScope(right),
-                  ((DelegatingScope) bb.scope).getParent()), null);
+      final Blackboard leftBlackboard = createBlackboard(Util.first(validator.getJoinScope(left),((DelegatingScope) bb.scope).getParent()), null);
+      final Blackboard rightBlackboard = createBlackboard(Util.first(validator.getJoinScope(right),((DelegatingScope) bb.scope).getParent()), null);
       convertFrom(leftBlackboard, left);
       RelNode leftRel = leftBlackboard.root;
       convertFrom(rightBlackboard, right);
@@ -2416,8 +2413,8 @@ public class SqlToRelConverter {
 
   private RexNode convertJoinCondition(
       Blackboard bb,
-      SqlNode condition,
-      JoinConditionType conditionType,
+      SqlNode condition,//on条件
+      JoinConditionType conditionType,//如何join
       RelNode leftRel,
       RelNode rightRel) {
     if (condition == null) {
@@ -4079,6 +4076,7 @@ public class SqlToRelConverter {
       }
     }
 
+    //将SqlNode转换成行计算表达式
     public RexNode convertExpression(SqlNode expr) {
       // If we're in aggregation mode and this is an expression in the
       // GROUP BY clause, return a reference to the field.
@@ -4265,7 +4263,7 @@ public class SqlToRelConverter {
       return exprConverter.convertInterval(this, intervalQualifier);
     }
 
-    // implement SqlVisitor
+    // implement SqlVisitor 转换常量表达式
     public RexNode visit(SqlLiteral literal) {
       return exprConverter.convertLiteral(this, literal);
     }
@@ -4334,20 +4332,24 @@ public class SqlToRelConverter {
 
   /**
    * An implementation of DefaultValueFactory which always supplies NULL.
+   * 默认值
    */
   class NullDefaultValueFactory implements DefaultValueFactory {
+    //boolean默认值
     public boolean isGeneratedAlways(
         RelOptTable table,
         int iColumn) {
       return false;
     }
 
+    //null默认值
     public RexNode newColumnDefaultValue(
         RelOptTable table,
         int iColumn) {
       return rexBuilder.constantNull();
     }
 
+    //null默认值
     public RexNode newAttributeInitializer(
         RelDataType type,
         SqlFunction constructor,
@@ -4399,25 +4401,28 @@ public class SqlToRelConverter {
     private final Blackboard bb;
     public final AggregatingSelectScope aggregatingSelectScope;
 
+    //key是节点sql、value是字段名称
     private final Map<String, String> nameMap = Maps.newHashMap();
 
     /**
      * The group-by expressions, in {@link SqlNode} format.
+     * group by的表达式
      */
-    private final SqlNodeList groupExprs =
-        new SqlNodeList(SqlParserPos.ZERO);
+    private final SqlNodeList groupExprs = new SqlNodeList(SqlParserPos.ZERO);
 
     /**
      * Input expressions for the group columns and aggregates, in
      * {@link RexNode} format. The first elements of the list correspond to the
      * elements in {@link #groupExprs}; the remaining elements are for
      * aggregates.
+     * 在group 或者 聚合函数对应的表达式
      */
     private final List<RexNode> convertedInputExprs = Lists.newArrayList();
 
     /**
      * Names of {@link #convertedInputExprs}, where the expressions are
      * simple mappings to input fields.
+     * 表达式的name集合,用于where查询
      */
     private final List<String> convertedInputExprNames = Lists.newArrayList();
 
@@ -4442,40 +4447,42 @@ public class SqlToRelConverter {
 
       // Collect all expressions used in the select list so that aggregate
       // calls can be named correctly.
+      //生成每一个字段的表达式与名称的映射
       final SqlNodeList selectList = select.getSelectList();
       for (int i = 0; i < selectList.size(); i++) {
         SqlNode selectItem = selectList.get(i);
         String name = null;
         if (SqlUtil.isCallTo(
             selectItem,
-            SqlStdOperatorTable.AS)) {
+            SqlStdOperatorTable.AS)) {//确定是as操作--可以直接拿到name字段名称
           final SqlCall call = (SqlCall) selectItem;
           selectItem = call.operand(0);
-          name = call.operand(1).toString();
+          name = call.operand(1).toString();//别名
         }
-        if (name == null) {
-          name = validator.deriveAlias(selectItem, i);
+        if (name == null) {//确定字段名称
+          name = validator.deriveAlias(selectItem, i);//如果是一个表达式,min(xx) 但ordinal>0,则返回EXPR$+ordinal.否则返回null
         }
         nameMap.put(selectItem.toString(), name);
       }
     }
 
+    //添加group by的表达式--返回新增的是第几个group by的表达式
     public int addGroupExpr(SqlNode expr) {
-      RexNode convExpr = bb.convertExpression(expr);
-      int ref = lookupGroupExpr(expr);
+      RexNode convExpr = bb.convertExpression(expr);//转换成表达式
+      int ref = lookupGroupExpr(expr);//是否在group by中已存在
       if (ref >= 0) {
-        return ref;
+        return ref;//已存在,直接返回序号
       }
       final int index = groupExprs.size();
-      groupExprs.add(expr);
-      String name = nameMap.get(expr.toString());
+      groupExprs.add(expr);//追加表达式
+      String name = nameMap.get(expr.toString());//表达式的别名
       addExpr(convExpr, name);
       return index;
     }
 
     /**
      * Adds an expression, deducing an appropriate name if possible.
-     *
+     * 表达式与select的别名映射
      * @param expr Expression
      * @param name Suggested name
      */
@@ -4498,7 +4505,7 @@ public class SqlToRelConverter {
       return null;
     }
 
-    // implement SqlVisitor
+    // implement SqlVisitor 每一个子节点都需要我来判断,看我需要什么
     public Void visit(SqlNodeList nodeList) {
       for (int i = 0; i < nodeList.size(); i++) {
         nodeList.get(i).accept(this);
@@ -4526,6 +4533,7 @@ public class SqlToRelConverter {
       return null;
     }
 
+    //只处理过程,这才是agg聚合函数核心关注的
     public Void visit(SqlCall call) {
       if (call.getOperator().isAggregator()) {
         assert bb.agg == this;
@@ -4601,10 +4609,11 @@ public class SqlToRelConverter {
       return null;
     }
 
+    //添加一个group by表达式
     private int lookupOrCreateGroupExpr(RexNode expr) {
       for (int i = 0; i < convertedInputExprs.size(); i++) {
         RexNode convertedInputExpr = convertedInputExprs.get(i);
-        if (expr.toString().equals(convertedInputExpr.toString())) {
+        if (expr.toString().equals(convertedInputExpr.toString())) {//说明已经存在,则直接返回序号
           return i;
         }
       }
@@ -4619,6 +4628,7 @@ public class SqlToRelConverter {
      * If an expression is structurally identical to one of the group-by
      * expressions, returns a reference to the expression, otherwise returns
      * null.
+     * 如果表达式与group by的表达式在结构上是相同的,则返回引用即可。否则说明不在group by中,返回null
      */
     public int lookupGroupExpr(SqlNode expr) {
       for (int i = 0; i < groupExprs.size(); i++) {

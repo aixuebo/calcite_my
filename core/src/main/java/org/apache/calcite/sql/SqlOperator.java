@@ -36,17 +36,24 @@ import java.util.List;
 import static org.apache.calcite.util.Static.RESOURCE;
 
 /**
+ * class SqlCall extends SqlNode
+ *   public abstract SqlOperator getOperator();
+ * 可见 SqlOperator 是SqlCall这个SqlNode的一个操作类型。
+ *
+ * 操作是有优先级的
  * A <code>SqlOperator</code> is a type of node in a SQL parse tree (it is NOT a
  * node in a SQL parse tree). It includes functions, operators such as '=', and
  * syntactic constructs such as 'case' statements. Operators may represent
  * query-level expressions (e.g. {@link SqlSelectOperator} or row-level
  * expressions (e.g. {@link org.apache.calcite.sql.fun.SqlBetweenOperator}.
  *
+ * 操作可以有参数,比如除法,第一个参数是分组、第二个参数是分母。
  * <p>Operators have <em>formal operands</em>, meaning ordered (and optionally
  * named) placeholders for the values they operate on. For example, the division
  * operator takes two operands; the first is the numerator and the second is the
  * denominator. In the context of subclass {@link SqlFunction}, formal operands
  * are referred to as <em>parameters</em>.
+ *
  *
  * <p>When an operator is instantiated via a {@link SqlCall}, it is supplied
  * with <em>actual operands</em>. For example, in the expression <code>3 /
@@ -57,6 +64,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  *
  * <p>In many cases, the formal/actual distinction is clear from context, in
  * which case we drop these qualifiers.
+ * sql操作
+ * 比如delete操作,name=delete,sqlKind=SqlKind.DELETE
  */
 public abstract class SqlOperator {
   //~ Static fields/initializers ---------------------------------------------
@@ -72,12 +81,14 @@ public abstract class SqlOperator {
 
   /**
    * The name of the operator/function. Ex. "OVERLAY" or "TRIM"
+   * 函数或者操作名字，比如select、trim
    */
   private final String name;
 
   /**
    * See {@link SqlKind}. It's possible to have a name that doesn't match the
    * kind
+   * sql的关键字
    */
   public final SqlKind kind;
 
@@ -85,6 +96,7 @@ public abstract class SqlOperator {
    * The precedence with which this operator binds to the expression to the
    * left. This is less than the right precedence if the operator is
    * left-associative.
+   * 优先级
    */
   private final int leftPrec;
 
@@ -228,6 +240,7 @@ public abstract class SqlOperator {
    * @param functionQualifier function qualifier (e.g. "DISTINCT"), may be
    * @param pos               parser position of the identifier of the call
    * @param operands          array of operands
+   * 创建一个函数,提供参数数组SqlNode,functionQualifier为函数名
    */
   public SqlCall createCall(
       SqlLiteral functionQualifier,
@@ -246,6 +259,7 @@ public abstract class SqlOperator {
    * @param pos      Parser position
    * @param operands List of arguments
    * @return call to this operator
+   * 匿名函数
    */
   public final SqlCall createCall(
       SqlParserPos pos,
@@ -261,6 +275,7 @@ public abstract class SqlOperator {
    *
    * @param nodeList List of arguments
    * @return call to this operator
+   * 匿名函数
    */
   public final SqlCall createCall(
       SqlNodeList nodeList) {
@@ -275,6 +290,7 @@ public abstract class SqlOperator {
    *
    * <p>The position of the resulting call is the union of the <code>
    * pos</code> and the positions of all of the operands.
+   * 匿名函数
    */
   public final SqlCall createCall(
       SqlParserPos pos,
@@ -293,7 +309,7 @@ public abstract class SqlOperator {
    * the trivial operator doesn't need its own implementation of type
    * derivation methods). The default implementation is to just return the
    * original call without any rewrite.
-   *
+   * 有时候需要重写，但是这种情况不多，比如NULLIF变成CASE形式
    * @param validator Validator
    * @param call      Call to be rewritten
    * @return rewritten call
@@ -450,6 +466,7 @@ public abstract class SqlOperator {
    * @param opBinding description of invocation (not necessarily a
    * {@link SqlCall})
    * @return inferred return type
+   * 根据操作的上下文信息,猜测操作的返回值类型
    */
   public RelDataType inferReturnType(
       SqlOperatorBinding opBinding) {
@@ -692,7 +709,7 @@ public abstract class SqlOperator {
       SqlCall call,
       boolean onlyExpressions,
       SqlBasicVisitor.ArgHandler<R> argHandler) {
-    List<SqlNode> operands = call.getOperandList();
+    List<SqlNode> operands = call.getOperandList();//参数
     for (int i = 0; i < operands.size(); i++) {
       argHandler.visitChild(visitor, call, i, operands.get(i));
     }

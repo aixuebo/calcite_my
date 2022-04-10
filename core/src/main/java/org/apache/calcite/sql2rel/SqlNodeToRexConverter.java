@@ -25,12 +25,14 @@ import org.apache.calcite.sql.SqlNode;
 
 /**
  * Converts expressions from {@link SqlNode} to {@link RexNode}.
+ * 负责具体的转换表达式的工作
  */
 public interface SqlNodeToRexConverter {
   //~ Methods ----------------------------------------------------------------
 
   /**
    * Converts a {@link SqlCall} to a {@link RexNode} expression.
+   * 将SqlCall对象转换成表达式
    */
   RexNode convertCall(
       SqlRexContext cx,
@@ -43,6 +45,7 @@ public interface SqlNodeToRexConverter {
    * <p>The result is {@link RexNode}, not {@link RexLiteral} because if the
    * literal is NULL (or the boolean Unknown value), we make a <code>CAST(NULL
    * AS type)</code> expression.
+   * 将常数对象转换成表达式
    */
   RexNode convertLiteral(
       SqlRexContext cx,
@@ -51,6 +54,7 @@ public interface SqlNodeToRexConverter {
   /**
    * Converts a {@link SqlIntervalQualifier SQL Interval Qualifier} to a
    * {@link RexLiteral REX literal}.
+   * 将时间日期对象转换成表达式
    */
   RexLiteral convertInterval(
       SqlRexContext cx,

@@ -34,9 +34,13 @@ import static org.apache.calcite.util.Static.RESOURCE;
 /**
  * Parameter type-checking strategy for a set operator (UNION, INTERSECT,
  * EXCEPT).
+ * set集合相关的参数校验策略,用于UNION, INTERSECT,EXCEPT
  *
  * <p>Both arguments must be records with the same number of fields, and the
  * fields must be union-compatible.
+ * 所有的参数必须有相同的列数量。每一个相同的列必须拥有相同的父类型
+ *
+ * 比如sql1 uinon all sql2的语法校验
  */
 public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
   //~ Methods ----------------------------------------------------------------
@@ -44,16 +48,16 @@ public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
   public boolean checkOperandTypes(
       SqlCallBinding callBinding,
       boolean throwOnFailure) {
-    assert callBinding.getOperandCount() == 2
-        : "setops are binary (for now)";
-    final RelDataType[] argTypes =
-        new RelDataType[callBinding.getOperandCount()];
-    int colCount = -1;
+    //目前集合操作，只支持2个参数做union等操作。
+    assert callBinding.getOperandCount() == 2 : "setops are binary (for now)";
+
+    final RelDataType[] argTypes = new RelDataType[callBinding.getOperandCount()];//每一个union子查询的返回值
+    int colCount = -1;//列数,用于校验列数必须相同
+
     final SqlValidator validator = callBinding.getValidator();
     for (int i = 0; i < argTypes.length; i++) {
-      final RelDataType argType =
-          argTypes[i] = callBinding.getOperandType(i);
-      if (!argType.isStruct()) {
+      final RelDataType argType = argTypes[i] = callBinding.getOperandType(i);//获取参数类型
+      if (!argType.isStruct()) {//参数必须是isStruct类型,即包含多个字段
         if (throwOnFailure) {
           throw new AssertionError("setop arg must be a struct");
         } else {
@@ -64,11 +68,11 @@ public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
       // Each operand must have the same number of columns.
       final List<RelDataTypeField> fields = argType.getFieldList();
       if (i == 0) {
-        colCount = fields.size();
+        colCount = fields.size();//获取列数
         continue;
       }
 
-      if (fields.size() != colCount) {
+      if (fields.size() != colCount) {//列数必须相同
         if (throwOnFailure) {
           SqlNode node = callBinding.getCall().operand(i);
           if (node instanceof SqlSelect) {
@@ -86,10 +90,9 @@ public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
     // The columns must be pairwise union compatible. For each column
     // ordinal, form a 'slice' containing the types of the ordinal'th
     // column j.
-    for (int i = 0; i < colCount; i++) {
+    for (int i = 0; i < colCount; i++) {//循环每一个列
       final int i2 = i;
-      final RelDataType type =
-          callBinding.getTypeFactory().leastRestrictive(
+      final RelDataType type = callBinding.getTypeFactory().leastRestrictive(//相同的列必须可以有相同的父类类型,获取该父类类型
               new AbstractList<RelDataType>() {
                 public RelDataType get(int index) {
                   return argTypes[index].getFieldList().get(i2)
@@ -100,7 +103,7 @@ public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
                   return argTypes.length;
                 }
               });
-      if (type == null) {
+      if (type == null) {//说明没有相同的父类,所以抛异常,校验失败
         if (throwOnFailure) {
           SqlNode field =
               SqlUtil.getSelectListItem(
@@ -118,10 +121,12 @@ public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
     return true;
   }
 
+  //2个参数
   public SqlOperandCountRange getOperandCountRange() {
     return SqlOperandCountRanges.of(2);
   }
 
+  //sql1 union all sql2
   public String getAllowedSignatures(SqlOperator op, String opName) {
     return "{0} " + opName + " {1}"; // todo: Wael, please review.
   }

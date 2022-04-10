@@ -58,12 +58,14 @@ public abstract class MetaImpl implements Meta {
 
   /** Uses a {@link org.apache.calcite.avatica.Meta.CursorFactory} to convert
    * an {@link Iterable} into a
-   * {@link org.apache.calcite.avatica.util.Cursor}. */
+   * {@link org.apache.calcite.avatica.util.Cursor}.
+   * 如何处理一行数据内容---注意 此时已经查询到结果集了
+   **/
   public static Cursor createCursor(CursorFactory cursorFactory,
       Iterable<Object> iterable) {
     switch (cursorFactory.style) {
     case OBJECT:
-      return new IteratorCursor<Object>(iterable.iterator()) {
+      return new IteratorCursor<Object>(iterable.iterator()) {//返回一行数据
         protected Getter createGetter(int ordinal) {
           return new ObjectGetter(ordinal);
         }
@@ -71,7 +73,7 @@ public abstract class MetaImpl implements Meta {
     case ARRAY:
       @SuppressWarnings("unchecked") final Iterable<Object[]> iterable1 =
           (Iterable<Object[]>) (Iterable) iterable;
-      return new ArrayIteratorCursor(iterable1.iterator());
+      return new ArrayIteratorCursor(iterable1.iterator());//返回一行数据,参数是如何读取一行数据中的某一列，使用createGetter方法
     case RECORD:
       @SuppressWarnings("unchecked") final Class<Object> clazz =
           cursorFactory.clazz;
@@ -191,6 +193,7 @@ public abstract class MetaImpl implements Meta {
         scalarType.columnClassName());
   }
 
+  //class所有的属性组成元数据---作为列集合输出
   protected static ColumnMetaData.StructType fieldMetaData(Class clazz) {
     final List<ColumnMetaData> list = new ArrayList<ColumnMetaData>();
     for (Field field : clazz.getFields()) {
@@ -225,13 +228,13 @@ public abstract class MetaImpl implements Meta {
     @JsonIgnore String getName();
   }
 
-  /** Metadata describing a column. */
+  /** Metadata describing a column.列的元数据 */
   public static class MetaColumn implements Named {
-    public final String tableCat;
-    public final String tableSchem;
-    public final String tableName;
-    public final String columnName;
-    public final int dataType;
+    public final String tableCat;//catalog
+    public final String tableSchem;//schema
+    public final String tableName;//table
+    public final String columnName;//列名
+    public final int dataType;//类型
     public final String typeName;
     public final int columnSize;
     public final String bufferLength = null;
@@ -285,12 +288,14 @@ public abstract class MetaImpl implements Meta {
     }
   }
 
-  /** Metadata describing a table. */
+  /** Metadata describing a table.
+   * 表级别的元数据 catalog+schema+table
+   **/
   public static class MetaTable implements Named {
-    public final String tableCat;
-    public final String tableSchem;
-    public final String tableName;
-    public final String tableType;
+    public final String tableCat;//catalog
+    public final String tableSchem;//schema
+    public final String tableName;//tableName
+    public final String tableType;//表类型
     public final String remarks = null;
     public final String typeCat = null;
     public final String typeSchem = null;
@@ -313,7 +318,9 @@ public abstract class MetaImpl implements Meta {
     }
   }
 
-  /** Metadata describing a schema. */
+  /** Metadata describing a schema.
+   * 描述 Catalog+schema信息
+   **/
   public static class MetaSchema implements Named {
     public final String tableCatalog;
     public final String tableSchem;
@@ -330,7 +337,10 @@ public abstract class MetaImpl implements Meta {
     }
   }
 
-  /** Metadata describing a catalog. */
+  /** Metadata describing a catalog.
+   * 描述catalog信息
+   * catalog是schema的父层名称，一般都是空,即一个catalog包含多个schema,每一个schema包含多个table
+   **/
   public static class MetaCatalog implements Named {
     public final String tableCatalog;
 
@@ -650,7 +660,7 @@ public abstract class MetaImpl implements Meta {
     return iterable;
   }
 
-  /** Information about a type. */
+  /** Information about a type. java类型与sql类型映射*/
   private static class TypeInfo {
     private static Map<Class<?>, TypeInfo> m =
         new HashMap<Class<?>, TypeInfo>();
@@ -675,9 +685,9 @@ public abstract class MetaImpl implements Meta {
       put(Timestamp.class, false, Types.TIMESTAMP, "TIMESTAMP");
     }
 
-    private final boolean primitive;
-    private final int sqlType;
-    private final String sqlTypeName;
+    private final boolean primitive;//是否原生的java基础类型---8种
+    private final int sqlType;//sql类型 VARCHAR
+    private final String sqlTypeName;//sql类型 VARCHAR
 
     public TypeInfo(boolean primitive, int sqlType, String sqlTypeName) {
       this.primitive = primitive;

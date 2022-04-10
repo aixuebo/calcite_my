@@ -25,12 +25,14 @@ import com.google.common.collect.ImmutableList;
  * Strategy to infer the type of an operator call from the type of the operands
  * by using one {@link SqlReturnTypeInference} rule and a combination of
  * {@link SqlTypeTransform}s
+ * 级联操作,一层套一层的进行运算
+ * 需要一个初始类型才能走通,因此参数第一个是SqlReturnTypeInference
  */
 public class SqlTypeTransformCascade implements SqlReturnTypeInference {
   //~ Instance fields --------------------------------------------------------
 
-  private final SqlReturnTypeInference rule;
-  private final ImmutableList<SqlTypeTransform> transforms;
+  private final SqlReturnTypeInference rule;//初始类型
+  private final ImmutableList<SqlTypeTransform> transforms;//一层一层的调用
 
   //~ Constructors -----------------------------------------------------------
 
@@ -51,12 +53,14 @@ public class SqlTypeTransformCascade implements SqlReturnTypeInference {
 
   public RelDataType inferReturnType(
       SqlOperatorBinding opBinding) {
-    RelDataType ret = rule.inferReturnType(opBinding);
+    RelDataType ret = rule.inferReturnType(opBinding);//初始类型
     if (ret == null) {
       // inferReturnType may return null; transformType does not accept or
       // return null types
       return null;
     }
+
+    //一层一层迭代
     for (SqlTypeTransform transform : transforms) {
       ret = transform.transformType(opBinding, ret);
     }

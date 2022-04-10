@@ -33,6 +33,7 @@ import java.util.List;
 /**
  * Sub-class of {@link org.apache.calcite.rel.core.Project} not
  * targeted at any particular engine or calling convention.
+ * 提取某些字段
  */
 public final class LogicalProject extends Project {
   //~ Constructors -----------------------------------------------------------
@@ -49,9 +50,9 @@ public final class LogicalProject extends Project {
    */
   public LogicalProject(
       RelOptCluster cluster,
-      RelNode child,
-      List<RexNode> exps,
-      List<String> fieldNames,
+      RelNode child,//数据源
+      List<RexNode> exps,//表达式select的内容,主要是记录函数和返回值
+      List<String> fieldNames,//列名称
       int flags) {
     this(
         cluster,
@@ -61,7 +62,7 @@ public final class LogicalProject extends Project {
         RexUtil.createStructType(
             cluster.getTypeFactory(),
             exps,
-            fieldNames),
+            fieldNames),//组成新的数据结构
         flags);
   }
 

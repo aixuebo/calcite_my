@@ -18,12 +18,12 @@ package org.apache.calcite.interpreter;
 
 /**
  * Source of rows.
- *
+ * 代表数据源
  * <p>Corresponds to an input of a relational expression.
  */
 public interface Source {
   /** Reads a row. Null means end of data. */
-  Row receive();
+  Row receive();//如何不断迭代,返回一行数据----返回null,说明无数据了
 }
 
 // End Source.java

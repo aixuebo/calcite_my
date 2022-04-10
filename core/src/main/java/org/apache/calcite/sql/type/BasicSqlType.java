@@ -26,6 +26,9 @@ import java.nio.charset.Charset;
 /**
  * BasicSqlType represents a standard atomic SQL type (excluding interval
  * types).
+ * 表示一个基础类型--sql类型
+ *
+ * 追加额外信息，字段的精准度、字段的字符集等信息
  */
 public class BasicSqlType extends AbstractSqlType {
   //~ Static fields/initializers ---------------------------------------------
@@ -200,7 +203,7 @@ public class BasicSqlType extends AbstractSqlType {
     return collation;
   }
 
-  // implement RelDataTypeImpl
+  // implement RelDataTypeImpl 输出数据类型，比如doble(precision,scala) CHARACTER SET "" COLLATE ""
   protected void generateTypeString(StringBuilder sb, boolean withDetail) {
     // Called to make the digest, which equals() compares;
     // so equivalent data types must produce identical type strings.

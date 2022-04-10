@@ -22,7 +22,7 @@ import org.apache.calcite.sql.SqlOperator;
 
 /**
  * Strategy interface to check for allowed operand types of an operator call.
- *
+ * 校验策略,校验参数是否正确、允许参数数量、对外如何描述需要什么样的参数
  * <p>This interface is an example of the
  * {@link org.apache.calcite.util.Glossary#STRATEGY_PATTERN strategy pattern}.
  */
@@ -31,10 +31,10 @@ public interface SqlOperandTypeChecker {
 
   /**
    * Checks the types of all operands to an operator call.
-   *
+   * 校验所有参数的类型是否正确
    * @param callBinding    description of the call to be checked
    * @param throwOnFailure whether to throw an exception if check fails
-   *                       (otherwise returns false in that case)
+   *                       (otherwise returns false in that case) 如果是true,则表示校验失败要抛异常
    * @return whether check succeeded
    */
   boolean checkOperandTypes(
@@ -43,6 +43,7 @@ public interface SqlOperandTypeChecker {
 
   /**
    * @return range of operand counts allowed in a call
+   * 返回函数允许的参数数量
    */
   SqlOperandCountRange getOperandCountRange();
 
@@ -53,6 +54,8 @@ public interface SqlOperandTypeChecker {
    * @param op     the operator being checked
    * @param opName name to use for the operator in case of aliasing
    * @return generated string
+   * 返回一个字符串形式的描述,表示允许什么样的call被调用。
+   * 比如SUBSTR(VARCHAR, INTEGER, INTEGER)，即函数的描述内容,让下游知道如何使用。
    */
   String getAllowedSignatures(SqlOperator op, String opName);
 }

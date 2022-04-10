@@ -67,8 +67,8 @@ public class SqlValidatorUtil {
    * only possible if the scope represents an identifier, such as "sales.emp".
    * Otherwise, returns null.
    *
-   * @param namespace     Namespace
-   * @param catalogReader Schema
+   * @param namespace     Namespace 表的命名空间,可以知道该表有哪些字段
+   * @param catalogReader Schema 读取schema
    * @param datasetName   Name of sample dataset to substitute, or null to use
    *                      the regular table
    * @param usedDataset   Output parameter which is set to true if a sample
@@ -82,14 +82,11 @@ public class SqlValidatorUtil {
     if (!namespace.isWrapperFor(TableNamespace.class)) {
       return null;
     }
-    final TableNamespace tableNamespace =
-        namespace.unwrap(TableNamespace.class);
-    final List<String> names = tableNamespace.getTable().getQualifiedName();
+    final TableNamespace tableNamespace = namespace.unwrap(TableNamespace.class);
+    final List<String> names = tableNamespace.getTable().getQualifiedName();//表的全路径
     RelOptTable table;
-    if (datasetName != null
-        && catalogReader instanceof RelOptSchemaWithSampling) {
-      final RelOptSchemaWithSampling reader =
-          (RelOptSchemaWithSampling) catalogReader;
+    if (datasetName != null && catalogReader instanceof RelOptSchemaWithSampling) {
+      final RelOptSchemaWithSampling reader = (RelOptSchemaWithSampling) catalogReader;
       table = reader.getTableForMember(names, datasetName, usedDataset);
     } else {
       // Schema does not support substitution. Ignore the data set, if any.
@@ -105,10 +102,11 @@ public class SqlValidatorUtil {
    * Looks up a field with a given name, returning null if not found.
    *
    * @param caseSensitive Whether match is case-sensitive
-   * @param elideRecord Whether to find fields nested within records
+   * @param elideRecord Whether to find fields nested within records 是否递归查找
    * @param rowType    Row type
    * @param columnName Field name
    * @return Field, or null if not found
+   * 通过表的schema，找到name列对应的类型对象
    */
   public static RelDataTypeField lookupField(boolean caseSensitive,
       boolean elideRecord, final RelDataType rowType, String columnName) {
@@ -180,7 +178,7 @@ public class SqlValidatorUtil {
       if (ordinal < 0) {
         return null;
       } else {
-        return SqlUtil.deriveAliasFromOrdinal(ordinal);
+        return SqlUtil.deriveAliasFromOrdinal(ordinal);//EXPR$+序号
       }
     }
   }
@@ -341,6 +339,7 @@ public class SqlValidatorUtil {
     return naturalColumnNames;
   }
 
+  //转换成select 提取部分数据字段
   public static RelDataType createTypeFromProjection(RelDataType type,
       List<String> columnNameList, RelDataTypeFactory typeFactory,
       boolean caseSensitive, boolean elideRecord) {

@@ -31,6 +31,15 @@ import java.util.List;
  * <p>Example:</p>
  *
  * <blockquote>ALTER SYSTEM SET myParam = 1</blockquote>
+ SqlSetOption 设置环境变量值
+ 1.语法:
+ ALTER scope SET option = value
+ 比如 ALTER SYSTEM SET myParam = 1
+ 2.操作:new SqlSpecialOperator("SET_OPTION", SqlKind.SET_OPTION)
+ 3.参数:
+ new SqlIdentifier(scope, SqlParserPos.ZERO),new SqlIdentifier(name, SqlParserPos.ZERO),value(SqlNode)
+ 即scope环境、key、value值
+ 4.SqlKind:SqlKind.SET_OPTION
  */
 public class SqlSetOption extends SqlCall {
   public static final SqlSpecialOperator OPERATOR =

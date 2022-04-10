@@ -21,6 +21,7 @@ package org.apache.calcite.runtime;
  *
  * <p>It also implements {@link Typed}; the {@link #getElementType()} method
  * must return {@code Object[].class}.
+ * 一行数据的返回值是一个数组
  */
 public interface ArrayBindable extends Bindable<Object[]>, Typed {
   // override

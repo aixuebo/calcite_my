@@ -46,13 +46,14 @@ import java.util.List;
 /**
  * Interpreter node that implements a
  * {@link org.apache.calcite.rel.core.TableScan}.
+ * 如何扫描数据
  */
 public class TableScanNode implements Node {
-  private final Sink sink;
-  private final TableScan rel;
-  private final ImmutableList<RexNode> filters;
+  private final Sink sink;//输出临时存储
+  private final TableScan rel;//扫描哪个表
+  private final ImmutableList<RexNode> filters;//where条件
   private final DataContext root;
-  private final int[] projects;
+  private final int[] projects;//select的投影字段
 
   TableScanNode(Interpreter interpreter, TableScan rel,
       ImmutableList<RexNode> filters, ImmutableIntList projects) {
@@ -75,16 +76,12 @@ public class TableScanNode implements Node {
 
   private Enumerable<Row> iterable() {
     final RelOptTable table = rel.getTable();
-    final ProjectableFilterableTable pfTable =
-        table.unwrap(ProjectableFilterableTable.class);
+    final ProjectableFilterableTable pfTable = table.unwrap(ProjectableFilterableTable.class);
     if (pfTable != null) {
       final List<RexNode> filters1 = Lists.newArrayList(filters);
-      final int[] projects1 =
-          projects == null
-              || isIdentity(projects, rel.getRowType().getFieldCount())
-              ? null : projects;
-      final Enumerable<Object[]> enumerator =
-          pfTable.scan(root, filters1, projects1);
+      //isIdentity true 表示select *,查询全部字段
+      final int[] projects1 =  projects == null || isIdentity(projects, rel.getRowType().getFieldCount()) ? null : projects;
+      final Enumerable<Object[]> enumerator = pfTable.scan(root, filters1, projects1);
       assert filters1.isEmpty()
           : "table could not handle a filter it earlier said it could";
       return Enumerables.toRow(enumerator);
@@ -92,12 +89,11 @@ public class TableScanNode implements Node {
     if (projects != null) {
       throw new AssertionError("have projects, but table cannot handle them");
     }
-    final FilterableTable filterableTable =
-        table.unwrap(FilterableTable.class);
+
+    final FilterableTable filterableTable = table.unwrap(FilterableTable.class);
     if (filterableTable != null) {
       final List<RexNode> filters1 = Lists.newArrayList(filters);
-      final Enumerable<Object[]> enumerator =
-          filterableTable.scan(root, filters1);
+      final Enumerable<Object[]> enumerator = filterableTable.scan(root, filters1);
       assert filters1.isEmpty()
           : "table could not handle a filter it earlier said it could";
       return Enumerables.toRow(enumerator);
@@ -105,8 +101,8 @@ public class TableScanNode implements Node {
     if (!filters.isEmpty()) {
       throw new AssertionError("have filters, but table cannot handle them");
     }
-    final ScannableTable scannableTable =
-        table.unwrap(ScannableTable.class);
+
+    final ScannableTable scannableTable =  table.unwrap(ScannableTable.class);
     if (scannableTable != null) {
       return Enumerables.toRow(scannableTable.scan(root));
     }
@@ -158,11 +154,14 @@ public class TableScanNode implements Node {
     throw new AssertionError("cannot convert table " + table + " to iterable");
   }
 
+  /**
+   * true 表示select *,查询全部字段
+   */
   private static boolean isIdentity(int[] is, int count) {
     if (is.length != count) {
       return false;
     }
-    for (int i = 0; i < is.length; i++) {
+    for (int i = 0; i < is.length; i++) {//全部字段都是名字
       if (is[i] != i) {
         return false;
       }

@@ -575,7 +575,7 @@ public class PushProjector {
    * well as locating expressions corresponding to special operators.
    */
   private class InputSpecialOpFinder extends RexVisitorImpl<Void> {
-    private final BitSet rexRefs;
+    private final BitSet rexRefs;//使用到了哪些字段
     private final ImmutableBitSet leftFields;
     private final ImmutableBitSet rightFields;
     private final ExprCondition preserveExprCondition;

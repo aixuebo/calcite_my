@@ -56,6 +56,7 @@ public class SelectNamespace extends AbstractNamespace {
     return select;
   }
 
+  //输出row的类型,包含输出列的名字以及类型
   public RelDataType validateImpl() {
     validator.validateSelect(select, validator.unknownType);
     return rowType;

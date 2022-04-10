@@ -29,6 +29,24 @@ import java.util.List;
 /**
  * A <code>SqlMerge</code> is a node of a parse tree which represents a MERGE
  * statement.
+ * 1.语法:
+ *  SqlMerge  当匹配上条件的去更新,当不匹配条件的去插入
+ *  语法 MERGE INTO CompoundIdentifier as SimpleIdentifier USING TableRef on conditionExpression
+ *   [WHEN MATCHED THEN UPDATE SET SimpleIdentifier = Expression,SimpleIdentifier = Expression]
+ *   [WHEN NOT MATCHED THEN INSERT (xx,xx,xx) values RowConstructor]
+ *
+ *  输出
+ *  insertCall = SqlInsert(insertPos, new SqlNodeList(keywords, insertPos),table, SqlStdOperatorTable.VALUES.createCall(pos,rowConstructor), 插入的列);
+ *  updateCall = SqlUpdate(pos, 表名, 更新条件的列, 更新条件的表达式, null,null, 别名);
+ *  SqlMerge(mergePos, table, condition, sourceTableRef,updateCall, insertCall, null, alias);
+ *
+ *
+ * 2.操作:new SqlSpecialOperator("MERGE", SqlKind.MERGE);
+ * 3.参数:
+ *  targetTable(SqlNode目标merge表), condition(SqlNode条件), source(SqlNode数据源),
+ * updateCall(SqlUpdate修改语句),insertCall(SqlInsert插入语句), sourceSelect(SqlSelect查询语句), alias(SqlIdentifier target目标表的别名)
+ * 注意:sourceSelect是set进来的,因此正常情况下他是无用的,即null
+ * 4.SqlKind:SqlKind.MERGE
  */
 public class SqlMerge extends SqlCall {
   public static final SqlSpecialOperator OPERATOR =

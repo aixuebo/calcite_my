@@ -35,9 +35,11 @@ import java.util.Set;
 
 /**
  * A <code>RelNode</code> is a relational expression.
+ * 表示一个关系表达式
  *
  * <p>Relational expressions process data, so their names are typically verbs:
  * Sort, Join, Project, Filter, Scan, Sample.
+ * 关系表达式用于处理数据,因此名字一般都是动词
  *
  * <p>A relational expression is not a scalar expression; see
  * {@link org.apache.calcite.sql.SqlNode} and {@link RexNode}.</p>

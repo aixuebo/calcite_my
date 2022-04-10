@@ -57,7 +57,7 @@ import java.util.Map;
 
 /**
  * Factory for row expressions.
- *
+ * row-expression 行表达式工程
  * <p>Some common literal values (NULL, TRUE, FALSE, 0, 1, '') are cached.</p>
  */
 public class RexBuilder {
@@ -79,10 +79,11 @@ public class RexBuilder {
   //~ Instance fields --------------------------------------------------------
 
   protected final RelDataTypeFactory typeFactory;
-  private final RexLiteral booleanTrue;
-  private final RexLiteral booleanFalse;
-  private final RexLiteral charEmpty;
-  private final RexLiteral constantNull;
+  //定义若干个常用常量
+  private final RexLiteral booleanTrue;//true
+  private final RexLiteral booleanFalse;//false
+  private final RexLiteral charEmpty;//""
+  private final RexLiteral constantNull;//null
   private final SqlStdOperatorTable opTab = SqlStdOperatorTable.instance();
 
   //~ Constructors -----------------------------------------------------------
@@ -219,6 +220,7 @@ public class RexBuilder {
 
   /**
    * Creates a call with a list of arguments and a predetermined type.
+   * 操作、参数、返回值,生产一个操作表达式,比如是function
    */
   public RexNode makeCall(
       RelDataType returnType,
@@ -233,6 +235,7 @@ public class RexBuilder {
    * <p>If you already know the return type of the call, then
    * {@link #makeCall(org.apache.calcite.rel.type.RelDataType, org.apache.calcite.sql.SqlOperator, java.util.List)}
    * is preferred.</p>
+   * 通过猜测返回值,返回:操作、参数、返回值,生产一个操作表达式,比如是function
    */
   public RexNode makeCall(
       SqlOperator op,
@@ -246,6 +249,7 @@ public class RexBuilder {
    *
    * <p>Equivalent to
    * <code>makeCall(op, exprList.toArray(new RexNode[exprList.size()]))</code>.
+   * 返回:操作、参数、返回值,生产一个操作表达式,比如是function
    */
   public final RexNode makeCall(
       SqlOperator op,
@@ -259,6 +263,7 @@ public class RexBuilder {
    * @param op          the operator being called
    * @param exprs       actual operands
    * @return derived type
+   * 根据操作、参数值,猜测返回值类型
    */
   public RelDataType deriveReturnType(
       SqlOperator op,
@@ -463,9 +468,9 @@ public class RexBuilder {
       RelDataType type,
       RexNode exp) {
     final SqlTypeName sqlType = type.getSqlTypeName();
-    if (exp instanceof RexLiteral) {
+    if (exp instanceof RexLiteral) {//表示一个常量
       RexLiteral literal = (RexLiteral) exp;
-      Comparable value = literal.getValue();
+      Comparable value = literal.getValue();//常量值
       if (RexLiteral.valueMatchesType(value, sqlType, false)
           && (!(value instanceof NlsString)
           || (type.getPrecision()
@@ -751,6 +756,7 @@ public class RexBuilder {
    * @param type Type of field
    * @param i    Ordinal of field
    * @return Reference to field
+   * 创建引用表的某一个字段的表达式。 第几个字段、字段类型
    */
   public RexInputRef makeInputRef(
       RelDataType type,
@@ -765,6 +771,7 @@ public class RexBuilder {
    * @param input Input relational expression
    * @param i    Ordinal of field
    * @return Reference to field
+   * 创建引用表的某一个字段的表达式。 第几个字段、字段类型
    */
   public RexInputRef makeInputRef(RelNode input, int i) {
     return makeInputRef(input.getRowType().getFieldList().get(i).getType(), i);
@@ -774,6 +781,7 @@ public class RexBuilder {
    * Creates a literal representing a flag.
    *
    * @param flag Flag value
+   * 常数表达式--符号类型--相当于枚举类型
    */
   public RexLiteral makeFlag(Enum flag) {
     assert flag != null;
@@ -788,10 +796,11 @@ public class RexBuilder {
    * {@link #makeDateLiteral(Calendar)}, {@link #makeLiteral(boolean)},
    * {@link #makeLiteral(String)}.
    *
-   * @param o        Value of literal, must be appropriate for the type
-   * @param type     Type of literal
-   * @param typeName SQL type of literal
+   * @param o        Value of literal, must be appropriate for the type 具体的值
+   * @param type     Type of literal 值的类型
+   * @param typeName SQL type of literal sql类型
    * @return Literal
+   * 返回常数表达式
    */
   protected RexLiteral makeLiteral(
       Comparable o,
@@ -820,6 +829,7 @@ public class RexBuilder {
 
   /**
    * Creates a boolean literal.
+   * 常量表达式--boolean类型
    */
   public RexLiteral makeLiteral(boolean b) {
     return b ? booleanTrue : booleanFalse;
@@ -827,21 +837,22 @@ public class RexBuilder {
 
   /**
    * Creates a numeric literal.
+   * 创建数字类型的表达式--数字类型包含int、bigint、double等类型,取决于精准度
    */
   public RexLiteral makeExactLiteral(BigDecimal bd) {
-    RelDataType relType;
+    RelDataType relType;//类型具体时间int还是其他类型,后面要计算得到
     int scale = bd.scale();
     long l = bd.unscaledValue().longValue();
     assert scale >= 0;
     assert scale <= typeFactory.getTypeSystem().getMaxNumericScale() : scale;
-    assert BigDecimal.valueOf(l, scale).equals(bd);
-    if (scale == 0) {
+    assert BigDecimal.valueOf(l, scale).equals(bd);//精度不变
+    if (scale == 0) {//说明是正数,int或者bigint
       if ((l >= Integer.MIN_VALUE) && (l <= Integer.MAX_VALUE)) {
         relType = typeFactory.createSqlType(SqlTypeName.INTEGER);
       } else {
         relType = typeFactory.createSqlType(SqlTypeName.BIGINT);
       }
-    } else {
+    } else {//说明是小数
       int precision = bd.unscaledValue().toString().length();
       relType =
           typeFactory.createSqlType(
@@ -852,6 +863,7 @@ public class RexBuilder {
 
   /**
    * Creates a BIGINT literal.
+   * 创建bigint表达式
    */
   public RexLiteral makeBigintLiteral(BigDecimal bd) {
     RelDataType bigintType =
@@ -862,6 +874,7 @@ public class RexBuilder {
 
   /**
    * Creates a numeric literal.
+   * 创建数字类型的表达式--数字类型包含int、bigint、double等类型,取决于参数type
    */
   public RexLiteral makeExactLiteral(BigDecimal bd, RelDataType type) {
     return makeLiteral(bd, type, SqlTypeName.DECIMAL);
@@ -869,6 +882,7 @@ public class RexBuilder {
 
   /**
    * Creates a byte array literal.
+   * 常量表达式--字节数组类型
    */
   public RexLiteral makeBinaryLiteral(ByteString byteString) {
     return makeLiteral(
@@ -879,6 +893,7 @@ public class RexBuilder {
 
   /**
    * Creates a double-precision literal.
+   * 常数表达式--double类型
    */
   public RexLiteral makeApproxLiteral(BigDecimal bd) {
     // Validator should catch if underflow is allowed
@@ -895,6 +910,7 @@ public class RexBuilder {
    * @param bd   literal value
    * @param type approximate numeric type
    * @return new literal
+   * 常数表达式--double类型
    */
   public RexLiteral makeApproxLiteral(BigDecimal bd, RelDataType type) {
     assert SqlTypeFamily.APPROXIMATE_NUMERIC.getTypeNames().contains(
@@ -904,6 +920,7 @@ public class RexBuilder {
 
   /**
    * Creates a character string literal.
+   * 常数表达式--string类型
    */
   public RexLiteral makeLiteral(String s) {
     assert s != null;
@@ -916,11 +933,12 @@ public class RexBuilder {
    *
    * @param s String value
    * @return Character string literal
+   * 常数表达式--string类型
    */
   protected RexLiteral makePreciseStringLiteral(String s) {
     assert s != null;
     if (s.equals("")) {
-      return charEmpty;
+      return charEmpty;//空字符串的表达式
     } else {
       return makeLiteral(
           new NlsString(s, null, null),
@@ -978,6 +996,7 @@ public class RexBuilder {
    *
    * <p>If the string's charset and collation are not set, uses the system
    * defaults.
+   * 常量表达式--字符串类型
    */
   public RexLiteral makeCharLiteral(NlsString str) {
     assert str != null;
@@ -987,6 +1006,7 @@ public class RexBuilder {
 
   /**
    * Creates a Date literal.
+   * 常量表达式--日期类型
    */
   public RexLiteral makeDateLiteral(Calendar date) {
     assert date != null;
@@ -996,6 +1016,7 @@ public class RexBuilder {
 
   /**
    * Creates a Time literal.
+   * 常量表达式--time类型
    */
   public RexLiteral makeTimeLiteral(
       Calendar time,
@@ -1009,6 +1030,7 @@ public class RexBuilder {
 
   /**
    * Creates a Timestamp literal.
+   * 常量表达式--Timestamp类型
    */
   public RexLiteral makeTimestampLiteral(
       Calendar timestamp,
@@ -1022,6 +1044,7 @@ public class RexBuilder {
 
   /**
    * Creates an interval literal.
+   * 常量表达式--Time Interval 单位类型
    */
   public RexLiteral makeIntervalLiteral(
       SqlIntervalQualifier intervalQualifier) {
@@ -1031,6 +1054,7 @@ public class RexBuilder {
 
   /**
    * Creates an interval literal.
+   * 常量表达式--Time Interval类型
    */
   public RexLiteral makeIntervalLiteral(
       BigDecimal v,
@@ -1048,10 +1072,11 @@ public class RexBuilder {
    * @param type  Type of dynamic parameter
    * @param index Index of dynamic parameter
    * @return Expression referencing dynamic parameter
+   * 动态参数表达式
    */
   public RexDynamicParam makeDynamicParam(
-      RelDataType type,
-      int index) {
+      RelDataType type,//参数类型
+      int index) {//第几个动态参数
     return new RexDynamicParam(type, index);
   }
 
@@ -1105,15 +1130,15 @@ public class RexBuilder {
 
   /**
    * Creates a literal of the default value for the given type.
-   *
+   * 创建一个默认值常量,根据类型不同,返回的默认值也不同
    * <p>This value is:</p>
    *
    * <ul>
-   * <li>0 for numeric types;
-   * <li>FALSE for BOOLEAN;
+   * <li>0 for numeric types; 数字返回0
+   * <li>FALSE for BOOLEAN; boolean返回false
    * <li>The epoch for TIMESTAMP and DATE;
    * <li>Midnight for TIME;
-   * <li>The empty string for string types (CHAR, BINARY, VARCHAR, VARBINARY).
+   * <li>The empty string for string types (CHAR, BINARY, VARCHAR, VARBINARY). 字符串返回""
    * </ul>
    *
    * @param type      Type
@@ -1123,6 +1148,16 @@ public class RexBuilder {
     return makeLiteral(zeroValue(type), type, false);
   }
 
+  /**
+   * 创建一个默认值常量,根据类型不同,返回的默认值也不同
+   * <ul>
+   * <li>0 for numeric types; 数字返回0
+   * <li>FALSE for BOOLEAN; boolean返回false
+   * <li>The epoch for TIMESTAMP and DATE;
+   * <li>Midnight for TIME;
+   * <li>The empty string for string types (CHAR, BINARY, VARCHAR, VARBINARY). 字符串返回""
+   * </ul>
+   */
   private static Comparable zeroValue(RelDataType type) {
     switch (type.getSqlTypeName()) {
     case CHAR:
@@ -1249,7 +1284,9 @@ public class RexBuilder {
   }
 
   /** Converts the type of a value to comply with
-   * {@link org.apache.calcite.rex.RexLiteral#valueMatchesType}. */
+   * {@link org.apache.calcite.rex.RexLiteral#valueMatchesType}.
+   * 让object的值更合规
+   **/
   private static Object clean(Object o, RelDataType type) {
     if (o == null) {
       return null;
@@ -1308,6 +1345,7 @@ public class RexBuilder {
     }
   }
 
+  //根据值具体的来源,猜测他的类型
   private RelDataType guessType(Object value) {
     if (value == null) {
       return typeFactory.createSqlType(SqlTypeName.NULL);
@@ -1341,7 +1379,9 @@ public class RexBuilder {
     return s.copy(padRight(s.getValue(), length));
   }
 
-  /** Returns a string padded with spaces to make it at least a given length. */
+  /** Returns a string padded with spaces to make it at least a given length.
+   * 使用空字符填充,直到满足length长度
+   **/
   private static String padRight(String s, int length) {
     if (s.length() >= length) {
       return s;

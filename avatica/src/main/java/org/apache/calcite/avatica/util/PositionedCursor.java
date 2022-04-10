@@ -29,7 +29,7 @@ import java.util.Map;
 public abstract class PositionedCursor<T> extends AbstractCursor {
   /**
    * Returns the current row.
-   *
+   * 返回一行数据
    * @return current row
    *
    * @throws java.util.NoSuchElementException if the iteration has no more
@@ -39,24 +39,31 @@ public abstract class PositionedCursor<T> extends AbstractCursor {
 
   /** Implementation of
    * {@link org.apache.calcite.avatica.util.AbstractCursor.Getter}
-   * that reads from records that are arrays. */
+   * that reads from records that are arrays.
+   * 一行元素是一个数组
+   *
+   *
+   * 注意:该对象也是继承AbstractGetter,因此也会有wasNull,此时的wasNull只是指代该字段是否为null
+   **/
   protected class ArrayGetter extends AbstractGetter {
-    protected final int field;
+    protected final int field;//获取数组的第几个属性,即具体到列
 
     public ArrayGetter(int field) {
       this.field = field;
     }
 
     public Object getObject() {
-      Object o = ((Object[]) current())[field];
-      wasNull[0] = o == null;
-      return o;
+      Object o = ((Object[]) current())[field]; //具体该列的值
+      wasNull[0] = o == null; //该列值是否是null
+      return o;//返回列值
     }
   }
 
   /** Implementation of
    * {@link org.apache.calcite.avatica.util.AbstractCursor.Getter}
-   * that reads items from a list. */
+   * that reads items from a list.
+   * 处理一行数据的返回值是list,列是list的第几个元素
+   **/
   protected class ListGetter extends AbstractGetter {
     protected final int index;
 
@@ -76,7 +83,9 @@ public abstract class PositionedCursor<T> extends AbstractCursor {
    * for records that consist of a single field.
    *
    * <p>Each record is represented as an object, and the value of the sole
-   * field is that object. */
+   * field is that object.
+   * 处理一行数据就一个值
+   **/
   protected class ObjectGetter extends AbstractGetter {
     public ObjectGetter(int field) {
       assert field == 0;
@@ -91,9 +100,11 @@ public abstract class PositionedCursor<T> extends AbstractCursor {
 
   /** Implementation of
    * {@link org.apache.calcite.avatica.util.AbstractCursor.Getter}
-   * that reads fields via reflection. */
+   * that reads fields via reflection.
+   * 处理一行数据是一个对象  --- 一行数据是一个java的class
+   **/
   protected class FieldGetter extends AbstractGetter {
-    protected final Field field;
+    protected final Field field;//该字段是class的哪个属性
 
     public FieldGetter(Field field) {
       this.field = field;
@@ -113,7 +124,9 @@ public abstract class PositionedCursor<T> extends AbstractCursor {
 
   /** Implementation of
    * {@link org.apache.calcite.avatica.util.AbstractCursor.Getter}
-   * that reads entries from a {@link java.util.Map}. */
+   * that reads entries from a {@link java.util.Map}.
+   * 处理一行数据是一个map
+   **/
   protected class MapGetter<K> extends AbstractGetter {
     protected final K key;
 

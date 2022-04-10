@@ -24,6 +24,7 @@ import java.util.List;
 /**
  * An implementation of {@link SqlMoniker} that encapsulates the normalized name
  * information of a {@link SqlIdentifier}.
+ * 使用归一化的名字去封装绰号 ---就是传递一个SqlIdentifier表示列名
  */
 public class SqlIdentifierMoniker implements SqlMoniker {
   //~ Instance fields --------------------------------------------------------

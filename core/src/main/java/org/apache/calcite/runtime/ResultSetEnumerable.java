@@ -40,6 +40,7 @@ import javax.sql.DataSource;
  * Executes a SQL statement and returns the result as an {@link Enumerable}.
  *
  * @param <T> Element type
+ * 直接返回每一行数据
  */
 public class ResultSetEnumerable<T> extends AbstractEnumerable<T> {
   private final DataSource dataSource;
@@ -48,6 +49,7 @@ public class ResultSetEnumerable<T> extends AbstractEnumerable<T> {
   private static final Logger LOGGER = Logger.getLogger(
       ResultSetEnumerable.class.getName());
 
+  //传入ResultSet,返回列组成的数组值
   private static final Function1<ResultSet, Function0<Object>>
   AUTO_ROW_BUILDER_FACTORY =
       new Function1<ResultSet, Function0<Object>>() {

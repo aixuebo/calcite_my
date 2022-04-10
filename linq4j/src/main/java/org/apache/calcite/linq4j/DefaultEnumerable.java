@@ -503,6 +503,7 @@ public abstract class DefaultEnumerable<T> implements OrderedEnumerable<T> {
     return EnumerableDefaults.ofType(getThis(), clazz);
   }
 
+  //将k转换成可以排序的value
   public <TKey extends Comparable> Enumerable<T> orderBy(
       Function1<T, TKey> keySelector) {
     return EnumerableDefaults.orderBy(getThis(), keySelector);

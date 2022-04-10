@@ -55,6 +55,7 @@ class WithItemNamespace extends AbstractNamespace {
     return withItem;
   }
 
+  //列名 转换成列字段名字
   @Override public String translate(String name) {
     if (withItem.columnList == null) {
       return name;

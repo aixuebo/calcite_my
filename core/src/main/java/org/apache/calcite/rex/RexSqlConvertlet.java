@@ -20,6 +20,7 @@ import org.apache.calcite.sql.SqlNode;
 
 /**
  * Converts a {@link RexNode} expression into a {@link SqlNode} expression.
+ * 表达式如何转换成SqlNode
  */
 public interface RexSqlConvertlet {
   //~ Methods ----------------------------------------------------------------

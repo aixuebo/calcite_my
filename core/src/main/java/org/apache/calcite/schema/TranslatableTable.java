@@ -28,9 +28,12 @@ import org.apache.calcite.rel.RelNode;
  * EnumerableTableAccessRel. Generally a Table will implements this interface to
  * create a particular subclass of RelNode, and also register rules that act
  * on that particular subclass of RelNode.</p>
+ * 定义function的返回值
  */
 public interface TranslatableTable extends Table {
-  /** Converts this table into a {@link RelNode relational expression}. */
+  /** Converts this table into a {@link RelNode relational expression}.
+   * 转换table成关系表达式
+   **/
   RelNode toRel(
       RelOptTable.ToRelContext context,
       RelOptTable relOptTable);

@@ -20,7 +20,8 @@
 
 options {
     STATIC = false;
-    IGNORE_CASE = true;
+
+
     UNICODE_INPUT = true;
 }
 
@@ -625,6 +626,14 @@ JAVACODE boolean matchesPrefix(int[] seq, int[][] prefixes)
  *
  *    [ OFFSET start { ROW | ROWS } ]
  *    [ FETCH { FIRST | NEXT } [ count ] { ROW | ROWS } ONLY ]
+查询表达式 OrderedQueryOrExpr —> 查询整体解析入口
+语法
+1.QueryOrExpr 返回 SqlNode
+2.[OrderBy(e.isA(SqlKind.QUERY))]
+3.[LIMIT NumericLiteral()—>count ]  [ limit ALL]
+4.[OFFSET NumericLiteral—>start] [ROW|ROWS]
+5.[FETCH FIRST/NEXR NumericLiteral—>count ROW|ROWS ONLY ]
+返回 new SqlOrderBy(pos, e, orderBy, start, count)
  */
 SqlNode OrderedQueryOrExpr(ExprContext exprContext) :
 {
@@ -672,6 +681,16 @@ SqlNode OrderedQueryOrExpr(ExprContext exprContext) :
 
 /**
  * Parses a leaf in a query expression (SELECT, VALUES or TABLE).
+ 1.TableConstructor
+ 语法
+ a.values (ROW (xx,xx,xx,子查询)),(ROW (xx,xx,xx,子查询)) 输出 SqlStdOperatorTable.ROW.createCall(valueList.toArray())
+ b.values [ROW] (xx,xx,xx,子查询) 输出 SqlStdOperatorTable.ROW.createCall(valueList.toArray())
+ c.values SqlNodeList[Expression]  输出 SqlStdOperatorTable.ROW.createCall(valueList.toArray())
+ 返回值 SqlNodeList[SqlNode]  输出 SqlStdOperatorTable.VALUES.createCall(pos, rowConstructorList.toArray())
+
+ 2.直接TABLE xx.xx引用表名
+
+ 3 select from where group by  having by window
  */
 SqlNode LeafQuery(ExprContext exprContext) :
 {
@@ -743,6 +762,7 @@ SqlNode ParenthesizedExpression(ExprContext exprContext) :
  * pretty-printer).  However, if this is done, it's important to also make
  * isA() on the paren node call down to its operand so that we can
  * always correctly discriminate a query from a row expression.
+子查询(),()等 返回多个子查询list
  */
 SqlNodeList ParenthesizedQueryOrCommaList(
     ExprContext exprContext) :
@@ -922,6 +942,8 @@ SqlNode SqlStmtEof() :
 
 /**
  * Parses a leaf SELECT expression without ORDER BY.
+语法 select DISTINCT/all/空  SelectList from FromClause  WhereOpt GroupByOpt HavingOpt WindowOpt
+输出 SqlSelect(pos,new SqlNodeList(keywords, pos),new SqlNodeList(selectList, selectListPos.plusAll(selectList)), fromClause, where, groupBy, having, windowDecls, null, null, null);
  */
 SqlSelect SqlSelect() :
 {
@@ -978,6 +1000,10 @@ SqlSelect SqlSelect() :
 
 /**
  * Parses an EXPLAIN PLAN statement.
+ 语法 EXPLAIN PLAN [ExplainDetailLevel] ExplainDepth [as xml] for OrderedQueryOrExpr(ExprContext.ACCEPT_QUERY) / SqlInsert() /  SqlDelete() / SqlUpdate() / SqlMerge()
+ 输出 SqlNode —> SqlExplain(pos,stmt, detailLevel,depth,boolean是否asxml,nDynamicParams
+ 其中
+ ExplainDepth语法 —> With TYPE/IMPLEMENTATION##PHYSICAL/IMPLEMENTATION##LOGICAL/##PHYSICAL
  */
 SqlNode SqlExplain() :
 {
@@ -1167,19 +1193,22 @@ SqlNode SqlInsert() :
 
 /**
  * Parses a DELETE statement.
+ * delete from table as alias
+ * 返回 new SqlDelete(pos, table, condition, null, alias);
  */
 SqlNode SqlDelete() :
 {
-    SqlNode table;
+    SqlNode table; //SqlIdentifier(表名字集合,null,整体token信息、每一个name的token信息) ### 比如 解析Identifier  或者 Identifier.xx.xx.*  或者 Identifier.xx.xx
     SqlNodeList extendList = null;
-    SqlIdentifier alias = null;
-    SqlNode condition;
-    SqlParserPos pos;
+    SqlIdentifier alias = null;//as new SqlIdentifier(p,pos)
+    SqlNode condition;//Expression(ExprContext.ACCEPT_SUBQUERY) 或者 null（没有出现where关键词）
+    SqlParserPos pos; //delete的token信息CompoundIdentifier
+
 }
 {
-    <DELETE>
+    <DELETE> //遇到delete关键词
     {
-        pos = getPos();
+        pos = getPos(); //开始记录token位置信息
     }
     <FROM> table = CompoundIdentifier()
     {
@@ -1200,6 +1229,8 @@ SqlNode SqlDelete() :
 
 /**
  * Parses an UPDATE statement.
+ 语法 UPDATE CompoundIdentifier as SimpleIdentifier set SimpleIdentifier = Expression,SimpleIdentifier = Expression  conditionExpression
+ 输出 SqlUpdate(pos, 表名, 列集合, 表达式集合,条件, null, 别名)
  */
 SqlNode SqlUpdate() :
 {
@@ -1256,6 +1287,16 @@ SqlNode SqlUpdate() :
 
 /**
  * Parses a MERGE statement.
+ SqlMerge  当匹配上条件的去更新,当不匹配条件的去插入
+ 语法 MERGE INTO CompoundIdentifier as SimpleIdentifier USING TableRef on conditionExpression
+  [WHEN MATCHED THEN UPDATE SET SimpleIdentifier = Expression,SimpleIdentifier = Expression]
+  [WHEN NOT MATCHED THEN INSERT (xx,xx,xx) values RowConstructor]
+
+
+ 输出
+ insertCall = SqlInsert(insertPos, new SqlNodeList(keywords, insertPos),table, SqlStdOperatorTable.VALUES.createCall(pos,rowConstructor), 插入的列);
+ updateCall = SqlUpdate(pos, 表名, 更新条件的列, 更新条件的表达式, null,null, 别名);
+ SqlMerge(mergePos, table, condition, sourceTableRef,updateCall, insertCall, null, alias);
  */
 SqlNode SqlMerge() :
 {
@@ -1373,6 +1414,9 @@ SqlInsert WhenNotMatchedClause(SqlNode table) :
 
 /**
  * Parses the select list of a SELECT statement.
+ select 输出 List<SqlNode>
+ 语法
+ 每一个SqlNode —> Expression|SqlIdentifier(“*”)  [as] SimpleIdentifier 输出 SqlStdOperatorTable.AS.createCall(pos, Expression, SimpleIdentifier)
  */
 List<SqlNode> SelectList() :
 {
@@ -1525,6 +1569,33 @@ SqlNode JoinTable(SqlNode e) :
 // SQL; the validator will catch it.
 /**
  * Parses the FROM clause a SELECT.
+ 语法
+ 1.TableRef 输出 TableRef
+ 2.TableRef,TableRef 输出 new SqlJoin(pos,e,SqlLiteral.createBoolean(false, pos),JoinType.COMMA,e2,JoinConditionType.NONEnull)
+ 3.TableRef Natural JoinType TableRef on condition 输出  new SqlJoin(joinType.getParserPosition(),e,natural,joinType,e2,JoinConditionType.ON.symbol(onPos),condition);
+ 4.TableRef Natural JoinType TableRef  USING  (xx,xx,xx) —>SqlNodeList<SimpleIdentifier>  输出 new SqlJoin(joinType.getParserPosition(),e,natural, joinType,e2,JoinConditionType.USING.symbol(usingPos),new SqlNodeList(list.getList(), usingPos));
+ 5.TableRef Natural JoinType TableRef  输出 new SqlJoin(joinType.getParserPosition(),e,natural,joinType,e2,JoinConditionType.NONE,null);
+
+
+ 其中
+ Natural SqlLiteral--> boolean
+ SqlLiteral—>JoinType
+ condition —> Expression
+
+
+ TableRef语法 —> SqlNode
+ 1.Identifier 输出 SqlNode ，比如xx.xx
+ 2. (SqlNode) 子查询,输出 SqlNode
+ 3.LATERAL (SqlNode) 子查询,输出SqlStdOperatorTable.LATERAL.createCall(getPos(), 子查询);
+ 4.UNNEST SqlNodeList<SqlNode> 一组子查询,输出 SqlStdOperatorTable.UNNEST.createCall(pos.plus(getPos()), args.toArray());
+ 5. table (TableFunctionCall)
+ [as Identifier] 输出 SqlStdOperatorTable.AS.createCall(pos, tableRef, new SqlIdentifier(alias, pos));
+ [as Identifie(xx,xx,xx)] —>好像用于LATERAL,为每一个结果集定义别名 输出SqlStdOperatorTable.AS.createCall(pos, list<TableRef,别名Identifier,参数list>);
+ [TABLESAMPLE SUBSTITUTE (抽样字符串) ] 输出 SqlStdOperatorTable.TABLESAMPLE.createCall(pos, tableRef, 抽样字符串);
+ [TABLESAMPLE  BERNOULLI/SYSTEM (抽样rate100以内的数字) ]  输出 tableSampleSpec=SqlSampleSpec.createTableSample(BERNOULLI/SYSTEM, rate)
+ [TABLESAMPLE  BERNOULLI/SYSTEM (抽样rate100以内的数字) [REPEATABLE (重复次数数字)]  输出 tableSampleSpec=SqlSampleSpec.createTableSample(BERNOULLI/SYSTEM , rate, 重复次数数字)
+ SqlStdOperatorTable.TABLESAMPLE.createCall(Pos,TableRef, SqlLiteral.createSample(tableSampleSpec, pos));
+
  */
 SqlNode FromClause() :
 {
@@ -1842,6 +1913,12 @@ SqlNode ExplicitTable(SqlParserPos pos) :
 
 /**
  * Parses a VALUES leaf query expression.
+ values SqlNodeList(行数据集合)
+ 语法
+ 1.values (ROW (xx,xx,xx,子查询)),(ROW (xx,xx,xx,子查询)) 输出 SqlStdOperatorTable.ROW.createCall(valueList.toArray())
+ 2.values [ROW] (xx,xx,xx,子查询) 输出 SqlStdOperatorTable.ROW.createCall(valueList.toArray())
+ 3.values SqlNodeList[Expression]  输出 SqlStdOperatorTable.ROW.createCall(valueList.toArray())
+ 返回值 SqlNodeList[SqlNode]  输出 SqlStdOperatorTable.VALUES.createCall(pos, rowConstructorList.toArray())
  */
 SqlNode TableConstructor() :
 {
@@ -1862,6 +1939,7 @@ SqlNode TableConstructor() :
 
 /**
  * Parses one or more rows in a VALUES expression.
+ 返回行数据集合SqlNodeList
  */
 SqlNodeList RowConstructorList(SqlParserPos pos) :
 {
@@ -1881,6 +1959,10 @@ SqlNodeList RowConstructorList(SqlParserPos pos) :
 
 /**
  * Parses a row constructor in the context of a VALUES expression.
+ 单独一行数据
+ （ROW (xx,xx,xx)）
+ ROW (xx,xx,xx)
+ (xx,xx,xx)
  */
 SqlNode RowConstructor() :
 {
@@ -1948,6 +2030,13 @@ SqlNode WhereOpt() :
 
 /**
  * Parses the optional GROUP BY clause for SELECT.
+返回值SqlNodeList<SqlNode>
+语法
+group by Expression
+group by ()
+group by  GROUPING SETS(GroupingElementList—>list) 返回值 SqlStdOperatorTable.GROUPING_SETS.createCall(pos, list);
+group by  ROLLUP(List<Expression> —>list) 返回值 SqlStdOperatorTable.ROLLUP.createCall(list);
+group by  CUBE(List<Expression> —>list) 返回值 SqlStdOperatorTable.CUBE.createCall(list);
  */
 SqlNodeList GroupByOpt() :
 {
@@ -2047,6 +2136,7 @@ SqlNodeList ExpressionCommaList(
 
 /**
  * Parses the optional HAVING clause for SELECT.
+ having Expression
  */
 SqlNode HavingOpt() :
 {
@@ -2065,6 +2155,8 @@ SqlNode HavingOpt() :
 
 /**
  * Parses the optional WINDOW clause for SELECT
+ 语法window SimpleIdentifier as window语法
+ 返回值SqlNodeList<SqlWindow>
  */
 SqlNodeList WindowOpt() :
 {
@@ -2101,6 +2193,29 @@ SqlNodeList WindowOpt() :
 
 /**
  * Parses a window specification.
+ 窗口函数WindowSpecification
+ 语法格式:
+ Over
+ (
+ [SimpleIdentifier]
+ partition by ExpressionList Order By SqlNodeList[Expression]
+ [ROWS/RANGE BETWEEN WindowRange and  WindowRange] / [ROWS/RANGE WindowRange ]
+ [ALLOW / DISALLOW PARTIAL ]
+ )
+ 返回值:
+ SqlWindow.create(
+             null, SimpleIdentifier, partitionList, orderList,
+             ROWS/RANGE, lowerBound, upperBound, allowPartial,
+             Pos);
+ 比如：
+ OVER(PARTITION BY cookieid ORDER BY createtime ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) as rn
+
+ WindowRange格式:
+ CURRENT ROW  返回SqlWindow.createCurrentRow(pos.plus(endPos));
+ UNBOUNDED PRECEDING 返回SqlWindow.createUnboundedPreceding(pos.plus(endPos));
+ UNBOUNDED FOLLOWING 返回SqlWindow.createUnboundedFollowing(pos.plus(endPos));
+ Expression PRECEDING 返回 SqlWindow.createPreceding(e, getPos());
+ Expression FOLLOWING 返回 SqlWindow.createFollowing(e, getPos());
  */
 SqlWindow WindowSpecification() :
 {
@@ -2369,6 +2484,24 @@ SqlNodeList WithList() :
     { return list; }
 }
 
+/**
+临时表后面跟字段，不过感觉意义不大，暂时可忽略
+with table1 (lable,b) as (
+  select label,1 b
+  from biao
+  where label = 1
+),
+table2 (lable,b) as (
+  select label,2 b
+  from biao
+  where label = 0
+)
+  select * from table1
+union all
+  select * from table2
+
+每一个item是with和逗号之间的描述，即临时表别名、可选择的列名称集合、查询语句
+**/
 SqlWithItem WithItem() :
 {
     SqlIdentifier id;
@@ -2379,7 +2512,7 @@ SqlWithItem WithItem() :
     id = SimpleIdentifier()
     [
         LOOKAHEAD(2)
-        columnList = ParenthesizedSimpleIdentifierList()
+        columnList = ParenthesizedSimpleIdentifierList() //匹配(xx,xx,xx)
     ]
     <AS>
     definition = ParenthesizedExpression(ExprContext.ACCEPT_QUERY)
@@ -2451,7 +2584,7 @@ List<Object> Expression2(ExprContext exprContext) :
 {
     e = Expression3(exprContext)
     {
-        list = startList(e);
+        list = startList(e);###转换成只有一个元素的list
     }
     (
         (
@@ -2559,7 +2692,7 @@ List<Object> Expression2(ExprContext exprContext) :
                     }
                 ]
                 |
-                LOOKAHEAD(3) op = BinaryRowOperator()
+                LOOKAHEAD(3) op = BinaryRowOperator() ###二元操作，比如and or等操作
                 {
                     checkNonQueryExpression(exprContext);
                 }
@@ -2624,7 +2757,7 @@ SqlNode Expression3(ExprContext exprContext) :
     e = CursorExpression(exprContext) { return e; }
     |
     LOOKAHEAD(3)
-    <ROW> list = ParenthesizedSimpleIdentifierList()
+    <ROW> list = ParenthesizedSimpleIdentifierList() ###匹配(xx,xx,xx),组成一行数据
     {
         pos = getPos();
         if (exprContext != ExprContext.ACCEPT_ALL
@@ -2656,8 +2789,8 @@ SqlNode Expression3(ExprContext exprContext) :
             pos = getPos(); rowSeen = true;
         }
     ]
-    list1 = ParenthesizedQueryOrCommaList(exprContext) {
-        if (rowSeen) {
+    list1 = ParenthesizedQueryOrCommaList(exprContext) { ### 子查询(),(),返回多个子查询组成的list
+        if (rowSeen) {//是否加了row关键词
             // interpret as row constructor
             return SqlStdOperatorTable.ROW.createCall(pos, list1.toArray());
 
@@ -2741,35 +2874,52 @@ SqlNode AtomicRowExpression() :
 }
 {
     LOOKAHEAD(1)
-    e = Literal() { return e; }
+    e = Literal() { return e; } //SqlLiteral  数字(正数、小数、科学计数法、负数)、boolean、时间、``的字符串
     |
-    e = DynamicParam() { return e; }
+    e = DynamicParam() { return e; } //SqlDynamicParam 动态参数?
     |
-    e = BuiltinFunctionCall() { return e; }
+    e = BuiltinFunctionCall() { return e; } //解析内部函数 SqlFunction
     |
     e = JdbcFunctionCall() { return e; }
     |
-    e = MultisetConstructor() { return e; }
+    e = MultisetConstructor() { return e; } //SqlStdOperatorTable.MULTISET_QUERY  —> MULTISET(查询语句)  —> 比如 MULTISET(SELECT * FROM T)
+                                              SqlStdOperatorTable.MULTISET_VALUE  —>  比如 MULTISET[e0, e1, ..., eN]
     |
-    e = ArrayConstructor() { return e; }
+    e = ArrayConstructor() { return e; } //SqlStdOperatorTable.ARRAY_QUERY —> ARRAY (查询语句)  —> 比如 ARRAY (SELECT * FROM T)
+                                           SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR  —> 比如 ARRAY[e0, e1, ..., eN]
     |
-    e = MapConstructor() { return e; }
+    e = MapConstructor() { return e; } //SqlStdOperatorTable.MAP_QUERY —> Map (查询sql)  —> 比如:MAP (SELECT empno, deptno FROM emp)
+                                         SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR —> 比如:MAP[k0, v0, ..., kN, vN]
     |
     // NOTE jvs 18-Jan-2005:  use syntactic lookahead to discriminate
     // compound identifiers from function calls in which the function
     // name is a compound identifier
     LOOKAHEAD( [<SPECIFIC>] FunctionName() <LPAREN>)
+    /**
+    支持内置函数、自定义函数、窗口函数
+    格式:
+    [SPECIFIC]  SqlIdentifier函数名(*) [OVER SimpleIdentifier/WindowSpecification()]
+    [SPECIFIC]  SqlIdentifier函数名()  [OVER SimpleIdentifier/WindowSpecification()]
+    [SPECIFIC]  SqlIdentifier函数名(List<Expression>) [OVER SimpleIdentifier/WindowSpecification()]
+    正常函数返回值  SqlCall function = createCall(函数名字, pos, 函数类型, distinct/all,函数参数);
+    窗口函数返回值:其中function就是正常函数返回的SqlCall
+    SqlStdOperatorTable.OVER.createCall(overPos, new SqlNode[] {function, id});
+    SqlStdOperatorTable.OVER.createCall( overPos, new SqlNode[] { function, e })
+    **/
     e = NamedFunctionCall() { return e; }
     |
-    e = ContextVariable() { return e; }
+    e = ContextVariable() { return e; } //返回系统定义的特殊变量名称 SqlIdentifier
     |
-    e = CompoundIdentifier() { return e; }
+    e = CompoundIdentifier() { return e; } //返回SqlIdentifier,由xxx.xxx.xxx组成的节点
     |
-    e = NewSpecification() { return e; }
+    e = NewSpecification() { return e; } //用户自定义一个UDT函数
+                                         SqlStdOperatorTable.NEW  createCall(xxx.xx.xx,poi,SqlFunctionCategory.USER_DEFINED_CONSTRUCTOR,null,参数集合)  比如New xxx.xxx() 构建无参数函数 或者 New xxx.xxx(表达式,表达式) 构造有参数函数
     |
-    e = CaseExpression() { return e; }
+    e = CaseExpression() { return e; } //case when then else  Case [表达式1]  when 表达式(可以是多个表达式,但之间的关系如何表达不确定) then 表达式 else 表达式 end
+                                         							SqlCase.createSwitched(pos, caseIdentifier,new SqlNodeList(whenList, whenPos),new SqlNodeList(thenList, thenPos),elseClause);
     |
-    e = SequenceExpression() { return e; }
+    e = SequenceExpression() { return e; } //支持select NEXT VALUE FOR 语法,暂时可忽略，创建SqlStdOperatorTable.NEXT_VALUE 或者 SqlStdOperatorTable.CURRENT_VALUE的类型SqlCall
+
 }
 
 SqlNode CaseExpression() :
@@ -2837,6 +2987,10 @@ SqlCall SequenceExpression() :
 /**
  * Parses an expression for setting a option in SQL, such as QUOTED_IDENTIFIERS,
  * or explain plan level (physical/logical).
+ 输出:new SqlSetOption(pos.plus(getPos()), scope, name, val)
+ 1.ALTER SYSTEM/SESSION set Identifier = Literal ### 代表数字、带有引号的字符串、时间格式
+ 2.ALTER SYSTEM/SESSION set Identifier = SimpleIdentifier
+ 3.ALTER SYSTEM/SESSION set Identifier = on/off SqlIdentifier(token.image.toUpperCase(), getPos());
  */
 SqlSetOption SqlSetOption() :
 {
@@ -2886,15 +3040,15 @@ SqlNode Literal() :
 }
 {
     (
-        e = NumericLiteral()
+        e = NumericLiteral() //正数、小数、科学计数法、负数
         |
-        e = StringLiteral()
+        e = StringLiteral() //带有``的字符串
         |
-        e = SpecialLiteral()
+        e = SpecialLiteral() //boolean类型 true、false、null、unknow
         |
-        e = DateTimeLiteral()
+        e = DateTimeLiteral() //日期格式
         |
-        e = IntervalLiteral()
+        e = IntervalLiteral() //interval日期格式
       <#-- additional literal parser methods are included here -->
       <#list parser.literalParserMethods as method>
         |
@@ -3485,6 +3639,7 @@ SqlNodeList SimpleIdentifierCommaList() :
 /**
   * List of simple identifiers in parentheses. The position extends from the
   * open parenthesis to the close parenthesis.
+  * SqlNodeList<SimpleIdentifier>  匹配 (xx,xx,xx)
   */
 SqlNodeList ParenthesizedSimpleIdentifierList() :
 {
@@ -5327,7 +5482,7 @@ String CommonNonReservedKeyWord() :
     < UNSIGNED_INTEGER_LITERAL: (["0"-"9"])+ >
     |
     < APPROX_NUMERIC_LITERAL:
-    (<UNSIGNED_INTEGER_LITERAL> | <DECIMAL_NUMERIC_LITERAL>) <EXPONENT> >
+    (<UNSIGNED_INTEGER_LITERAL> | <DECIMAL_NUMERIC_LITERAL>) <EXPONENT> > //数字+e+9科学计数法
     |
     < DECIMAL_NUMERIC_LITERAL:
     (["0"-"9"])+(".")?(["0"-"9"])*

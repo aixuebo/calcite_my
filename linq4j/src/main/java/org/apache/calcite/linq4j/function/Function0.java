@@ -18,7 +18,7 @@ package org.apache.calcite.linq4j.function;
 
 /**
  * Function with no parameters.
- *
+ * 无参数,直接有返回值
  * @param <R> Result type
  */
 public interface Function0<R> extends Function<R> {

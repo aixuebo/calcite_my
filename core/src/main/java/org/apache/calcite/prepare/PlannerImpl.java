@@ -50,7 +50,7 @@ import java.util.List;
 
 /** Implementation of {@link org.apache.calcite.tools.Planner}. */
 public class PlannerImpl implements Planner {
-  private final SqlOperatorTable operatorTable;
+  private final SqlOperatorTable operatorTable;//持有各种函数的映射,比如 SUM--> SqlSumAggFunction
   private final ImmutableList<Program> programs;
   private final FrameworkConfig config;
 
@@ -163,8 +163,11 @@ public class PlannerImpl implements Planner {
     return sqlNode;
   }
 
+  /**
+   * 对sqlNode进行验证
+   */
   public SqlNode validate(SqlNode sqlNode) throws ValidationException {
-    ensure(State.STATE_3_PARSED);
+    ensure(State.STATE_3_PARSED);//已完成sqlNode解析
     this.validator =
         new CalciteSqlValidator(
             operatorTable, createCatalogReader(), typeFactory);
@@ -173,7 +176,7 @@ public class PlannerImpl implements Planner {
     } catch (RuntimeException e) {
       throw new ValidationException(e);
     }
-    state = State.STATE_4_VALIDATED;
+    state = State.STATE_4_VALIDATED;//已完成sql校验
     return validatedSqlNode;
   }
 
@@ -256,7 +259,9 @@ public class PlannerImpl implements Planner {
     return program.run(planner, rel, requiredOutputTraits);
   }
 
-  /** Stage of a statement in the query-preparation lifecycle. */
+  /** Stage of a statement in the query-preparation lifecycle.
+   * 查询的生命周期
+   **/
   private enum State {
     STATE_0_CLOSED {
       @Override void from(PlannerImpl planner) {
@@ -275,11 +280,13 @@ public class PlannerImpl implements Planner {
         planner.ready();
       }
     },
-    STATE_3_PARSED,
-    STATE_4_VALIDATED,
-    STATE_5_CONVERTED;
+    STATE_3_PARSED,//已解析成sqlNode
+    STATE_4_VALIDATED,//已验证
+    STATE_5_CONVERTED;//已转换成功
 
-    /** Moves planner's state to this state. This must be a higher state. */
+    /** Moves planner's state to this state. This must be a higher state.
+     * 默认不会状态转移
+     **/
     void from(PlannerImpl planner) {
       throw new IllegalArgumentException("cannot move from " + planner.state
           + " to " + this);

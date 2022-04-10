@@ -36,6 +36,7 @@ import java.util.Properties;
  * <p>Since a {@code CalciteConnection} implements the linq4j
  * {@link QueryProvider} interface, you can use a connection to execute
  * expression trees as queries.</p>
+ * 主要实现连接器与schema之间的关系绑定
  */
 public interface CalciteConnection extends Connection, QueryProvider {
   /**
@@ -45,6 +46,7 @@ public interface CalciteConnection extends Connection, QueryProvider {
    * also nested schemas.</p>
    *
    * @return Root schema
+   * 连接器对应的schema对象
    */
   SchemaPlus getRootSchema();
 
@@ -52,6 +54,7 @@ public interface CalciteConnection extends Connection, QueryProvider {
    * Returns the type factory.
    *
    * @return Type factory
+   * 连接器对应的字段类型与sql类型映射关系
    */
   JavaTypeFactory getTypeFactory();
 
@@ -66,15 +69,18 @@ public interface CalciteConnection extends Connection, QueryProvider {
    * implementations of stateful connections and configuration.</p>
    *
    * @return properties
+   * 连接属性信息
    */
   Properties getProperties();
 
   // in java.sql.Connection from JDK 1.7, but declare here to allow other JDKs
+  //设置连接器连接的是哪一个数据库schema
   void setSchema(String schema) throws SQLException;
 
   // in java.sql.Connection from JDK 1.7, but declare here to allow other JDKs
   String getSchema() throws SQLException;
 
+  //连接属性信息
   CalciteConnectionConfig config();
 }
 

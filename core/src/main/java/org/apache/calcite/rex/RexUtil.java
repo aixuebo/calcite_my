@@ -520,11 +520,12 @@ public class RexUtil {
    * @param exprs       Expressions
    * @param names       Field names, may be null, or elements may be null
    * @return Record type
+   * 返回一个新的数据结构
    */
   public static RelDataType createStructType(
       RelDataTypeFactory typeFactory,
-      final List<? extends RexNode> exprs,
-      final List<String> names) {
+      final List<? extends RexNode> exprs,//表达式,可以描述返回类型
+      final List<String> names) {//字段名称
     final RelDataTypeFactory.FieldInfoBuilder builder =
         typeFactory.builder();
     for (int i = 0; i < exprs.size(); i++) {

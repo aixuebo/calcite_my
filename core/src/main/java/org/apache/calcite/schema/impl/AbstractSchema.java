@@ -51,6 +51,7 @@ import java.util.Set;
  * <p>For constructing custom maps and multi-maps, we recommend
  * {@link com.google.common.base.Suppliers} and
  * {@link com.google.common.collect.Maps}.</p>
+ * 默认的空实现
  */
 public class AbstractSchema implements Schema {
   public AbstractSchema() {

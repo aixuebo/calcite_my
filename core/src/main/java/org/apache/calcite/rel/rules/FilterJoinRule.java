@@ -44,7 +44,7 @@ import java.util.List;
  */
 public abstract class FilterJoinRule extends RelOptRule {
   /** Predicate that always returns true. With this predicate, every filter
-   * will be pushed into the ON clause. */
+   * will be pushed into the ON clause. 永远都是true*/
   public static final Predicate TRUE_PREDICATE =
       new Predicate() {
         public boolean apply(Join join, JoinRelType joinType, RexNode exp) {

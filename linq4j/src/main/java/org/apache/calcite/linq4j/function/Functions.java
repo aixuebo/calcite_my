@@ -173,6 +173,7 @@ public abstract class Functions {
     return (Predicate2<T1, T2>) Predicate2.FALSE;
   }
 
+  //原始值返回,即什么都不变
   public static <TSource> Function1<TSource, TSource> identitySelector() {
     //noinspection unchecked
     return (Function1) Function1.IDENTITY;
@@ -307,6 +308,7 @@ public abstract class Functions {
 
   /**
    * Creates a view of a list that applies a function to each element.
+   * 循环list,每一个元素进入function处理
    */
   public static <T1, R> List<R> adapt(final List<T1> list,
       final Function1<T1, R> f) {

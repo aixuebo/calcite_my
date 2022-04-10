@@ -22,6 +22,7 @@ import org.apache.calcite.sql.SqlNode;
 
 /**
  * Converts expressions from {@link RexNode} to {@link SqlNode}.
+ * 表达式到sqlNode的转换
  */
 public interface RexToSqlNodeConverter {
   //~ Methods ----------------------------------------------------------------
@@ -32,6 +33,7 @@ public interface RexToSqlNodeConverter {
    *
    * @param node RexNode to translate
    * @return SqlNode, or null if no translation was available
+   * 负责下面三个类型的统筹工作,相当于工厂模式
    */
   SqlNode convertNode(RexNode node);
 
@@ -40,6 +42,7 @@ public interface RexToSqlNodeConverter {
    *
    * @param call RexCall to translate
    * @return SqlNode, or null if no translation was available
+   * 函数表达式转换
    */
   SqlNode convertCall(RexCall call);
 
@@ -48,6 +51,7 @@ public interface RexToSqlNodeConverter {
    *
    * @param literal RexLiteral to translate
    * @return SqlNode, or null if no translation was available
+   * 常量表达式转换
    */
   SqlNode convertLiteral(RexLiteral literal);
 
@@ -56,6 +60,7 @@ public interface RexToSqlNodeConverter {
    *
    * @param ref RexInputRef to translate
    * @return SqlNode, or null if no translation was available
+   * 字段引用表达式抓换
    */
   SqlNode convertInputRef(RexInputRef ref);
 }

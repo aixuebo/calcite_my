@@ -22,13 +22,13 @@ package org.apache.calcite.avatica.util;
  * For example, Oracle converts unquoted identifiers to upper-case, but
  * quoted identifiers are unchanged.</p> */
 public enum Casing {
-  /** The case of identifiers is not changed. */
+  /** The case of identifiers is not changed. 不更改*/
   UNCHANGED,
 
-  /** Identifiers are converted to upper-case. */
+  /** Identifiers are converted to upper-case. 都大写*/
   TO_UPPER,
 
-  /** Identifiers are converted to lower-case. */
+  /** Identifiers are converted to lower-case. 都小写*/
   TO_LOWER
 }
 

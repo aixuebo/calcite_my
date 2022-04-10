@@ -33,12 +33,13 @@ import java.util.List;
  * Implementation of a function that is based on a method.
  * This class mainly solves conversion of method parameter types to {@code
  * List<FunctionParameter>} form.
+ * 实现一个function,该function是某一个class的一个方法
  */
 public abstract class ReflectiveFunctionBase implements Function {
   /** Method that implements the function. */
-  public final Method method;
+  public final Method method;//函数function
   /** Types of parameter for the function call. */
-  public final List<FunctionParameter> parameters;
+  public final List<FunctionParameter> parameters;//参数类型
 
   /**
    * {@code ReflectiveFunctionBase} constructor
@@ -64,6 +65,7 @@ public abstract class ReflectiveFunctionBase implements Function {
     return toFunctionParameters(Arrays.asList(types));
   }
 
+  //参数是方法的参数类型--返回方法参数类型迭代器
   public static ImmutableList<FunctionParameter> toFunctionParameters(
       Iterable<? extends Class> types) {
     final ImmutableList.Builder<FunctionParameter> res =
@@ -71,7 +73,7 @@ public abstract class ReflectiveFunctionBase implements Function {
     int i = 0;
     for (final Class type : types) {
       final int ordinal = i;
-      res.add(new FunctionParameter() {
+      res.add(new FunctionParameter() {//标识第几个参数,以及参数name、参数类型
         public int getOrdinal() {
           return ordinal;
         }
@@ -93,6 +95,7 @@ public abstract class ReflectiveFunctionBase implements Function {
    * Verifies if given class has public constructor with zero arguments.
    * @param clazz class to verify
    * @return true if given class has public constructor with zero arguments
+   * true表示有无参数的构造函数
    */
   static boolean classHasPublicZeroArgsConstructor(Class<?> clazz) {
     for (Constructor<?> constructor : clazz.getConstructors()) {
@@ -109,6 +112,7 @@ public abstract class ReflectiveFunctionBase implements Function {
    * @param clazz class to search method in
    * @param name name of the method to find
    * @return the first method with matching name or null when no method found
+   * 是否class中存在该方法,存在则返回方法实例
    */
   static Method findMethod(Class<?> clazz, String name) {
     for (Method method : clazz.getMethods()) {

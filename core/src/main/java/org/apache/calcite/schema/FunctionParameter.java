@@ -24,6 +24,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
  *
  * <p>NOTE: We'd have called it {@code Parameter} but the overlap with
  * {@link java.lang.reflect.Parameter} was too confusing.</p>
+ * 表示方法的第几个参数,以及参数name、参数类型
  */
 public interface FunctionParameter {
   /**

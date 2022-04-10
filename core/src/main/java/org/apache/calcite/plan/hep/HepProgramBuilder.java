@@ -26,12 +26,14 @@ import java.util.List;
 
 /**
  * HepProgramBuilder creates instances of {@link HepProgram}.
+ * 构建程序如何运行
  */
 public class HepProgramBuilder {
   //~ Instance fields --------------------------------------------------------
 
-  private final List<HepInstruction> instructions =
-      new ArrayList<HepInstruction>();
+  //指令集合
+  private final List<HepInstruction> instructions = new ArrayList<HepInstruction>();
+
 
   private HepInstruction.BeginGroup group;
 
@@ -67,10 +69,8 @@ public class HepProgramBuilder {
    *
    * @param ruleClass class of rules to fire, e.g. ConverterRule.class
    */
-  public <R extends RelOptRule> HepProgramBuilder addRuleClass(
-      Class<R> ruleClass) {
-    HepInstruction.RuleClass instruction =
-        new HepInstruction.RuleClass<R>();
+  public <R extends RelOptRule> HepProgramBuilder addRuleClass(Class<R> ruleClass) {
+    HepInstruction.RuleClass instruction = new HepInstruction.RuleClass<R>();
     instruction.ruleClass = ruleClass;
     instructions.add(instruction);
     return this;
@@ -92,8 +92,7 @@ public class HepProgramBuilder {
    * @param rules collection of rules to fire
    */
   public HepProgramBuilder addRuleCollection(Collection<RelOptRule> rules) {
-    HepInstruction.RuleCollection instruction =
-        new HepInstruction.RuleCollection();
+    HepInstruction.RuleCollection instruction = new HepInstruction.RuleCollection();
     instruction.rules = rules;
     instructions.add(instruction);
     return this;
@@ -110,8 +109,7 @@ public class HepProgramBuilder {
    * @param rule rule to fire
    */
   public HepProgramBuilder addRuleInstance(RelOptRule rule) {
-    HepInstruction.RuleInstance instruction =
-        new HepInstruction.RuleInstance();
+    HepInstruction.RuleInstance instruction = new HepInstruction.RuleInstance();
     instruction.rule = rule;
     instructions.add(instruction);
     return this;
@@ -131,8 +129,7 @@ public class HepProgramBuilder {
    * @param ruleDescription description of rule to fire
    */
   public HepProgramBuilder addRuleByDescription(String ruleDescription) {
-    HepInstruction.RuleInstance instruction =
-        new HepInstruction.RuleInstance();
+    HepInstruction.RuleInstance instruction = new HepInstruction.RuleInstance();
     instruction.ruleDescription = ruleDescription;
     instructions.add(instruction);
     return this;
@@ -177,8 +174,7 @@ public class HepProgramBuilder {
    */
   public HepProgramBuilder addConverters(boolean guaranteed) {
     assert group == null;
-    HepInstruction.ConverterRules instruction =
-        new HepInstruction.ConverterRules();
+    HepInstruction.ConverterRules instruction = new HepInstruction.ConverterRules();
     instruction.guaranteed = guaranteed;
     instructions.add(instruction);
     return this;
@@ -191,8 +187,7 @@ public class HepProgramBuilder {
    */
   public HepProgramBuilder addCommonRelSubExprInstruction() {
     assert group == null;
-    HepInstruction.CommonRelSubExprRules instruction =
-        new HepInstruction.CommonRelSubExprRules();
+    HepInstruction.CommonRelSubExprRules instruction = new HepInstruction.CommonRelSubExprRules();
     instructions.add(instruction);
     return this;
   }

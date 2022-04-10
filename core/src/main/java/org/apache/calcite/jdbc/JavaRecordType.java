@@ -27,12 +27,13 @@ import java.util.List;
  *
  * <p><strong>NOTE: This class is experimental and subject to
  * change/removal without notice</strong>.</p>
+ * 一个java对象表示一行数据
  */
 public class JavaRecordType extends RelRecordType {
-  final Class clazz;
+  final Class clazz;//java对象
 
   public JavaRecordType(List<RelDataTypeField> fields, Class clazz) {
-    super(fields);
+    super(fields);//每一个字段
     this.clazz = clazz;
     assert clazz != null;
   }

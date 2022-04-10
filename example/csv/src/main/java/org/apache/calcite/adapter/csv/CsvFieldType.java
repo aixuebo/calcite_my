@@ -29,6 +29,7 @@ import java.util.Map;
  * <p>Usually, and unless specified explicitly in the header row, a field is
  * of type {@link #STRING}. But specifying the field type in the header row
  * makes it easier to write SQL.</p>
+ * sql类型与string字符串描述的映射关系
  */
 enum CsvFieldType {
   STRING(String.class, "string"),

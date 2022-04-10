@@ -36,22 +36,25 @@ public interface RelOptTable {
    * Obtains an identifier for this table. The identifier must be unique with
    * respect to the Connection producing this table.
    *
-   * @return qualified name
+   * @return qualified name 表的全路径名称
    */
   List<String> getQualifiedName();
 
   /**
    * Returns an estimate of the number of rows in the table.
+   * 预估表的数据量
    */
   double getRowCount();
 
   /**
    * Describes the type of rows returned by this table.
+   * 表的表结构
    */
   RelDataType getRowType();
 
   /**
    * Returns the {@link RelOptSchema} this table belongs to.
+   * 表归属哪个schema
    */
   RelOptSchema getRelOptSchema();
 
@@ -65,6 +68,7 @@ public interface RelOptTable {
    * then optimizes this expression by
    * applying {@link org.apache.calcite.plan.RelOptRule rules} to transform it
    * into more efficient access methods for this table.</p>
+   * 转换成关系表达式
    */
   RelNode toRel(ToRelContext context);
 
@@ -73,6 +77,7 @@ public interface RelOptTable {
    * returned from this table.
    *
    * @see RelNode#getCollationList()
+   * 如何排序
    */
   List<RelCollation> getCollationList();
 
@@ -87,6 +92,7 @@ public interface RelOptTable {
 
   /**
    * Finds an interface implemented by this table.
+   * 找到该类实现的接口
    */
   <T> T unwrap(Class<T> clazz);
 
@@ -97,7 +103,9 @@ public interface RelOptTable {
    */
   Expression getExpression(Class clazz);
 
-  /** Returns a table with the given extra fields. */
+  /** Returns a table with the given extra fields.
+   * 追加额外的列
+   **/
   RelOptTable extend(List<RelDataTypeField> extendedFields);
 
   /** Can expand a view into relational expressions. */

@@ -27,11 +27,12 @@ import org.apache.calcite.sql.validate.SqlValidatorScope;
  * SQL statement. The textual order in which dynamic parameters appear within an
  * SQL statement is the only property which distinguishes them, so this 0-based
  * index is recorded as soon as the parameter is encountered.
+ * 动态参数,即代表?
  */
 public class SqlDynamicParam extends SqlNode {
   //~ Instance fields --------------------------------------------------------
 
-  private final int index;
+  private final int index;//第几个参数
 
   //~ Constructors -----------------------------------------------------------
 
@@ -68,6 +69,7 @@ public class SqlDynamicParam extends SqlNode {
     validator.validateDynamicParam(this);
   }
 
+  //无单调性,常量
   public SqlMonotonicity getMonotonicity(SqlValidatorScope scope) {
     return SqlMonotonicity.CONSTANT;
   }

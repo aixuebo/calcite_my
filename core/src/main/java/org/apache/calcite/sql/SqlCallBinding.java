@@ -65,10 +65,9 @@ public class SqlCallBinding extends SqlOperatorBinding {
   }
 
   //~ Methods ----------------------------------------------------------------
-
+  //返回group by语法有多少个字段
   @Override public int getGroupCount() {
-    final SelectScope selectScope =
-        SqlValidatorUtil.getEnclosingSelectScope(scope);
+    final SelectScope selectScope = SqlValidatorUtil.getEnclosingSelectScope(scope);
     if (selectScope == null) {
       // Probably "VALUES expr". Treat same as "SELECT expr GROUP BY ()"
       return 0;
@@ -110,13 +109,15 @@ public class SqlCallBinding extends SqlOperatorBinding {
   }
 
   // implement SqlOperatorBinding
+  //字符串处理
   public String getStringLiteralOperand(int ordinal) {
     SqlNode node = call.operand(ordinal);
     return SqlLiteral.stringValue(node);
   }
 
   // implement SqlOperatorBinding
-  public int getIntLiteralOperand(int ordinal) {
+  //返回int值
+  public int getIntLiteralOperand(int ordinal) {//第几个参数
     // todo: move this to SqlTypeUtil
     SqlNode node = call.operand(ordinal);
     if (node instanceof SqlLiteral) {
@@ -124,7 +125,7 @@ public class SqlCallBinding extends SqlOperatorBinding {
       return sqlLiteral.intValue(true);
     } else if (node instanceof SqlCall) {
       final SqlCall c = (SqlCall) node;
-      if (c.getKind() == SqlKind.MINUS_PREFIX) {
+      if (c.getKind() == SqlKind.MINUS_PREFIX) { //负数方法
         SqlNode child = c.operand(0);
         if (child instanceof SqlLiteral) {
           return -((SqlLiteral) child).intValue(true);
@@ -135,11 +136,12 @@ public class SqlCallBinding extends SqlOperatorBinding {
   }
 
   // implement SqlOperatorBinding
+  //值是否是null
   public boolean isOperandNull(int ordinal, boolean allowCast) {
     return SqlUtil.isNullLiteral(call.operand(ordinal), allowCast);
   }
 
-  // implement SqlOperatorBinding
+  // implement SqlOperatorBinding 参数数量
   public int getOperandCount() {
     return call.getOperandList().size();
   }

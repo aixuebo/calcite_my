@@ -34,12 +34,13 @@ import org.apache.calcite.util.Util;
  * <p>YEAR/MONTH intervals are not implemented yet.</p>
  *
  * <p>The interval string, such as '1:00:05.345', is not parsed yet.</p>
+ * 创建时间间隔语法
  */
 public class SqlIntervalLiteral extends SqlLiteral {
   //~ Constructors -----------------------------------------------------------
 
   protected SqlIntervalLiteral(
-      int sign,
+      int sign,//+或者-
       String intervalStr,
       SqlIntervalQualifier intervalQualifier,
       SqlTypeName sqlTypeName,

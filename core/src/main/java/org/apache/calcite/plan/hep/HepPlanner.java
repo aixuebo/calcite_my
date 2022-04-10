@@ -63,15 +63,16 @@ import java.util.logging.Level;
 /**
  * HepPlanner is a heuristic implementation of the {@link RelOptPlanner}
  * interface.
+ * 程序优化入口方法:RelNode findBestExp()
  */
 public class HepPlanner extends AbstractRelOptPlanner {
   //~ Instance fields --------------------------------------------------------
 
-  private HepProgram mainProgram;
+  private HepProgram mainProgram;//主程序
 
   private HepProgram currentProgram;
 
-  private HepRelVertex root;
+  private HepRelVertex root;//准备去优化的关系表达式
 
   private RelTraitSet requestedRootTraits;
 
@@ -258,8 +259,7 @@ public class HepPlanner extends AbstractRelOptPlanner {
     }
   }
 
-  void executeInstruction(
-      HepInstruction.RuleClass<?> instruction) {
+  void executeInstruction(HepInstruction.RuleClass<?> instruction) {
     if (skippingGroup()) {
       return;
     }
@@ -295,8 +295,7 @@ public class HepPlanner extends AbstractRelOptPlanner {
     }
   }
 
-  void executeInstruction(
-      HepInstruction.ConverterRules instruction) {
+  void executeInstruction(HepInstruction.ConverterRules instruction) {
     assert currentProgram.group == null;
     if (instruction.ruleSet == null) {
       instruction.ruleSet = new LinkedHashSet<RelOptRule>();
@@ -917,8 +916,7 @@ public class HepPlanner extends AbstractRelOptPlanner {
     graphSizeLastGC = graph.vertexSet().size();
 
     // Clean up digest map too.
-    Iterator<Map.Entry<String, HepRelVertex>> digestIter =
-        mapDigestToVertex.entrySet().iterator();
+    Iterator<Map.Entry<String, HepRelVertex>> digestIter = mapDigestToVertex.entrySet().iterator();
     while (digestIter.hasNext()) {
       HepRelVertex vertex = digestIter.next().getValue();
       if (sweepSet.contains(vertex)) {

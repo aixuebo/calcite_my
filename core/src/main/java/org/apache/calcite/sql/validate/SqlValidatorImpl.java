@@ -141,20 +141,24 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
   /**
    * Validation status.
+   * 校验状态
    */
   public enum Status {
     /**
      * Validation has not started for this scope.
+     * 尚未开始
      */
     UNVALIDATED,
 
     /**
      * Validation is in progress for this scope.
+     * 在校验过程中
      */
     IN_PROGRESS,
 
     /**
      * Validation has completed (perhaps unsuccessfully).
+     * 已校验完成,但不管是否成功
      */
     VALID
   }
@@ -793,10 +797,10 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
   private SqlNode validateScopedExpression(
       SqlNode topNode,
       SqlValidatorScope scope) {
-    SqlNode outermostNode = performUnconditionalRewrites(topNode, false);
+    SqlNode outermostNode = performUnconditionalRewrites(topNode, false);//sql重写
     cursorSet.add(outermostNode);
     if (TRACER.isLoggable(Level.FINER)) {
-      TRACER.finer("After unconditional rewrite: " + outermostNode.toString());
+      TRACER.finer("After unconditional rewrite: " + outermostNode.toString());//打印无条件重写后的节点内容
     }
     if (outermostNode.isA(SqlKind.TOP_LEVEL)) {
       registerQuery(scope, null, outermostNode, outermostNode, null, false);
@@ -836,6 +840,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
   /**
    * Validates a namespace.
+   * 校验一个命名空间,
+   * 参数是具体的命名空间实现类,比如SelectNamespace
    */
   protected void validateNamespace(final SqlValidatorNamespace namespace) {
     namespace.validate();
@@ -907,6 +913,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     return getNamespace(node);
   }
 
+  //该节点对应的空间表结果
   public SqlValidatorNamespace getNamespace(SqlNode node) {
     switch (node.getKind()) {
     case AS:
@@ -931,8 +938,9 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    * Performs expression rewrites which are always used unconditionally. These
    * rewrites massage the expression tree into a standard form so that the
    * rest of the validation logic can be simpler.
-   *
-   * @param node      expression to be rewritten
+   * 总是无条件的去执行表达式重写。
+   * 重写表达式 进入标准形式,目的是余下来的校验更简单
+   * @param node      expression to be rewritten 要重写的表达式
    * @param underFrom whether node appears directly under a FROM clause
    * @return rewritten expression
    */
@@ -955,7 +963,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       final List<SqlNode> operands = call.getOperandList();
       for (int i = 0; i < operands.size(); i++) {
         SqlNode operand = operands.get(i);
-        boolean childUnderFrom;
+        boolean childUnderFrom;//true表示循环到from参数了
         if (kind == SqlKind.SELECT) {
           childUnderFrom = i == SqlSelect.FROM_OPERAND;
         } else if (kind == SqlKind.AS && (i == 0)) {
@@ -968,7 +976,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
         newOperand =
             performUnconditionalRewrites(operand, childUnderFrom);
         if (newOperand != null && newOperand != operand) {
-          call.setOperand(i, newOperand);
+          call.setOperand(i, newOperand);//替换成标准形式
         }
       }
 
@@ -1029,6 +1037,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
         // Don't clobber existing ORDER BY.  It may be needed for
         // an order-sensitive function like RANK.
+        //不能破坏已存在的order by,如果子查询没有order by,可以考虑将外部的order by 赋予select对象
         if (select.getOrderList() == null) {
           // push ORDER BY into existing select
           select.setOrderBy(orderBy.orderList);
@@ -1040,19 +1049,20 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       final SqlNodeList selectList = new SqlNodeList(SqlParserPos.ZERO);
       selectList.add(new SqlIdentifier("*", SqlParserPos.ZERO));
       final SqlNodeList orderList;
+      //包含select语法 && select语法内有聚合函数
       if (getInnerSelect(node) != null && isAggregate(getInnerSelect(node))) {
         orderList =
             orderBy.orderList.clone(orderBy.orderList.getParserPosition());
         // We assume that ORDER BY item does not have ASC etc.
         // We assume that ORDER BY item is present in SELECT list.
         for (int i = 0; i < orderList.size(); i++) {
-          SqlNode sqlNode = orderList.get(i);
-          SqlNodeList selectList2 = getInnerSelect(node).getSelectList();
+          SqlNode sqlNode = orderList.get(i);//每一个order by的内容
+          SqlNodeList selectList2 = getInnerSelect(node).getSelectList();//order by中select的内容
           for (Ord<SqlNode> sel : Ord.zip(selectList2)) {
-            if (stripAs(sel.e).equalsDeep(sqlNode, false)) {
+            if (stripAs(sel.e).equalsDeep(sqlNode, false)) {//如果order by的内容在select中
               orderList.set(i,
                   SqlLiteral.createExactNumeric(Integer.toString(sel.i + 1),
-                      SqlParserPos.ZERO));
+                      SqlParserPos.ZERO));//设置order by 字段位置与selet字段位置的映射关系
             }
           }
         }
@@ -1109,6 +1119,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     return node;
   }
 
+  //返回select语法
   private SqlSelect getInnerSelect(SqlNode node) {
     for (;;) {
       if (node instanceof SqlSelect) {
@@ -1901,7 +1912,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       registerNamespace(null, null, joinNamespace, forceNullable);
       return join;
 
-    case IDENTIFIER:
+    case IDENTIFIER://xx.xx,应对与from xxx.xx
       final SqlIdentifier id = (SqlIdentifier) node;
       final IdentifierNamespace newNs =
           new IdentifierNamespace(
@@ -2094,7 +2105,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       SqlValidatorScope parentScope,
       SqlValidatorScope usingScope,
       SqlNode node,
-      SqlNode enclosingNode,
+      SqlNode enclosingNode,//封闭的节点
       String alias,
       boolean forceNullable,
       boolean checkUpdate) {
@@ -2107,21 +2118,19 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     switch (node.getKind()) {
     case SELECT:
       final SqlSelect select = (SqlSelect) node;
-      final SelectNamespace selectNs =
-          createSelectNamespace(select, enclosingNode);
-      registerNamespace(usingScope, alias, selectNs, forceNullable);
-      final SqlValidatorScope windowParentScope =
-          (usingScope != null) ? usingScope : parentScope;
-      SelectScope selectScope =
-          new SelectScope(parentScope, windowParentScope, select);
+      final SelectNamespace selectNs = createSelectNamespace(select, enclosingNode);//创建select表空间,即该表有什么字段
+      registerNamespace(usingScope, alias, selectNs, forceNullable);//注册表空间
+
+      final SqlValidatorScope windowParentScope = (usingScope != null) ? usingScope : parentScope;
+      SelectScope selectScope = new SelectScope(parentScope, windowParentScope, select);//创建select的scope
       scopes.put(select, selectScope);
 
       // Start by registering the WHERE clause
-      whereScopes.put(select, selectScope);
+      whereScopes.put(select, selectScope);//处理where语句
       registerOperandSubqueries(
           selectScope,
           select,
-          SqlSelect.WHERE_OPERAND);
+          SqlSelect.WHERE_OPERAND);//处理where语法节点
 
       // Register FROM with the inherited scope 'parentScope', not
       // 'selectScope', otherwise tables in the FROM clause would be
@@ -2481,8 +2490,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
   }
 
   private void registerSubqueries(
-      SqlValidatorScope parentScope,
-      SqlNode node) {
+      SqlValidatorScope parentScope,//join对应的scope
+      SqlNode node) {//aa.id = bb.id
     if (node == null) {
       return;
     }
@@ -2519,22 +2528,21 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    * operand to a scalar subquery if the operator requires it.
    *
    * @param parentScope    Parent scope
-   * @param call           Call
-   * @param operandOrdinal Ordinal of operand within call
+   * @param call           Call 比如select
+   * @param operandOrdinal Ordinal of operand within call 获取call的第几个参数,比如获取select中的where节点
    * @see SqlOperator#argumentMustBeScalar(int)
    */
   private void registerOperandSubqueries(
       SqlValidatorScope parentScope,
       SqlCall call,
       int operandOrdinal) {
-    SqlNode operand = call.operand(operandOrdinal);
+    SqlNode operand = call.operand(operandOrdinal);//比如获取where节点
     if (operand == null) {
       return;
     }
     if (operand.getKind().belongsTo(SqlKind.QUERY)
         && call.getOperator().argumentMustBeScalar(operandOrdinal)) {
-      operand =
-          SqlStdOperatorTable.SCALAR_QUERY.createCall(
+      operand = SqlStdOperatorTable.SCALAR_QUERY.createCall(
               operand.getParserPosition(),
               operand);
       call.setOperand(operandOrdinal, operand);
@@ -2553,6 +2561,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     }
   }
 
+  //校验字符内容
   public void validateLiteral(SqlLiteral literal) {
     switch (literal.getTypeName()) {
     case DECIMAL:
@@ -2621,6 +2630,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     }
   }
 
+  //必须是一个double值
   private void validateLiteralAsDouble(SqlLiteral literal) {
     BigDecimal bd = (BigDecimal) literal.getValue();
     double d = bd.doubleValue();
@@ -2633,6 +2643,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     // REVIEW jvs 4-Aug-2004:  what about underflow?
   }
 
+  //处理日期内容
   public void validateIntervalQualifier(SqlIntervalQualifier qualifier) {
     assert qualifier != null;
     boolean startPrecisionOutOfRange = false;
@@ -2857,7 +2868,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
   /**
    * Validates a SELECT statement.
-   *
+   * 校验selectNode
    * @param select        Select statement
    * @param targetRowType Desired row type, must not be null, may be the data
    *                      type 'unknown'.
@@ -2869,7 +2880,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
     // Namespace is either a select namespace or a wrapper around one.
     final SelectNamespace ns =
-        getNamespace(select).unwrap(SelectNamespace.class);
+        getNamespace(select).unwrap(SelectNamespace.class);//强转成SelectNamespace
 
     // Its rowtype is null, meaning it hasn't been validated yet.
     // This is important, because we need to take the targetRowType into
@@ -2877,8 +2888,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     assert ns.rowType == null;
 
     if (select.isDistinct()) {
-      validateFeature(RESOURCE.sQLFeature_E051_01(),
-          select.getModifierNode(SqlSelectKeyword.DISTINCT)
+      validateFeature(RESOURCE.sQLFeature_E051_01(),//校验关键字的位置?后续看到runtime的时候补一下
+          select.getModifierNode(SqlSelectKeyword.DISTINCT)//获取distinct关键字的位置
               .getParserPosition());
     }
 
@@ -2922,7 +2933,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     // window name in the WINDOW clause etc.
     final RelDataType rowType =
         validateSelectList(selectItems, select, targetRowType);
-    ns.setType(rowType);
+    ns.setType(rowType);//设置输出row的类型
 
     // Validate ORDER BY after we have set ns.rowType because in some
     // dialects you can refer to columns of the select list, e.g.
@@ -3267,7 +3278,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       Set<String> aliasList,
       List<Map.Entry<String, RelDataType>> fieldList) {
     // A scalar subquery only has one output column.
-    if (1 != selectItem.getSelectList().size()) {
+    if (1 != selectItem.getSelectList().size()) {//只允许有一个列
       throw newValidationError(selectItem,
           RESOURCE.onlyScalarSubqueryAllowed());
     }
@@ -3745,6 +3756,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     }
   }
 
+  //找到一个字段对应的类型创建一个空间
   SqlValidatorNamespace lookupFieldNamespace(RelDataType rowType, String name) {
     final RelDataTypeField field = catalogReader.field(rowType, name);
     return new FieldNamespace(this, field.getType());
@@ -4122,6 +4134,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
   /**
    * Converts an expression into canonical form by fully-qualifying any
    * identifiers.
+   * 将任意identifiers字符串表达式转换成合法的
    */
   private static class Expander extends SqlScopedShuttle {
     private final SqlValidatorImpl validator;
@@ -4136,14 +4149,12 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     @Override public SqlNode visit(SqlIdentifier id) {
       // First check for builtin functions which don't have
       // parentheses, like "LOCALTIME".
-      SqlCall call =
-          SqlUtil.makeCall(
-              validator.getOperatorTable(),
-              id);
+      //id字符串可能是无参数的函数,如果是,则将SqlIdentifier转换成SqlCall
+      SqlCall call = SqlUtil.makeCall(validator.getOperatorTable(),id);
       if (call != null) {
         return call.accept(this);
       }
-      final SqlIdentifier fqId = getScope().fullyQualify(id).identifier;
+      final SqlIdentifier fqId = getScope().fullyQualify(id).identifier;//将列名字补全
       validator.setOriginal(fqId, id);
       return fqId;
     }
@@ -4157,8 +4168,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       }
       // Only visits arguments which are expressions. We don't want to
       // qualify non-expressions such as 'x' in 'empno * 5 AS x'.
-      ArgHandler<SqlNode> argHandler =
-          new CallCopyingArgHandler(call, false);
+      ArgHandler<SqlNode> argHandler = new CallCopyingArgHandler(call, false);
       call.getOperator().acceptCall(this, call, true, argHandler);
       final SqlNode result = argHandler.result();
       validator.setOriginal(result, call);

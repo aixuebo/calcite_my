@@ -28,6 +28,7 @@ import java.util.List;
  * <p>Note that the structure of a program is immutable, but the planner uses it
  * as read/write during planning, so a program can only be in use by a single
  * planner at a time.
+ * 代表一个程序。按照顺序执行rule规则
  */
 public class HepProgram {
   //~ Static fields/initializers ---------------------------------------------
@@ -39,11 +40,11 @@ public class HepProgram {
 
   //~ Instance fields --------------------------------------------------------
 
-  final ImmutableList<HepInstruction> instructions;
+  final ImmutableList<HepInstruction> instructions;//需要按照顺序执行的指令集
 
   int matchLimit;
 
-  HepMatchOrder matchOrder;
+  HepMatchOrder matchOrder;//匹配方式
 
   HepInstruction.EndGroup group;
 
@@ -53,6 +54,7 @@ public class HepProgram {
    * Creates a new empty HepProgram. The program has an initial match order of
    * {@link org.apache.calcite.plan.hep.HepMatchOrder#ARBITRARY}, and an initial
    * match limit of {@link #MATCH_UNTIL_FIXPOINT}.
+   * 持有要执行的指令集
    */
   HepProgram(List<HepInstruction> instructions) {
     this.instructions = ImmutableList.copyOf(instructions);
@@ -69,7 +71,7 @@ public class HepProgram {
     matchOrder = HepMatchOrder.ARBITRARY;
     group = null;
 
-    for (HepInstruction instruction : instructions) {
+    for (HepInstruction instruction : instructions) {//初始化每一个指令集
       instruction.initialize(clearCache);
     }
   }

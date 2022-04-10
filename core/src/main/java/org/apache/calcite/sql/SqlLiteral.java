@@ -42,7 +42,7 @@ import static org.apache.calcite.util.Static.RESOURCE;
 
 /**
  * A <code>SqlLiteral</code> is a constant. It is, appropriately, immutable.
- *
+ * 表示常量
  * <p>How is the value stored? In that respect, the class is somewhat of a black
  * box. There is a {@link #getValue} method which returns the value as an
  * object, but the type of that value is implementation detail, and it is best
@@ -178,6 +178,7 @@ public class SqlLiteral extends SqlNode {
   /**
    * @return whether value is appropriate for its type (we have rules about
    * these things)
+   * 值是否匹配类型
    */
   public static boolean valueMatchesType(
       Object value,
@@ -253,6 +254,7 @@ public class SqlLiteral extends SqlNode {
    *
    * @throws ClassCastException if the value is not a symbol literal
    * @see #createSymbol(SqlSymbol, SqlParserPos)
+   * SqlSampleSpec是一个常量值
    */
   public static SqlSampleSpec sampleValue(SqlNode node) {
     return (SqlSampleSpec) ((SqlLiteral) node).value;
@@ -617,8 +619,9 @@ public class SqlLiteral extends SqlNode {
         pos);
   }
 
+  //负数
   public static SqlNumericLiteral createNegative(
-      SqlNumericLiteral num,
+      SqlNumericLiteral num,//本身是正数
       SqlParserPos pos) {
     return new SqlNumericLiteral(
         ((BigDecimal) num.getValue()).negate(),
@@ -628,6 +631,7 @@ public class SqlLiteral extends SqlNode {
         pos);
   }
 
+  //s是整数或者小数
   public static SqlNumericLiteral createExactNumeric(
       String s,
       SqlParserPos pos) {
@@ -658,6 +662,7 @@ public class SqlLiteral extends SqlNode {
         pos);
   }
 
+  //s是科学技术法，比如3.5e+5
   public static SqlNumericLiteral createApproxNumeric(
       String s,
       SqlParserPos pos) {
@@ -704,7 +709,7 @@ public class SqlLiteral extends SqlNode {
 
   /**
    * Creates a string literal in the system character set.
-   *
+   * 创建一个字符串常量
    * @param s   a string (without the sql single quotes)
    * @param pos Parser position
    */

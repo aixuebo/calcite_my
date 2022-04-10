@@ -37,28 +37,30 @@ import java.util.Map;
 /**
  * Metadata for a column.
  * (Compare with {@link ResultSetMetaData}.)
+ * 列对象的元数据
  */
 public class ColumnMetaData {
-  public final int ordinal; // 0-based
-  public final boolean autoIncrement;
-  public final boolean caseSensitive;
-  public final boolean searchable;
-  public final boolean currency;
-  public final int nullable;
-  public final boolean signed;
-  public final int displaySize;
-  public final String label;
-  public final String columnName;
+  public final int ordinal; // 0-based 第几个列 从0开始计数
+  public final boolean autoIncrement;//是否自增长
+  public final boolean caseSensitive;//大小写忽略
+  public final boolean searchable;//指示是否可以在 where 子句中使用指定的列。
+  public final boolean currency;//指示指定的列是否是一个哈希代码值 基本无用
+  public final int nullable;//该列是否允许是null
+  public final boolean signed;//指示指定列中的值是否带正负号。
+  public final int displaySize;//显示的字符大小  基本无用
+  public final String label;//作为as的别名
+  public final String columnName;//列名
   public final String schemaName;
-  public final int precision;
-  public final int scale;
-  public final String tableName;
-  public final String catalogName;
-  public final boolean readOnly;
-  public final boolean writable;
-  public final boolean definitelyWritable;
-  public final String columnClassName;
-  public final AvaticaType type;
+  public final int precision;//数据精准度
+  public final int scale;//数据精准度
+  public final String tableName;//来自哪张表
+  public final String catalogName;//来自哪个数据库
+  public final boolean readOnly;//该字段是否只读
+  public final boolean writable;//指示在指定的列上进行写操作是否可以获得成功。
+
+  public final boolean definitelyWritable;//基本无用
+  public final String columnClassName;//数据库类型对应的java全路径,比如是string类型还是integer类型
+  public final AvaticaType type;//数据库类型
 
   @JsonCreator
   public ColumnMetaData(

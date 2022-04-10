@@ -165,8 +165,10 @@ public abstract class AbstractCursor implements Cursor {
     }
   }
 
+  //获取一行数据中的某一列的值
   protected abstract Getter createGetter(int ordinal);
 
+  //获取下一行数据
   public abstract boolean next();
 
   /** Accesses a timestamp value as a string.
@@ -1087,16 +1089,20 @@ public abstract class AbstractCursor implements Cursor {
   }
 
   /** Gets a value from a particular field of the current record of this
-   * cursor. */
+   * cursor.
+   * 获取指定一行数据中的某一个具体的列的值
+   **/
   protected interface Getter {
-    Object getObject();
+    Object getObject();//具体列的值
 
-    boolean wasNull();
+    boolean wasNull();//是否该值是null
   }
 
-  /** Abstract implementation of {@link Getter}. */
+  /** Abstract implementation of {@link Getter}.
+   * 获取某一个字段
+   **/
   protected abstract class AbstractGetter implements Getter {
-    public boolean wasNull() {
+    public boolean wasNull() { //确定该值是否为null
       return wasNull[0];
     }
   }

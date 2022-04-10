@@ -31,6 +31,7 @@ package org.apache.calcite.sql;
  * <p>A sample is not a {@link SqlNode}. To include it in a parse tree, wrap it
  * as a literal, viz:
  * {@link SqlLiteral#createSample(SqlSampleSpec, org.apache.calcite.sql.parser.SqlParserPos)}.
+ * 代表是一个常量值
  */
 public abstract class SqlSampleSpec {
   //~ Constructors -----------------------------------------------------------

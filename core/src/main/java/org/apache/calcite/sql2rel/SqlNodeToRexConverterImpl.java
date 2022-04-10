@@ -40,6 +40,7 @@ import java.util.Calendar;
 
 /**
  * Standard implementation of {@link SqlNodeToRexConverter}.
+ * 负责具体的转换表达式的工作--实现类
  */
 public class SqlNodeToRexConverterImpl implements SqlNodeToRexConverter {
   //~ Instance fields --------------------------------------------------------
@@ -55,7 +56,7 @@ public class SqlNodeToRexConverterImpl implements SqlNodeToRexConverter {
   //~ Methods ----------------------------------------------------------------
 
   public RexNode convertCall(SqlRexContext cx, SqlCall call) {
-    final SqlRexConvertlet convertlet = convertletTable.get(call);
+    final SqlRexConvertlet convertlet = convertletTable.get(call);//从工厂找到具体的转换器对象
     if (convertlet != null) {
       return convertlet.convertCall(cx, call);
     }
@@ -73,6 +74,7 @@ public class SqlNodeToRexConverterImpl implements SqlNodeToRexConverter {
     return rexBuilder.makeIntervalLiteral(intervalQualifier);
   }
 
+  //返回常量表达式
   public RexNode convertLiteral(
       SqlRexContext cx,
       SqlLiteral literal) {
@@ -100,23 +102,23 @@ public class SqlNodeToRexConverterImpl implements SqlNodeToRexConverter {
     long l;
 
     switch (literal.getTypeName()) {
-    case DECIMAL:
+    case DECIMAL://创建数字类型的表达式--数字类型包含int、bigint、double等类型,取决于参数type
 
       // exact number
       BigDecimal bd = (BigDecimal) value;
       return rexBuilder.makeExactLiteral(
           bd,
           literal.createSqlType(typeFactory));
-    case DOUBLE:
+    case DOUBLE://常数表达式--double类型
 
       // approximate type
       // TODO:  preserve fixed-point precision and large integers
       return rexBuilder.makeApproxLiteral((BigDecimal) value);
-    case CHAR:
+    case CHAR://常量表达式--字符串类型
       return rexBuilder.makeCharLiteral((NlsString) value);
-    case BOOLEAN:
+    case BOOLEAN://常量表达式--boolean类型
       return rexBuilder.makeLiteral(((Boolean) value).booleanValue());
-    case BINARY:
+    case BINARY://常量表达式--字节数组类型
       bitString = (BitString) value;
       Util.permAssert(
           (bitString.getBitCount() % 8) == 0,
@@ -126,7 +128,7 @@ public class SqlNodeToRexConverterImpl implements SqlNodeToRexConverter {
       // of bytes.
       ByteString byteString = new ByteString(bitString.getAsByteArray());
       return rexBuilder.makeBinaryLiteral(byteString);
-    case SYMBOL:
+    case SYMBOL://常数表达式--符号类型--相当于枚举类型
       return rexBuilder.makeFlag((Enum) value);
     case TIMESTAMP:
       return rexBuilder.makeTimestampLiteral(

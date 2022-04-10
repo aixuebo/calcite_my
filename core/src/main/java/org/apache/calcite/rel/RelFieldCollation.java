@@ -21,12 +21,14 @@ package org.apache.calcite.rel;
  * output is to be sorted.
  *
  * @see RelCollation
+ * 主要描述排序的列是谁、如何排序、如果是null时候该如何排序
  */
 public class RelFieldCollation {
   //~ Enums ------------------------------------------------------------------
 
   /**
    * Direction that a field is ordered in.
+   * 排序规则
    */
   public enum Direction {
     /**
@@ -38,6 +40,7 @@ public class RelFieldCollation {
     /**
      * Strictly ascending direction: A value is always followed by a greater
      * value.
+     * 不能有相等,严格意义的升序
      */
     STRICTLY_ASCENDING("SASC"),
 
@@ -70,17 +73,19 @@ public class RelFieldCollation {
 
   /**
    * Ordering of nulls.
+   * null的时候如何排序
    */
   public enum NullDirection {
     FIRST,
     LAST,
-    UNSPECIFIED
+    UNSPECIFIED //默认 null放在最后面,与last效果相同
   }
 
   //~ Instance fields --------------------------------------------------------
 
   /**
    * 0-based index of field being sorted.
+   * 被排序的属性序号
    */
   private final int fieldIndex;
 

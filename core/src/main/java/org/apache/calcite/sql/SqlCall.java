@@ -34,6 +34,11 @@ import java.util.List;
  * (Operators can be used to describe any syntactic construct, so in practice,
  * every non-leaf node in a SQL parse tree is a <code>SqlCall</code> of some
  * kind.)
+ *
+ * SqlCall 用于调用一个操作 SqlOperator
+ * 1.主要子类实现两个方法:
+ * SqlOperator getOperator() 返回对应的操作是什么操作。
+ * List<SqlNode> getOperandList() 操作的参数集合
  */
 public abstract class SqlCall extends SqlNode {
   //~ Constructors -----------------------------------------------------------
@@ -63,10 +68,13 @@ public abstract class SqlCall extends SqlNode {
     throw new UnsupportedOperationException();
   }
 
+  //返回具体的操作是什么
   public abstract SqlOperator getOperator();
 
+  //返回操作的参数集合
   public abstract List<SqlNode> getOperandList();
 
+  //返回某一个参数
   @SuppressWarnings("unchecked")
   public <S extends SqlNode> S operand(int i) {
     return (S) getOperandList().get(i);
@@ -176,11 +184,12 @@ public abstract class SqlCall extends SqlNode {
    * Test to see if it is the function COUNT(*)
    *
    * @return boolean true if function call to COUNT(*)
+   * 是否参数是count(*)
    */
   public boolean isCountStar() {
-    if (getOperator().isName("COUNT") && operandCount() == 1) {
-      final SqlNode parm = operand(0);
-      if (parm instanceof SqlIdentifier) {
+    if (getOperator().isName("COUNT") && operandCount() == 1) {//操作是count,并且只有一个参数
+      final SqlNode parm = operand(0);//获取参数节点
+      if (parm instanceof SqlIdentifier) {//该节点只有一个字段,并且是*
         SqlIdentifier id = (SqlIdentifier) parm;
         if (id.isStar() && id.names.size() == 1) {
           return true;

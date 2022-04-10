@@ -21,12 +21,13 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 
 /**
  * Function that combines several values into a scalar result.
+ * 聚合函数
  */
 public interface AggregateFunction extends Function {
   /**
    * Returns the return type of this function, constructed using the given
    * type factory.
-   *
+   * 返回类型
    * @param typeFactory Type factory
    */
   RelDataType getReturnType(RelDataTypeFactory typeFactory);

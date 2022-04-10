@@ -42,18 +42,22 @@ import java.util.List;
 /**
  * Relational expression whose value is a sequence of zero or more literal row
  * values.
+ * 表示一行数据,存储一组值,0个值或多个值
+ * 属于sql中values,用于生产静态的数据源
  */
 public abstract class Values extends AbstractRelNode {
   /**
    * Lambda that helps render tuples as strings.
+   * 将数组转换成字符串,参数是一行的所有值{}包裹的字符串。
+   * 即如何处理一行数据的打印结果
    */
   private static final Function1<ImmutableList<RexLiteral>, Object> F =
       new Function1<ImmutableList<RexLiteral>, Object>() {
         public Object apply(ImmutableList<RexLiteral> tuple) {
           String s = tuple.toString();
           assert s.startsWith("[");
-          assert s.endsWith("]");
-          return "{ " + s.substring(1, s.length() - 1) + " }";
+          assert s.endsWith("]");//数组是以[]开头结尾
+          return "{ " + s.substring(1, s.length() - 1) + " }";//将[]替换成{}
         }
       };
 
@@ -63,6 +67,7 @@ public abstract class Values extends AbstractRelNode {
    * <p>This is the conventional way to represent an empty relational
    * expression. There are several rules that recognize empty relational
    * expressions and prune away that section of the tree.
+   * true表示空数据源,没有任何数据
    */
   public static final Predicate<? super Values> IS_EMPTY =
       new Predicate<Values>() {
@@ -73,7 +78,7 @@ public abstract class Values extends AbstractRelNode {
 
   //~ Instance fields --------------------------------------------------------
 
-  protected final ImmutableList<ImmutableList<RexLiteral>> tuples;
+  protected final ImmutableList<ImmutableList<RexLiteral>> tuples;//values一组row,所以是二维数组,外面表示一行数据,里面表示每一行的列
 
   //~ Constructors -----------------------------------------------------------
 
@@ -92,8 +97,8 @@ public abstract class Values extends AbstractRelNode {
    */
   protected Values(
       RelOptCluster cluster,
-      RelDataType rowType,
-      ImmutableList<ImmutableList<RexLiteral>> tuples,
+      RelDataType rowType,//字段类型
+      ImmutableList<ImmutableList<RexLiteral>> tuples,//values一组row,所以是二维数组,外面表示一行数据,里面表示每一行的列
       RelTraitSet traits) {
     super(cluster, traits);
     this.rowType = rowType;
@@ -116,25 +121,30 @@ public abstract class Values extends AbstractRelNode {
   }
 
   /** Returns the rows of literals represented by this Values relational
-   * expression. */
+   * expression.
+   * 返回行集合
+   **/
   public ImmutableList<ImmutableList<RexLiteral>> getTuples() {
     return tuples;
   }
 
   /** Returns true if all tuples match rowType; otherwise, assert on
-   * mismatch. */
+   * mismatch.
+   * 校验:
+   * 1.每一行的字段长度是相同的
+   * 2.如果不是null,就要校验值与类型匹配
+   **/
   private boolean assertRowType() {
     for (List<RexLiteral> tuple : tuples) {
-      assert tuple.size() == rowType.getFieldCount();
-      for (Pair<RexLiteral, RelDataTypeField> pair
-          : Pair.zip(tuple, rowType.getFieldList())) {
-        RexLiteral literal = pair.left;
-        RelDataType fieldType = pair.right.getType();
+      assert tuple.size() == rowType.getFieldCount();//每一行的字段长度是相同的
+      for (Pair<RexLiteral, RelDataTypeField> pair : Pair.zip(tuple, rowType.getFieldList())) {
+        RexLiteral literal = pair.left;//列数据值
+        RelDataType fieldType = pair.right.getType();//列类型
 
         // TODO jvs 19-Feb-2006: strengthen this a bit.  For example,
         // overflow, rounding, and padding/truncation must already have
         // been dealt with.
-        if (!RexLiteral.isNullLiteral(literal)) {
+        if (!RexLiteral.isNullLiteral(literal)) {//如果不是null,就要校验值与类型匹配
           assert SqlTypeUtil.canAssignFrom(fieldType, literal.getType())
               : "to " + fieldType + " from " + literal;
         }
@@ -158,7 +168,7 @@ public abstract class Values extends AbstractRelNode {
     return planner.getCostFactory().makeCost(dRows, dCpu, dIo);
   }
 
-  // implement RelNode
+  // implement RelNode 多少行数据
   public double getRows() {
     return tuples.size();
   }

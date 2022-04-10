@@ -37,6 +37,7 @@ public interface Function {
    * Returns the parameters of this function.
    *
    * @return Parameters; never null
+   * 返回函数的参数集合
    */
   List<FunctionParameter> getParameters();
 }

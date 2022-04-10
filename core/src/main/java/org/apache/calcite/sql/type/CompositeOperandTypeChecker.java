@@ -32,6 +32,7 @@ import java.util.List;
  * This class allows multiple existing {@link SqlOperandTypeChecker} rules to be
  * combined into one rule. For example, allowing an operand to be either string
  * or numeric could be done by:
+ * 多个存在的规则,如何组合成一个规则.
  *
  * <blockquote>
  * <pre><code>
@@ -74,18 +75,19 @@ import java.util.List;
  * <p>For SEQUENCE composition, the rules must be instances of
  * SqlSingleOperandTypeChecker, and signature generation is not supported. For
  * AND composition, only the first rule is used for signature generation.
+ * 多个规则作用于参数，比如2个规则,并且是and关系,则要求参数都要通过这2个规则
  */
 public class CompositeOperandTypeChecker
     implements SqlSingleOperandTypeChecker {
   //~ Enums ------------------------------------------------------------------
 
-  /** How operands are composed. */
+  /** How operands are composed.组合方式 并且关系、或者关系、序列化关系 */
   public enum Composition {
     AND, OR, SEQUENCE
   }
 
   //~ Instance fields --------------------------------------------------------
-
+  //组合集合、什么关系
   private final ImmutableList<SqlSingleOperandTypeChecker> allowedRules;
   private final Composition composition;
 
@@ -129,7 +131,7 @@ public class CompositeOperandTypeChecker
 
   public SqlOperandCountRange getOperandCountRange() {
     switch (composition) {
-    case SEQUENCE:
+    case SEQUENCE://固定参数大小
       return SqlOperandCountRanges.of(allowedRules.size());
     case AND:
     case OR:
@@ -191,6 +193,8 @@ public class CompositeOperandTypeChecker
     }
   }
 
+  //所有max中最小的max数量 即最多允许5个，最多允许10个，结果最多允许就是5个。
+  //貌似没有考虑到-1的情况,有bug
   private int minMin(List<SqlOperandCountRange> ranges) {
     int min = Integer.MAX_VALUE;
     for (SqlOperandCountRange range : ranges) {
@@ -199,11 +203,12 @@ public class CompositeOperandTypeChecker
     return min;
   }
 
+  //获取最大的max,即最多允许多少个参数
   private int maxMax(List<SqlOperandCountRange> ranges) {
     int max = Integer.MIN_VALUE;
     for (SqlOperandCountRange range : ranges) {
-      if (range.getMax() < 0) {
-        if (composition == Composition.OR) {
+      if (range.getMax() < 0) {//无边界
+        if (composition == Composition.OR) {//or 所以最终结果就是无边界,即-1
           return -1;
         }
       } else {
@@ -217,7 +222,7 @@ public class CompositeOperandTypeChecker
       SqlCallBinding callBinding,
       SqlNode node,
       int iFormalOperand,
-      boolean throwOnFailure) {
+      boolean throwOnFailure) {//true表示如果失败的话,需要抛异常出去
     assert allowedRules.size() >= 1;
 
     if (composition == Composition.SEQUENCE) {
@@ -231,30 +236,30 @@ public class CompositeOperandTypeChecker
         (composition == Composition.AND)
             && throwOnFailure;
 
-    for (SqlSingleOperandTypeChecker rule : allowedRules) {
+    for (SqlSingleOperandTypeChecker rule : allowedRules) {//每一个规则都进行校验一次
       if (!rule.checkSingleOperandType(
           callBinding,
           node,
           iFormalOperand,
           throwOnAndFailure)) {
-        typeErrorCount++;
+        typeErrorCount++;//记录校验失败次数
       }
     }
 
     boolean ret;
     switch (composition) {
     case AND:
-      ret = typeErrorCount == 0;
+      ret = typeErrorCount == 0;//必须全对
       break;
     case OR:
-      ret = typeErrorCount < allowedRules.size();
+      ret = typeErrorCount < allowedRules.size();//有一个对即可
       break;
     default:
       // should never come here
       throw Util.unexpected(composition);
     }
 
-    if (!ret && throwOnFailure) {
+    if (!ret && throwOnFailure) {//确实失败了,并且如果失败需要抛异常
       // In the case of a composite OR, we want to throw an error
       // describing in more detail what the problem was, hence doing the
       // loop again.
@@ -285,7 +290,7 @@ public class CompositeOperandTypeChecker
 
       switch (composition) {
       case SEQUENCE:
-        if (ord.i >= callBinding.getOperandCount()) {
+        if (ord.i >= callBinding.getOperandCount()) {//全部校验完成
           break label;
         }
         if (!rule.checkSingleOperandType(
@@ -293,38 +298,38 @@ public class CompositeOperandTypeChecker
             callBinding.getCall().operand(ord.i),
             0,
             false)) {
-          typeErrorCount++;
+          typeErrorCount++;//校验失败
         }
         break;
       default:
-        if (!rule.checkOperandTypes(callBinding, false)) {
-          typeErrorCount++;
+        if (!rule.checkOperandTypes(callBinding, false)) {//校验
+          typeErrorCount++;//校验失败
           if (composition == Composition.AND) {
             // Avoid trying other rules in AND if the first one fails.
-            break label;
+            break label;//直接退出
           }
-        } else if (composition == Composition.OR) {
+        } else if (composition == Composition.OR) {//有任意一个失败,则都是失败,直接退出
           break label; // true OR any == true, just break
         }
         break;
       }
     }
 
-    boolean failed;
+    boolean failed;//是否失败
     switch (composition) {
     case AND:
     case SEQUENCE:
-      failed = typeErrorCount > 0;
+      failed = typeErrorCount > 0;//有任意一个错误的,则都是失败
       break;
     case OR:
-      failed = typeErrorCount == allowedRules.size();
+      failed = typeErrorCount == allowedRules.size();//全错误,则失败
       break;
     default:
       throw new AssertionError();
     }
 
-    if (failed) {
-      if (throwOnFailure) {
+    if (failed) {//失败了
+      if (throwOnFailure) {//失败还需要抛异常
         // In the case of a composite OR, we want to throw an error
         // describing in more detail what the problem was, hence doing
         // the loop again.

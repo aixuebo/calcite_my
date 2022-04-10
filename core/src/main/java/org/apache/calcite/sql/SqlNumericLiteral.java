@@ -26,13 +26,14 @@ import java.math.BigDecimal;
 
 /**
  * A numeric SQL literal.
+ * 表示一个数字，正数、小数、科学计数法3.1e+5、负数
  */
 public class SqlNumericLiteral extends SqlLiteral {
   //~ Instance fields --------------------------------------------------------
 
   private Integer prec;
   private Integer scale;
-  private boolean isExact;
+  private boolean isExact;//false表示非准确，即科学计数法
 
   //~ Constructors -----------------------------------------------------------
 

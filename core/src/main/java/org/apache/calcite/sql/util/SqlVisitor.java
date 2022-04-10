@@ -39,6 +39,7 @@ import org.apache.calcite.sql.SqlOperator;
  * @see SqlOperator#acceptCall
  *
  * @param <R> Return type
+ * 不同的sqlNode调用visit时，该如何处理,返回处理结果。比如查找聚合函数,如果找到返回等case场景
  */
 public interface SqlVisitor<R> {
   //~ Methods ----------------------------------------------------------------
@@ -48,6 +49,7 @@ public interface SqlVisitor<R> {
    *
    * @param literal Literal
    * @see SqlLiteral#accept(SqlVisitor)
+   * 如何处理厂常量
    */
   R visit(SqlLiteral literal);
 
@@ -56,6 +58,7 @@ public interface SqlVisitor<R> {
    *
    * @param call Call
    * @see SqlCall#accept(SqlVisitor)
+   * 如何处理call
    */
   R visit(SqlCall call);
 
@@ -64,6 +67,7 @@ public interface SqlVisitor<R> {
    *
    * @param nodeList list of nodes
    * @see SqlNodeList#accept(SqlVisitor)
+   * 如何处理node数组
    */
   R visit(SqlNodeList nodeList);
 
@@ -72,6 +76,7 @@ public interface SqlVisitor<R> {
    *
    * @param id identifier
    * @see SqlIdentifier#accept(SqlVisitor)
+   * 如何处理xxx.xx字符串
    */
   R visit(SqlIdentifier id);
 
@@ -80,6 +85,7 @@ public interface SqlVisitor<R> {
    *
    * @param type datatype specification
    * @see SqlDataTypeSpec#accept(SqlVisitor)
+   * 如何处理日期对象
    */
   R visit(SqlDataTypeSpec type);
 
@@ -88,6 +94,7 @@ public interface SqlVisitor<R> {
    *
    * @param param Dynamic parameter
    * @see SqlDynamicParam#accept(SqlVisitor)
+   * 如何处理动态参数
    */
   R visit(SqlDynamicParam param);
 
@@ -96,6 +103,7 @@ public interface SqlVisitor<R> {
    *
    * @param intervalQualifier Interval qualifier
    * @see SqlIntervalQualifier#accept(SqlVisitor)
+   * 如何处理日期对象
    */
   R visit(SqlIntervalQualifier intervalQualifier);
 }

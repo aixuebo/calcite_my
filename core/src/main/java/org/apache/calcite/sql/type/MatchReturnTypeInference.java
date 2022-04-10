@@ -26,6 +26,7 @@ import java.util.List;
 /**
  * Returns the first type that matches a set of given {@link SqlTypeName}s. If
  * no match could be found, null is returned.
+ * 循环参数类型，匹配第一个参数类型与给定类型一致的
  */
 public class MatchReturnTypeInference implements SqlReturnTypeInference {
   //~ Instance fields --------------------------------------------------------

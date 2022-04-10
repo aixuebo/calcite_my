@@ -30,6 +30,7 @@ import java.util.TimeZone;
 
 /**
  * Runtime context allowing access to the tables in a database.
+ * 数据环境上下文 参考DataContextImpl
  */
 public interface DataContext {
   ParameterExpression ROOT =
@@ -60,7 +61,9 @@ public interface DataContext {
    */
   Object get(String name);
 
-  /** Variable that may be asked for in a call to {@link DataContext#get}. */
+  /** Variable that may be asked for in a call to {@link DataContext#get}.
+   * 数据上下文--特殊环境变量name
+   **/
   enum Variable {
     UTC_TIMESTAMP("utcTimestamp", Long.class),
 
