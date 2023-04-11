@@ -36,9 +36,9 @@ import java.util.List;
  */
 public final class FunctionExpression<F extends Function<?>>
     extends LambdaExpression {
-  public final F function;
-  public final BlockStatement body;
-  public final List<ParameterExpression> parameterList;
+  public final F function;//函数名
+  public final BlockStatement body;//函数对应的代码块，该块可以转换成Expression
+  public final List<ParameterExpression> parameterList; //代码块涉及到的字段引用等变量信息
   private F dynamicFunction;
   /**
    * Cache the hash code for the expression

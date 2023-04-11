@@ -25,13 +25,15 @@ import java.util.List;
 
 /**
  * Declaration of a method.
+ *
+ * 创建class中method方法
  */
 public class MethodDeclaration extends MemberDeclaration {
   public final int modifier;
-  public final String name;
-  public final Type resultType;
-  public final List<ParameterExpression> parameters;
-  public final BlockStatement body;
+  public final String name;//方法名
+  public final Type resultType;//方法返回类型
+  public final List<ParameterExpression> parameters;//方法参数类型与参数名称
+  public final BlockStatement body;//方法体
 
   public MethodDeclaration(int modifier, String name, Type resultType,
       List<ParameterExpression> parameters, BlockStatement body) {
@@ -54,6 +56,7 @@ public class MethodDeclaration extends MemberDeclaration {
   }
 
   public void accept(ExpressionWriter writer) {
+    //public String name(String x1,String x2)
     String modifiers = Modifier.toString(modifier);
     writer.append(modifiers);
     if (!modifiers.isEmpty()) {

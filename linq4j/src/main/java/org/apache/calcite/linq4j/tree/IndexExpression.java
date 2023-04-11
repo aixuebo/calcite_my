@@ -20,10 +20,11 @@ import java.util.List;
 
 /**
  * Represents indexing a property or array.
+ * 获取数组中的某一个元素
  */
 public class IndexExpression extends Expression {
   public final Expression array;
-  public final List<Expression> indexExpressions;
+  public final List<Expression> indexExpressions;//似乎只有一个元素才对呀，不知道为什么会是list
 
   public IndexExpression(Expression array, List<Expression> indexExpressions) {
     super(ExpressionType.ArrayIndex, Types.getComponentType(array.getType()));

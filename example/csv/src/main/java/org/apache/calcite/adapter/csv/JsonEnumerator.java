@@ -26,7 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-/** Enumerator that reads from a JSON file. */
+/** Enumerator that reads from a JSON file.
+ * 读取文件内容，解析成List<Object[]>，即解析成一个表的所有数据。每一行数据是Object
+ **/
 class JsonEnumerator implements Enumerator<Object[]> {
   private final Enumerator<Object> enumerator;
 
@@ -37,13 +39,14 @@ class JsonEnumerator implements Enumerator<Object[]> {
       mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
       mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
       //noinspection unchecked
-      List<Object> list = mapper.readValue(file, List.class);
+      List<Object> list = mapper.readValue(file, List.class);//说明json文件的格式是[aa,bb,cc]
       enumerator = Linq4j.enumerator(list);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
+  //当前只有一列数据。返回object[]数组只有一列
   public Object[] current() {
     return new Object[] {enumerator.current()};
   }

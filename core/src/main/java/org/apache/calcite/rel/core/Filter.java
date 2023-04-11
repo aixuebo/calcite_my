@@ -50,7 +50,7 @@ import java.util.List;
 public abstract class Filter extends SingleRel {
   //~ Instance fields --------------------------------------------------------
 
-  protected final RexNode condition;
+  protected final RexNode condition;//条件表达式
 
   //~ Constructors -----------------------------------------------------------
 

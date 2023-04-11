@@ -32,6 +32,7 @@ package org.apache.calcite.linq4j;
 public interface RawEnumerable<T> {
   /**
    * Returns an enumerator that iterates through a collection.
+   * 返回一个迭代器
    */
   Enumerator<T> enumerator();
 }

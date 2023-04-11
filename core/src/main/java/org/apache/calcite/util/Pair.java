@@ -328,6 +328,7 @@ public class Pair<T1, T2>
     };
   }
 
+  //返回left数据组成的list集合
   public static <K, V> List<K> left(
       final List<? extends Map.Entry<K, V>> pairs) {
     return new AbstractList<K>() {

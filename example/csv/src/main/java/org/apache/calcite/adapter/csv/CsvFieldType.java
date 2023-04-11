@@ -30,8 +30,11 @@ import java.util.Map;
  * of type {@link #STRING}. But specifying the field type in the header row
  * makes it easier to write SQL.</p>
  * sql类型与string字符串描述的映射关系
+ *
+ * 对应到某一个字段的类型
  */
 enum CsvFieldType {
+  //配置给定字段的字符串类型，对应程序的java类型，比如配置csv的某一列字段是date，其实对应的java的类型是Date
   STRING(String.class, "string"),
   BOOLEAN(Primitive.BOOLEAN),
   BYTE(Primitive.BYTE),
@@ -70,6 +73,7 @@ enum CsvFieldType {
     return typeFactory.createJavaType(clazz);
   }
 
+  //获取程序对应的java类型
   public static CsvFieldType of(String typeString) {
     return MAP.get(typeString);
   }

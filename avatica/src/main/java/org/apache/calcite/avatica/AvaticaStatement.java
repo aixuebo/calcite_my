@@ -33,7 +33,7 @@ public abstract class AvaticaStatement
     implements Statement {
   public final AvaticaConnection connection;
   /** Statement id; unique within connection. */
-  public final Meta.StatementHandle handle;
+  public final Meta.StatementHandle handle; //Statement的唯一id,即connection中第几个Statement对象
   protected boolean closed;
 
   /**
@@ -48,13 +48,14 @@ public abstract class AvaticaStatement
    */
   protected AvaticaResultSet openResultSet;
 
-  private int queryTimeoutMillis;
-  final int resultSetType;
-  final int resultSetConcurrency;
+  //其他配置参数
+  private int queryTimeoutMillis;//超时时间
+  final int resultSetType;//数据可支持向前、向后next查找
+  final int resultSetConcurrency;//是否只读查询
   final int resultSetHoldability;
-  private int fetchSize;
+  private int fetchSize;//每次抓取数据条数
   private int fetchDirection;
-  protected int maxRowCount;
+  protected int maxRowCount;//查询最大行数
 
   /**
    * Creates an AvaticaStatement.

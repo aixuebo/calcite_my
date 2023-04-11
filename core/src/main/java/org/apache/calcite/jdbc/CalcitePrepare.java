@@ -193,12 +193,12 @@ public interface CalcitePrepare {
     }
   }
 
-  /** The result of parsing and validating a SQL query. */
+  /** The result of parsing and validating a SQL query.这个结果只包含解析sql 以及 校验sql */
   public static class ParseResult {
-    public final CalcitePrepareImpl prepare;
-    public final String sql; // for debug
-    public final SqlNode sqlNode;
-    public final RelDataType rowType;
+    public final CalcitePrepareImpl prepare;//对象引用
+    public final String sql; // for debug  查询的是哪个sql,用于debug和log日志
+    public final SqlNode sqlNode;//sql转换成SqlNode
+    public final RelDataType rowType;//sql经过校验器校验完成后,返回的类型。大多数场景都是一个struck对象,因为包含多个字段
     public final RelDataTypeFactory typeFactory;
 
     public ParseResult(CalcitePrepareImpl prepare, SqlValidator validator,
@@ -218,7 +218,7 @@ public interface CalcitePrepare {
    * 校验sql语法,解析sql,转换成关系表达式
    **/
   public static class ConvertResult extends ParseResult {
-    public final RelNode relNode;
+    public final RelNode relNode;//进一步做了逻辑表达式转换操作
 
     public ConvertResult(CalcitePrepareImpl prepare, SqlValidator validator,
         String sql, SqlNode sqlNode, RelDataType rowType, RelNode relNode) {

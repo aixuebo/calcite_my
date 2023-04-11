@@ -30,6 +30,7 @@ import java.util.Set;
  * Builder for {@link BlockStatement}.
  *
  * <p>Has methods that help ensure that variable names are unique.</p>
+ * 帮助类,确保变量name是唯一的命名
  */
 public class BlockBuilder {
   final List<Statement> statements = new ArrayList<Statement>();

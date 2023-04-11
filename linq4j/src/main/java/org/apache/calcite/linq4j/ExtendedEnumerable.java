@@ -43,6 +43,29 @@ import java.util.Map;
  * Extension methods in {@link Enumerable}.
  *
  * @param <TSource> Element type
+ *
+ * 参见 EnumerableDefaults
+ *
+
+
+LookupImpl --- 转换成TreeMap<K,List<V>> --- 循环元素,将相同的元素放在List里,转换成map<key,List<value>>形式
+参数:
+1.集合队列
+2.排序对象,key按照什么方式排序
+3.key转换函数,将集合元素转换成key
+4.value转换器,支持将原始value转换成需要的value元素形式。默认函数可以返回原始值本身,表示不需要转换
+
+
+map = new treeMap<key,List<Value>>(comparator)
+for(value){
+key = keySelect(value)
+value = map(value)
+list = map.get(key).add(value)
+map.put(key,list)
+}
+return new LookupImpl<TKey, TElement>(treeMap)
+
+
  */
 public interface ExtendedEnumerable<TSource> {
 
@@ -54,12 +77,14 @@ public interface ExtendedEnumerable<TSource> {
    *
    * @param func Operation
    * @param <R> Return type
+   * 相当于for循环,用于输出打印结果即可,最终会返回最后一个元素的参与function1的计算结果
    */
   <R> R foreach(Function1<TSource, R> func);
 
   /**
-   * Applies an accumulator function over a
-   * sequence.
+   * Applies an accumulator function over a sequence.
+   *
+   * for(value:List) fun(temp,value) --- 中间结果,迭代下一个元素,计算最终结果。要求中间结果与最终结果类型一致
    */
   TSource aggregate(Function2<TSource, TSource, TSource> func);
 
@@ -67,6 +92,9 @@ public interface ExtendedEnumerable<TSource> {
    * Applies an accumulator function over a
    * sequence. The specified seed value is used as the initial
    * accumulator value.
+   *
+   * for(value:List) fun(temp,value) --- 中间结果,迭代下一个元素,计算最终结果。要求中间结果与最终结果类型可以不一致
+   * TAccumulate seed是初始化中间结果值
    */
   <TAccumulate> TAccumulate aggregate(TAccumulate seed,
       Function2<TAccumulate, TSource, TAccumulate> func);
@@ -76,6 +104,10 @@ public interface ExtendedEnumerable<TSource> {
    * sequence. The specified seed value is used as the initial
    * accumulator value, and the specified function is used to select
    * the result value.
+   *
+   * 1.result = for(value:List) fun(temp,value) --- 中间结果,迭代下一个元素,计算最终结果。要求中间结果与最终结果类型可以不一致
+   * TAccumulate seed是初始化中间结果值
+   * 2.selector(result) --- 对结果再进一步转换,包含类型转换
    */
   <TAccumulate, TResult> TResult aggregate(TAccumulate seed,
       Function2<TAccumulate, TSource, TAccumulate> func,
@@ -84,18 +116,24 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Determines whether all elements of a sequence
    * satisfy a condition.
+   * for(value:List) predicate(value) 所有元素必须全返回true,结果才是true
    */
   boolean all(Predicate1<TSource> predicate);
 
   /**
    * Determines whether a sequence contains any
    * elements. (Defined by Enumerable.)
+   *
+   * for(value:List),只要有元素存在,则就返回true。
+   * 即是否非空集合
    */
   boolean any();
 
   /**
    * Determines whether any element of a sequence
    * satisfies a condition.
+   *
+   * for(value:List) predicate(value) 有任意元素是true,结果就是true。
    */
   boolean any(Predicate1<TSource> predicate);
 
@@ -142,6 +180,7 @@ public interface ExtendedEnumerable<TSource> {
    * Computes the average of a sequence of Decimal
    * values that are obtained by invoking a transform function on
    * each element of the input sequence.
+   * 扫描两次集合,分别计算sum/count
    */
   BigDecimal average(BigDecimalFunction1<TSource> selector);
 
@@ -226,37 +265,60 @@ public interface ExtendedEnumerable<TSource> {
    *
    * @see EnumerableDefaults#cast
    * @see #ofType(Class)
+   *
+   * 将每一个元素,强转成class对象,即相当于map+cast操作
    */
   <T2> Enumerable<T2> cast(Class<T2> clazz);
 
   /**
    * Concatenates two sequences.
+   * 把两个集合连接起来,相当于new list().addAll(enumerable0).addAll(enumerable1)
    */
   Enumerable<TSource> concat(Enumerable<TSource> enumerable1);
 
   /**
    * Determines whether a sequence contains a specified
    * element by using the default equality comparer.
+   * 判断集合中是否有参数元素
    */
   boolean contains(TSource element);
 
   /**
    * Determines whether a sequence contains a specified
    * element by using a specified {@code EqualityComparer<TSource>}.
+   *
+   * 判断集合中是否有参数元素，判断是否存在,依赖comparer对象
    */
   boolean contains(TSource element, EqualityComparer comparer);
 
   /**
    * Returns the number of elements in a
    * sequence.
+   * 计算集合的元素数量
    */
   int count();
 
   /**
    * Returns a number that represents how many elements
    * in the specified sequence satisfy a condition.
+   *
+   * 计算满足参数条件的 元素数量
    */
   int count(Predicate1<TSource> predicate);
+
+  /**
+   * Returns an long that represents the total number
+   * of elements in a sequence.
+   * 计算元素数量
+   */
+  long longCount();
+
+  /**
+   * Returns an long that represents how many elements
+   * in a sequence satisfy a condition.
+   * 计算满足条件的元素数量
+   */
+  long longCount(Predicate1<TSource> predicate);
 
   /**
    * Returns the elements of the specified sequence or
@@ -275,6 +337,8 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Returns distinct elements from a sequence by using
    * the default equality comparer to compare values.
+   *
+   * 将元素集合存放到set中
    */
   Enumerable<TSource> distinct();
 
@@ -301,6 +365,9 @@ public interface ExtendedEnumerable<TSource> {
    * Produces the set difference of two sequences by
    * using the default equality comparer to compare values. (Defined
    * by Enumerable.)
+   *
+   * 返回集合的子集,从集合中删除参数集合内的数据。
+   * set<>.remove(enumerable1)
    */
   Enumerable<TSource> except(Enumerable<TSource> enumerable1);
 
@@ -315,12 +382,14 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Returns the first element of a sequence. (Defined
    * by Enumerable.)
+   * 返回第一个元素
    */
   TSource first();
 
   /**
    * Returns the first element in a sequence that
    * satisfies a specified condition.
+   * 返回满足条件的第一个元素
    */
   TSource first(Predicate1<TSource> predicate);
 
@@ -340,6 +409,9 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Groups the elements of a sequence according to a
    * specified key selector function.
+   *
+   * 1.LookupImpl 将集合按照key分组,转换成Map<k,List<v>>
+   * 2.返回每一个map的entry对象即可组成 key,list --> 转换成key,value迭代器 --> 转换成Grouping<TKey, TSource>
    */
   <TKey> Enumerable<Grouping<TKey, TSource>> groupBy(
       Function1<TSource, TKey> keySelector);
@@ -356,6 +428,8 @@ public interface ExtendedEnumerable<TSource> {
    * Groups the elements of a sequence according to a
    * specified key selector function and projects the elements for
    * each group by using a specified function.
+   *
+   * 增加对value的处理函数,即map存储的list不在是value,而是经过转换的value
    */
   <TKey, TElement> Enumerable<Grouping<TKey, TElement>> groupBy(
       Function1<TSource, TKey> keySelector,
@@ -365,6 +439,8 @@ public interface ExtendedEnumerable<TSource> {
    * Groups the elements of a sequence according to a
    * specified key selector function and creates a result value from
    * each group and its key.
+   *
+   * 对map的<k,list<v>> 再进一步转换,elementSelector转换成<TKey, TResult>
    */
   <TKey, TResult> Enumerable<Grouping<TKey, TResult>> groupBy(
       Function1<TSource, TKey> keySelector,
@@ -447,11 +523,13 @@ public interface ExtendedEnumerable<TSource> {
    * Correlates the elements of two sequences based on
    * equality of keys and groups the results. The default equality
    * comparer is used to compare keys.
+   * 相当于join操作,只是匹配的是 左边表+右边匹配的list一起参与运算,计算结果
    */
   <TInner, TKey, TResult> Enumerable<TResult> groupJoin(
-      Enumerable<TInner> inner, Function1<TSource, TKey> outerKeySelector,
-      Function1<TInner, TKey> innerKeySelector,
-      Function2<TSource, Enumerable<TInner>, TResult> resultSelector);
+      Enumerable<TInner> inner, //右边表
+      Function1<TSource, TKey> outerKeySelector,//左边表如何转换成key
+      Function1<TInner, TKey> innerKeySelector,//左边表如何转换成key
+      Function2<TSource, Enumerable<TInner>, TResult> resultSelector); //左边数据+右边list匹配的集合,返回结果
 
   /**
    * Correlates the elements of two sequences based on
@@ -459,7 +537,8 @@ public interface ExtendedEnumerable<TSource> {
    * {@code EqualityComparer<TSource>} is used to compare keys.
    */
   <TInner, TKey, TResult> Enumerable<TResult> groupJoin(
-      Enumerable<TInner> inner, Function1<TSource, TKey> outerKeySelector,
+      Enumerable<TInner> inner,
+      Function1<TSource, TKey> outerKeySelector,
       Function1<TInner, TKey> innerKeySelector,
       Function2<TSource, Enumerable<TInner>, TResult> resultSelector,
       EqualityComparer<TKey> comparer);
@@ -468,6 +547,9 @@ public interface ExtendedEnumerable<TSource> {
    * Produces the set intersection of two sequences by
    * using the default equality comparer to compare values. (Defined
    * by Enumerable.)
+   *
+   * 两个集合去交集。
+   * new set().add( set1.contain(enumerable1的元素))
    */
   Enumerable<TSource> intersect(Enumerable<TSource> enumerable1);
 
@@ -481,6 +563,8 @@ public interface ExtendedEnumerable<TSource> {
 
   /**
    * Copies the contents of the sequence into a collection.
+   *
+   * 复制集合 for(value --> Collection.add(value))
    */
   <C extends Collection<? super TSource>> C into(C sink);
 
@@ -524,13 +608,16 @@ public interface ExtendedEnumerable<TSource> {
    *   <tr><td>RIGHT</td><td>true</td><td>false</td></tr>
    *   <tr><td>FULL</td><td>true</td><td>true</td></tr>
    * </table>
+   *
+   * 讲右表转换成Map，然后循环左表,去右表Map中找到list,与list做循环
    */
-  <TInner, TKey, TResult> Enumerable<TResult> join(Enumerable<TInner> inner,
-      Function1<TSource, TKey> outerKeySelector,
-      Function1<TInner, TKey> innerKeySelector,
-      Function2<TSource, TInner, TResult> resultSelector,
+  <TInner, TKey, TResult> Enumerable<TResult> join(Enumerable<TInner> inner,//右表数据
+      Function1<TSource, TKey> outerKeySelector,//提取左表key
+      Function1<TInner, TKey> innerKeySelector,//提取右表key
+      Function2<TSource, TInner, TResult> resultSelector,//左表一行数据+右表一行数据,生产结果数据
       EqualityComparer<TKey> comparer,
-      boolean generateNullsOnLeft, boolean generateNullsOnRight);
+      boolean generateNullsOnLeft, //左表允许null,用于left join等场景
+      boolean generateNullsOnRight);//左表允许null,用于left join等场景
 
   /**
    * For each row of the current enumerable returns the correlated rows
@@ -540,10 +627,15 @@ public interface ExtendedEnumerable<TSource> {
    * @param inner generator of inner enumerable
    * @param resultSelector selector of the result. For semi/anti join
    *                       inner argument is always null.
+   * 相互关联的join
+   * 不提供右边表,但提供通过key查找右边表匹配的list方法
+   *
+   * 其实就是简单的join操作
    */
   <TInner, TResult> Enumerable<TResult> correlateJoin(
-      CorrelateJoinType joinType, Function1<TSource, Enumerable<TInner>> inner,
-      Function2<TSource, TInner, TResult> resultSelector);
+      CorrelateJoinType joinType,
+      Function1<TSource, Enumerable<TInner>> inner,//右边表
+      Function2<TSource, TInner, TResult> resultSelector);//完成join操作
 
   /**
    * Returns the last element of a sequence. (Defined
@@ -571,26 +663,19 @@ public interface ExtendedEnumerable<TSource> {
   TSource lastOrDefault(Predicate1<TSource> predicate);
 
   /**
-   * Returns an long that represents the total number
-   * of elements in a sequence.
-   */
-  long longCount();
-
-  /**
-   * Returns an long that represents how many elements
-   * in a sequence satisfy a condition.
-   */
-  long longCount(Predicate1<TSource> predicate);
-
-  /**
    * Returns the maximum value in a generic
    * sequence.
+   *
+   * 返回集合中最大的元素
    */
   TSource max();
 
   /**
    * Invokes a transform function on each element of a
    * sequence and returns the maximum Decimal value.
+   *
+   *
+   * 将元素先map转换成double类型,然后返回集合中最大的元素
    */
   BigDecimal max(BigDecimalFunction1<TSource> selector);
 
@@ -750,6 +835,9 @@ public interface ExtendedEnumerable<TSource> {
    * @param <TResult> Target type
    *
    * @return Collection of T2
+   * 匹配元素是class的子类的元素被保留
+   *
+   * for(value --> value instance clazz)
    */
   <TResult> Enumerable<TResult> ofType(Class<TResult> clazz);
 
@@ -757,6 +845,8 @@ public interface ExtendedEnumerable<TSource> {
    * Sorts the elements of a sequence in ascending
    * order according to a key.
    * 将k转换成可以排序的value
+   *
+   * 先进行LookupImpl处理,将数据转换成treeMap --> 输出treeMap中value迭代器,自然就有顺序的
    */
   <TKey extends Comparable> Enumerable<TSource> orderBy(
       Function1<TSource, TKey> keySelector);
@@ -764,6 +854,8 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Sorts the elements of a sequence in ascending
    * order by using a specified comparer.
+   *
+   * 先进行LookupImpl处理,将数据转换成treeMap --> 输出treeMap中value迭代器,自然就有顺序的
    */
   <TKey> Enumerable<TSource> orderBy(Function1<TSource, TKey> keySelector,
       Comparator<TKey> comparator);
@@ -785,18 +877,24 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Inverts the order of the elements in a
    * sequence.
+   *
+   * 将元素反过来,即从后往前输出集合
    */
   Enumerable<TSource> reverse();
 
   /**
    * Projects each element of a sequence into a new
    * form.
+   *
+   * 相当于map操作,转换成新的数据集合
    */
   <TResult> Enumerable<TResult> select(Function1<TSource, TResult> selector);
 
   /**
    * Projects each element of a sequence into a new
    * form by incorporating the element's index.
+   *
+   * 相当于map操作,转换成新的数据集合,只是转换函数是由 <元素+序号(从0开始计数))组成
    */
   <TResult> Enumerable<TResult> select(
       Function2<TSource, Integer, TResult> selector);
@@ -805,6 +903,7 @@ public interface ExtendedEnumerable<TSource> {
    * Projects each element of a sequence to an
    * {@code Enumerable<TSource>} and flattens the resulting sequences into one
    * sequence.
+   * 每一个元素转换成多个元素,相当于flatMap
    */
   <TResult> Enumerable<TResult> selectMany(
       Function1<TSource, Enumerable<TResult>> selector);
@@ -887,6 +986,7 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Bypasses a specified number of elements in a
    * sequence and then returns the remaining elements.
+   * 跳过n个元素,使用skipWhile实现
    */
   Enumerable<TSource> skip(int count);
 
@@ -894,6 +994,7 @@ public interface ExtendedEnumerable<TSource> {
    * Bypasses elements in a sequence as long as a
    * specified condition is true and then returns the remaining
    * elements.
+   * 跳过参数是false的数据
    */
   Enumerable<TSource> skipWhile(Predicate1<TSource> predicate);
 
@@ -909,6 +1010,8 @@ public interface ExtendedEnumerable<TSource> {
    * Computes the sum of the sequence of Decimal values
    * that are obtained by invoking a transform function on each
    * element of the input sequence.
+   *
+   * for(value --> map(value)).sum() 先将元素转换成double,然后求和
    */
   BigDecimal sum(BigDecimalFunction1<TSource> selector);
 
@@ -978,12 +1081,22 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Returns a specified number of contiguous elements
    * from the start of a sequence.
+   *
+   * 获取前count条元素。
+   * 调用takeWhile函数,满足条件是元素序号<count
    */
   Enumerable<TSource> take(int count);
 
   /**
    * Returns elements from a sequence as long as a
    * specified condition is true.
+   *
+   * 实现while语法,直到函数返回值false时停止循环,即保留true的数据
+   * for(value) {
+   *
+   *     boolean b = predicate(value,index)
+   *     if(b == false) return
+   * }
    */
   Enumerable<TSource> takeWhile(Predicate1<TSource> predicate);
 
@@ -1000,6 +1113,9 @@ public interface ExtendedEnumerable<TSource> {
    * function.
    *
    * <p>NOTE: Called {@code toDictionary} in LINQ.NET.</p>
+   *
+   * 将集合转换成map,通过提供函数keySelector将value转换成key
+   * for(value --> map.put(keySelector(value),value) )
    */
   <TKey> Map<TKey, TSource> toMap(Function1<TSource, TKey> keySelector);
 
@@ -1015,6 +1131,9 @@ public interface ExtendedEnumerable<TSource> {
    * Creates a {@code Map<TKey, TValue>} from an
    * {@code Enumerable<TSource>} according to specified key selector and element
    * selector functions.
+   * 将集合转换成map,通过提供函数keySelector将value转换成key
+   * for(value --> map.put(keySelector(value),elementSelector(value)) )
+   *
    */
   <TKey, TElement> Map<TKey, TElement> toMap(
       Function1<TSource, TKey> keySelector,
@@ -1032,6 +1151,8 @@ public interface ExtendedEnumerable<TSource> {
 
   /**
    * Creates a {@code List<TSource>} from an {@code Enumerable<TSource>}.
+   * 将集合转换成List
+   * for(value --> list.add(value))
    */
   List<TSource> toList();
 
@@ -1039,6 +1160,9 @@ public interface ExtendedEnumerable<TSource> {
    * Creates a {@code Lookup<TKey, TElement>} from an
    * {@code Enumerable<TSource>} according to a specified key selector
    * function.
+   *
+   *
+   * 转换成Map<K,List<V>> --- 循环元素,将相同的元素放在List里,转换成map<key,List<value>>形式
    */
   <TKey> Lookup<TKey, TSource> toLookup(Function1<TSource, TKey> keySelector);
 
@@ -1046,6 +1170,8 @@ public interface ExtendedEnumerable<TSource> {
    * Creates a {@code Lookup<TKey, TElement>} from an
    * {@code Enumerable<TSource>} according to a specified key selector function
    * and key comparer.
+   *
+   * 转换成TreeMap<K,List<V>> --- 循环元素,将相同的元素放在List里,转换成map<key,List<value>>形式
    */
   <TKey> Lookup<TKey, TSource> toLookup(Function1<TSource, TKey> keySelector,
       EqualityComparer<TKey> comparer);
@@ -1054,6 +1180,8 @@ public interface ExtendedEnumerable<TSource> {
    * Creates a {@code Lookup<TKey, TElement>} from an
    * {@code Enumerable<TSource>} according to specified key selector and element
    * selector functions.
+   *
+   * 转换成TreeMap<K,List<V>> --- 循环元素,将相同的元素放在List里,转换成map<key,List<value>>形式
    */
   <TKey, TElement> Lookup<TKey, TElement> toLookup(
       Function1<TSource, TKey> keySelector,
@@ -1063,6 +1191,8 @@ public interface ExtendedEnumerable<TSource> {
    * Creates a {@code Lookup<TKey, TElement>} from an
    * {@code Enumerable<TSource>} according to a specified key selector function,
    * a comparer and an element selector function.
+   *
+   * 转换成TreeMap<K,List<V>> --- 循环元素,将相同的元素放在List里,转换成map<key,List<value>>形式
    */
   <TKey, TElement> Lookup<TKey, TElement> toLookup(
       Function1<TSource, TKey> keySelector,
@@ -1072,6 +1202,9 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Produces the set union of two sequences by using
    * the default equality comparer.
+   *
+   * 将两个集合做并集
+   * new set().addALL(source).addALL(source1)
    */
   Enumerable<TSource> union(Enumerable<TSource> source1);
 
@@ -1085,6 +1218,7 @@ public interface ExtendedEnumerable<TSource> {
   /**
    * Filters a sequence of values based on a
    * predicate.
+   * 返回结果是true的元素
    */
   Enumerable<TSource> where(Predicate1<TSource> predicate);
 
@@ -1092,6 +1226,7 @@ public interface ExtendedEnumerable<TSource> {
    * Filters a sequence of values based on a
    * predicate. Each element's index is used in the logic of the
    * predicate function.
+   * 返回结果是true的元素,参数是元素值+元素序号,序号从0开始计数,即第几条数据
    */
   Enumerable<TSource> where(Predicate2<TSource, Integer> predicate);
 

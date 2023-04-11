@@ -147,14 +147,18 @@ public abstract class UnregisteredDriver implements java.sql.Driver {
     return connection;
   }
 
+  //校验是否url是合法的以xxx前缀开头的
   public boolean acceptsURL(String url) throws SQLException {
     return url.startsWith(getConnectStringPrefix());
   }
 
   /** Returns the prefix of the connect string that this driver will recognize
-   * as its own. For example, "jdbc:calcite:". */
+   * as its own. For example, "jdbc:calcite:".
+   *  获取driver需要适配的url前缀
+   **/
   protected abstract String getConnectStringPrefix();
 
+  //返回driver需要的PropertyInfo信息
   public DriverPropertyInfo[] getPropertyInfo(
       String url, Properties info) throws SQLException {
     List<DriverPropertyInfo> list = new ArrayList<DriverPropertyInfo>();

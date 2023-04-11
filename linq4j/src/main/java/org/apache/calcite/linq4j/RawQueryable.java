@@ -33,16 +33,19 @@ public interface RawQueryable<T> extends Enumerable<T> {
   /**
    * Gets the type of the element(s) that are returned when the expression
    * tree associated with this Queryable is executed.
+   * 返回表达式树的元素类型
    */
   Type getElementType();
 
   /**
    * Gets the expression tree that is associated with this Queryable.
+   * 返回查询对应的表达式树
    */
   Expression getExpression();
 
   /**
    * Gets the query provider that is associated with this data source.
+   * 查询数据源提供者
    */
   QueryProvider getProvider();
 }

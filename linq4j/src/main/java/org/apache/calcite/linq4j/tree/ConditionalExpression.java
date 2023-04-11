@@ -30,9 +30,11 @@ import java.util.List;
  * represents
  * "if (c0) e0 else if (c1) e1 ... else if (c<sub>n-1</sub>) e<sub>n-1</sub>".
  * </p>
+ *
+ * if表达式
  */
 public class ConditionalExpression extends AbstractNode {
-  private final List<Node> expressionList;
+  private final List<Node> expressionList;//if中的内容
 
   public ConditionalExpression(List<Node> expressionList, Type type) {
     super(ExpressionType.Conditional, type);
@@ -40,6 +42,7 @@ public class ConditionalExpression extends AbstractNode {
     this.expressionList = expressionList;
   }
 
+  //if(Node){Node} else if(Node) {Node} ... else {Node}
   @Override void accept(ExpressionWriter writer, int lprec, int rprec) {
     for (int i = 0; i < expressionList.size(); i += 2) {
       writer.append(i > 0 ? " else if (" : "if (")

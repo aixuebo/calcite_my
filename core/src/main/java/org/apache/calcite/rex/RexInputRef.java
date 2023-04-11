@@ -25,10 +25,11 @@ import java.util.List;
 
 /**
  * Variable which references a field of an input relational expression.
+ * 变量,代表数据源的一个字段
  *
  * <p>Fields of the input are 0-based. If there is more than one input, they are
  * numbered consecutively. For example, if the inputs to a join are</p>
- *
+ * 下标从0开始计数，如果是多个表join,下标从0开始计数,一个表一个表的追加
  * <ul>
  * <li>Input #0: EMP(EMPNO, ENAME, DEPTNO) and</li>
  * <li>Input #1: DEPT(DEPTNO AS DEPTNO2, DNAME)</li>
@@ -46,6 +47,7 @@ import java.util.List;
  *
  * <p>So <code>RexInputRef(3, Integer)</code> is the correct reference for the
  * field DEPTNO2.</p>
+ *
  * 表达式:表示表的某一个字段
  */
 public class RexInputRef extends RexSlot {

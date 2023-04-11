@@ -19,6 +19,8 @@ package org.apache.calcite.rel.type;
 /**
  * RelDataTypeFamily represents a family of related types. The specific criteria
  * for membership in a type family are type-system dependent.
+ *
+ * 标识好，该字段类型是正数、小数、boolean、还是java对象
  */
 public interface RelDataTypeFamily {
 }

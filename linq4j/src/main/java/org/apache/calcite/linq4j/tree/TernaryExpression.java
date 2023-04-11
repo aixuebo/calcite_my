@@ -20,6 +20,7 @@ import java.lang.reflect.Type;
 
 /**
  * Represents an expression that has a ternary operator.
+ * 代表三个参数的操作
  */
 public class TernaryExpression extends Expression {
   public final Expression expression0;

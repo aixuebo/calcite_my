@@ -43,20 +43,20 @@
  * <ul>
  *     <li>{@link org.apache.calcite.rex.RexLiteral} represents a boolean,
  *         numeric, string, or date constant, or the value <code>NULL</code>.
- *     </li>
+ *     </li> 代表一个常量
  *     <li>{@link org.apache.calcite.rex.RexVariable} represents a leaf of the
- *         tree. It has sub-types:
+ *         tree. It has sub-types: 变量，代表解析树的叶子节点
  *         <ul>
  *             <li>{@link org.apache.calcite.rex.RexCorrelVariable} is a
- *                 correlating variable for nested-loop joins
+ *                 correlating variable for nested-loop joins 代表变量是参与join中on的关联键
  *             </li>
  *             <li>{@link org.apache.calcite.rex.RexInputRef} refers to a field
- *                 of an input relational expression
+ *                 of an input relational expression,代表变量是一个字段，即来自于input输入的某个字段
  *             </li>
  *             <li>{@link org.apache.calcite.rex.RexCall} is a call to an
  *                 operator or function.  By means of special operators, we can
  *                 use this construct to represent virtually every non-leaf node
- *                 in the tree.
+ *                 in the tree.代表一个函数或者操作。
  *             </li>
  *             <li>{@link org.apache.calcite.rex.RexRangeRef} refers to a
  *                 collection of contiguous fields from an input relational

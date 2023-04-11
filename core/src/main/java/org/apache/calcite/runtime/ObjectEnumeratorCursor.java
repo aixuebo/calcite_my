@@ -23,6 +23,8 @@ import org.apache.calcite.linq4j.Enumerator;
  * Implementation of {@link org.apache.calcite.avatica.util.Cursor} on top of an
  * {@link org.apache.calcite.linq4j.Enumerator} that
  * returns an {@link Object} for each row.
+ *
+ * 结果集是Enumerator迭代器
  */
 public class ObjectEnumeratorCursor extends PositionedCursor<Object> {
   private final Enumerator<Object> enumerator;
@@ -36,10 +38,12 @@ public class ObjectEnumeratorCursor extends PositionedCursor<Object> {
     this.enumerator = enumerator;
   }
 
+  //获取某一列的值
   protected Getter createGetter(int ordinal) {
     return new ObjectGetter(ordinal);
   }
 
+  //获取当前行
   protected Object current() {
     return enumerator.current();
   }

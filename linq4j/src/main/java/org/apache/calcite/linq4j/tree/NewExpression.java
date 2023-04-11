@@ -24,11 +24,13 @@ import java.util.List;
  *
  * <p>If {@link #memberDeclarations} is not null (even if empty) represents
  * an anonymous class.</p>
+ *
+ * new一个新对象
  */
 public class NewExpression extends Expression {
-  public final Type type;
-  public final List<Expression> arguments;
-  public final List<MemberDeclaration> memberDeclarations;
+  public final Type type;//new的对象类型
+  public final List<Expression> arguments;//new对象的参数
+  public final List<MemberDeclaration> memberDeclarations;//如果要override方法和属性,则有以下内容
   /**
    * Cache the hash code for the expression
    */
@@ -51,6 +53,8 @@ public class NewExpression extends Expression {
     return visitor.visit(this, arguments, memberDeclarations);
   }
 
+  //new Person(String name,int age)
+  //new Person(String name,int age) { 重写属性、方法 }
   @Override void accept(ExpressionWriter writer, int lprec, int rprec) {
     writer.append("new ").append(type).list("(\n", ",\n", ")", arguments);
     if (memberDeclarations != null) {

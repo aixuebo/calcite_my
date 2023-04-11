@@ -40,6 +40,21 @@ import java.util.Map;
 /**
  * Interface to an iteration that is similar to, and can easily support,
  * a JDBC {@link java.sql.ResultSet}, but is simpler to implement.
+ * 游标对象,相当于迭代器对象,一行一行查看数据
+ *
+ 背景知识:
+ 1.经过解析,已经知道数据list集合，以及每一行数据对应的列信息(列序号、列名、列类型)
+ 2.循环每一行数据,每一列数据(Getter方法返回列的值)。
+ 3.因为知道每一列的类型,因此可以转换成对应的列的值转换成对应的类型方法，比如long getLong()返回列的long值
+
+ 因此 参考 ObjectEnumeratorCursor  以及 AvaticaResultSet
+ while(next()){ //是否有下一行数据
+    Object record = current() //获取下一行数据
+
+
+ }
+
+
  */
 public interface Cursor extends Closeable {
   /**
@@ -52,7 +67,8 @@ public interface Cursor extends Closeable {
    * @return List of column accessors
    */
   List<Accessor> createAccessors(List<ColumnMetaData> types,
-      Calendar localCalendar, ArrayImpl.Factory factory);
+      Calendar localCalendar, //日期对象如何转换
+      ArrayImpl.Factory factory);//数组的时候处理,似乎使用的价值没有那么大,暂时可忽略
 
   /**
    * Moves to the next row.
@@ -60,6 +76,7 @@ public interface Cursor extends Closeable {
    * @return Whether moved
    *
    * @throws SQLException on database error
+   * 是否有下一行数据
    */
   boolean next() throws SQLException;
 
@@ -77,6 +94,7 @@ public interface Cursor extends Closeable {
 
   /**
    * Accessor of a column value.
+   * 代表一行数据中的所有列
    */
   public interface Accessor {
     boolean wasNull() throws SQLException;

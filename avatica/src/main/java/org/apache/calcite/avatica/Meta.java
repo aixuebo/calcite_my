@@ -35,14 +35,49 @@ import java.util.Map;
  * 获取数据库级别的元数据信息---每一个connect都可以关联到该对象
  */
 public interface Meta {
+
+    /**
+     * Returns comma-separated list of JDBC keywords.
+     * 返回逗号分隔的关键词集合
+     */
   String getSqlKeywords();//所有系统支持的关键词
 
+    /**
+     * SqlJdbcFunctionCall.NUMERIC_FUNCTIONS
+     * constructFuncList(
+     *       "ABS", "ACOS", "ASIN", "ATAN", "ATAN2", "CEILING", "COS", "COT",
+     *       "DEGREES", "EXP", "FLOOR", "LOG", "LOG10", "MOD", "PI",
+     *       "POWER", "RADIANS", "RAND", "ROUND", "SIGN", "SIN", "SQRT",
+     *       "TAN", "TRUNCATE")
+     * @return 逗号分隔的数学函数
+     */
   String getNumericFunctions();//所有数字处理的函数
 
+    /**
+     * constructFuncList(
+     *       "ASCII", "CHAR", "CONCAT", "DIFFERENCE", "INSERT", "LCASE",
+     *       "LEFT", "LENGTH", "LOCATE", "LTRIM", "REPEAT", "REPLACE",
+     *       "RIGHT", "RTRIM", "SOUNDEX", "SPACE", "SUBSTRING", "UCASE")
+     * @return 逗号分隔的字符串处理函数
+     */
   String getStringFunctions();//所有字符串处理的函数
 
+    /**
+     *
+     * constructFuncList(
+     *       "DATABASE", "IFNULL", "USER"
+     * @return 逗号分隔的系统函数
+     */
   String getSystemFunctions();//所有系统函数
 
+    /**
+     * constructFuncList(
+     *       "CURDATE", "CURTIME", "DAYNAME", "DAYOFMONTH", "DAYOFWEEK",
+     *       "DAYOFYEAR", "HOUR", "MINUTE", "MONTH", "MONTHNAME", "NOW",
+     *       "QUARTER", "SECOND", "TIMESTAMPADD", "TIMESTAMPDIFF",
+     *       "WEEK", "YEAR");
+     * @return 逗号分隔的时间日期函数
+     */
   String getTimeDateFunctions();//所有日期函数
 
   //所有的表信息
@@ -151,12 +186,14 @@ public interface Meta {
    *
    * <p>The default implementation just returns {@code iterable}, which it
    * requires to be not null; derived classes may instead choose to execute the
-   * relational expression in {@code signature}. */
+   * relational expression in {@code signature}.
+   * 针对一个已经解析好的sql元数据对象Signature,产生迭代器集合
+   **/
   Iterable<Object> createIterable(StatementHandle handle, Signature signature,
       Iterable<Object> iterable);
 
   /** Prepares a statement.
-   *
+   *  解析一个sql
    * @param h Statement handle
    * @param sql SQL query
    * @param maxRowCount Negative for no limit (different meaning than JDBC)
@@ -171,6 +208,7 @@ public interface Meta {
    * @param maxRowCount Negative for no limit (different meaning than JDBC)
    * @param callback Callback to lock, clear and assign cursor
    * @return Signature of prepared statement
+   * 解析一个sql,并且执行该sql
    */
   MetaResultSet prepareAndExecute(StatementHandle h, String sql,
       int maxRowCount, PrepareCallback callback);
@@ -183,12 +221,14 @@ public interface Meta {
 
   /** Factory to create instances of {@link Meta}. */
   interface Factory {
-    Meta create(List<String> args);
+    Meta create(List<String> args); //给定参数,如何创建一个Meta工厂
   }
 
   /** Wrapper to remind API calls that a parameter is a pattern (allows '%' and
    * '_' wildcards, per the JDBC spec) rather than a string to be matched
-   * exactly. */
+   * exactly.
+   * 就是一个字符串,但字符串有更特殊的意义，是一个包装器,支持%与_这样的通配符
+   **/
   class Pat {
     public final String s;
 
@@ -202,9 +242,14 @@ public interface Meta {
     }
   }
 
-  /** Meta data from which a result set can be constructed. */
+  /** Meta data from which a result set can be constructed.
+   * 结果集包含以下信息:
+   * 1.属于哪个statement,从而知道属于哪个connect。
+   * 2.结果集的迭代器集合
+   * 3.结果集的元数据信息，包含查询sql、列集合元数据信息、如何将一行迭代器信息转换成正确的格式提取数据
+   **/
   class MetaResultSet {
-    public final int statementId;
+    public final int statementId;//Statement的唯一id,即connect中创建的第几个Statement对象
     public final boolean ownStatement;
     public final Iterable<Object> iterable;//集合,每一个元素存储的只有每一个元素具体的值
     public final Signature signature;//描述每一个元素的列schema等信息
@@ -219,7 +264,9 @@ public interface Meta {
   }
 
   /** Information necessary to convert an {@link Iterable} into a
-   * {@link org.apache.calcite.avatica.util.Cursor}. */
+   * {@link org.apache.calcite.avatica.util.Cursor}.
+   * 游标循环结果集的工厂对象
+   **/
   final class CursorFactory {
     public final Style style;
     public final Class clazz;
@@ -269,10 +316,20 @@ public interface Meta {
     public static final CursorFactory LIST =
         new CursorFactory(Style.LIST, null, null, null);
 
+    //一行数据是一个对象,对象就是参数的class,即把一行数据转换成该对象
     public static CursorFactory record(Class resultClazz) {
       return new CursorFactory(Style.RECORD, resultClazz, null, null);
     }
 
+    //project,获取resultClass中的字段子集，创建的
+
+      /**
+       * 一行数据对应的字段集合
+       * @param resultClass  一行数据对应的字段存储在该对象的field中
+       * @param fields 字段的顺序对应的field对象
+       * @param fieldNames 按照字段顺序存储字段名称集合
+       * @return
+       */
     public static CursorFactory record(Class resultClass, List<Field> fields,
         List<String> fieldNames) {
       if (fields == null) {
@@ -316,13 +373,13 @@ public interface Meta {
     MAP //一行数据是Map
   }
 
-  /** Result of preparing a statement. */
+  /** Result of preparing a statement. 一个已经解析好的sql元数据对象Signature,描述一个结果的元数据信息*/
   class Signature {
-    public final List<ColumnMetaData> columns;
+    public final List<ColumnMetaData> columns;//描述结果集中字段集合的信息
     public final String sql;
     public final List<AvaticaParameter> parameters;
     public final Map<String, Object> internalParameters;
-    public final CursorFactory cursorFactory;
+    public final CursorFactory cursorFactory;//如何一行一行解析数据值
 
     @JsonCreator
     public Signature(@JsonProperty("columns") List<ColumnMetaData> columns,
@@ -345,7 +402,9 @@ public interface Meta {
     }
   }
 
-  /** Connection handle. */
+  /** Connection handle.
+   * Connection的唯一id
+   **/
   class ConnectionHandle {
     public final int id;
 
@@ -359,7 +418,9 @@ public interface Meta {
     }
   }
 
-  /** Statement handle. */
+  /** Statement handle.
+   * connect中创建的statement的唯一id,即第几个创建的statement对象
+   **/
   class StatementHandle {
     public final int id;
 
@@ -374,13 +435,16 @@ public interface Meta {
   }
 
   /** API to put a result set into a statement, being careful to enforce
-   * thread-safety and not to overwrite existing open result sets. */
+   * thread-safety and not to overwrite existing open result sets.
+   * 讲一个查询结果放入到 statement 中
+   **/
   interface PrepareCallback {
-    Object getMonitor();
-    void clear() throws SQLException;
-    void assign(Signature signature, Iterable<Object> iterable)
+    //定义了一套模板方法,按照顺序依次执行,可以在statement中产生一个结果集
+    Object getMonitor();//如何上锁
+    void clear() throws SQLException;//如果resultSet存在,则说明是历史的resultSet,将其销毁
+    void assign(Signature signature, Iterable<Object> iterable) //设置数据集合的元数据信息,比如sql、列信息集合、如何一行一行读取数据方式,以及 数据集合本身的迭代器
         throws SQLException;
-    void execute() throws SQLException;
+    void execute() throws SQLException;//真正执行结果集生产
   }
 }
 

@@ -46,9 +46,9 @@ public class SqlParserPos implements Serializable {
 
   //~ Instance fields --------------------------------------------------------
 
-  private final int lineNumber;
+  private final int lineNumber;//taken开始的行与列位置
   private final int columnNumber;
-  private final int endLineNumber;
+  private final int endLineNumber;//token结束的行与列位置
   private final int endColumnNumber;
 
   //~ Constructors -----------------------------------------------------------

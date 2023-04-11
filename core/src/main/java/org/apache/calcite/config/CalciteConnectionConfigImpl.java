@@ -22,7 +22,9 @@ import org.apache.calcite.avatica.util.Quoting;
 
 import java.util.Properties;
 
-/** Implementation of {@link CalciteConnectionConfig}. */
+/** Implementation of {@link CalciteConnectionConfig}.
+ * 通过connect连接后带来的元数据信息，扩展Connection配置信息
+ **/
 public class CalciteConnectionConfigImpl extends ConnectionConfigImpl
     implements CalciteConnectionConfig {
   public CalciteConnectionConfigImpl(Properties properties) {

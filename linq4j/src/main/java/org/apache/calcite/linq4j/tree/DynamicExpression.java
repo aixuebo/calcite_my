@@ -18,6 +18,8 @@ package org.apache.calcite.linq4j.tree;
 
 /**
  * Represents a dynamic operation.
+ * 动态操作，通过CallSiteBinder接口去完成
+ * 目前没有被使用
  */
 public class DynamicExpression extends Expression {
   public DynamicExpression(Class type) {

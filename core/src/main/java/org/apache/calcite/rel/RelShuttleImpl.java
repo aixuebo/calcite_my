@@ -51,8 +51,7 @@ public class RelShuttleImpl implements RelShuttle {
     try {
       RelNode child2 = child.accept(this);
       if (child2 != child) {
-        final List<RelNode> newInputs =
-            new ArrayList<RelNode>(parent.getInputs());
+        final List<RelNode> newInputs = new ArrayList<RelNode>(parent.getInputs());
         newInputs.set(i, child2);
         return parent.copy(parent.getTraitSet(), newInputs);
       }

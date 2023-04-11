@@ -74,6 +74,9 @@ public class RelJson {
     this.jsonBuilder = jsonBuilder;
   }
 
+  /**
+   * 创建type这个class对应的构造函数类,该类是RelInput的子类
+   */
   public RelNode create(Map<String, Object> map) {
     String type = (String) map.get("type");
     Constructor constructor = getConstructor(type);
@@ -94,6 +97,11 @@ public class RelJson {
     }
   }
 
+  /**
+   * 创建type这个class对应的构造函数类,该类是RelInput的子类
+   * @param type
+   * @return
+   */
   public Constructor getConstructor(String type) {
     Constructor constructor = constructorMap.get(type);
     if (constructor == null) {

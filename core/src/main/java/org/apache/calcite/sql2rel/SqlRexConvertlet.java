@@ -28,6 +28,7 @@ import org.apache.calcite.sql.SqlNode;
 public interface SqlRexConvertlet {
   //~ Methods ----------------------------------------------------------------
 
+  //sqlNode转换器
   RexNode convertCall(
       SqlRexContext cx,
       SqlCall call);

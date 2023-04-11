@@ -125,9 +125,10 @@ public class AggregatingSelectScope
    * expanded.
    *
    * @return list of grouping expressions
+   * 返回group by的节点集合
    */
   private ImmutableList<SqlNode> getGroupExprs() {
-    if (distinct) {
+    if (distinct) { //有distinct,不管有没有group by,select的内容都是group by的内容
       // Cannot compute this in the constructor: select list has not been
       // expanded yet.
       assert select.isDistinct();
@@ -140,7 +141,7 @@ public class AggregatingSelectScope
         groupExprs.add(stripAs(selectItem));
       }
       return groupExprs.build();
-    } else if (select.getGroup() != null) {
+    } else if (select.getGroup() != null) { //存在group by语法,直接返回
       if (groupExprList != null) {
         return groupExprList;
       } else {
@@ -208,6 +209,7 @@ public class AggregatingSelectScope
     return super.getOperandScope(call);
   }
 
+  //校验having等表达式是否在group by里
   public boolean checkAggregateExpr(SqlNode expr, boolean deep) {
     // Fully-qualify any identifiers in expr.
     if (deep) {
@@ -215,7 +217,7 @@ public class AggregatingSelectScope
     }
 
     // Make sure expression is valid, throws if not.
-    List<SqlNode> groupExprs = getGroupExprs();
+    List<SqlNode> groupExprs = getGroupExprs();//返回group by的节点集合
     final AggChecker aggChecker =
         new AggChecker(
             validator,

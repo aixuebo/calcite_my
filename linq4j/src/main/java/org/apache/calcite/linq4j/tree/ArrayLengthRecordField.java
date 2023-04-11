@@ -21,10 +21,11 @@ import java.lang.reflect.Type;
 
 /**
  * Represents a length field of a RecordType
+ * 代表某一个字段，只是该字段是数组，因此多了一个方法，返回数组长度。
  */
 public class ArrayLengthRecordField implements Types.RecordField {
-  private final String fieldName;
-  private final Class clazz;
+  private final String fieldName;//字段name
+  private final Class clazz;//字段类型
 
   public ArrayLengthRecordField(String fieldName, Class clazz) {
     assert fieldName != null : "fieldName should not be null";

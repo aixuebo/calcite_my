@@ -89,6 +89,7 @@ public class JavaToSqlTypeConversionRules {
    *
    * @param javaClass the Java class to lookup
    * @return a corresponding SqlTypeName if found, otherwise null is returned
+   * 通过java对象，反查他应该对应哪个sql对象类型
    */
   public SqlTypeName lookup(Class javaClass) {
     return rules.get(javaClass);

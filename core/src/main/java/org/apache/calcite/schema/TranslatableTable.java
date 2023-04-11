@@ -35,7 +35,7 @@ public interface TranslatableTable extends Table {
    * 转换table成关系表达式
    **/
   RelNode toRel(
-      RelOptTable.ToRelContext context,
+      RelOptTable.ToRelContext context,//实现类是LixToRelTranslator
       RelOptTable relOptTable);
 }
 

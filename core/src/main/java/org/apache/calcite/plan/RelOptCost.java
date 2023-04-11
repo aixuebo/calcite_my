@@ -25,6 +25,8 @@ package org.apache.calcite.plan;
  * plugging in their own cost models with well-defined meanings for each unit.
  * Optimizers which supply their own cost models may also extend this interface
  * with additional cost metrics such as memory usage.
+ *
+ * 对操作表的评估,包含 表行数、CPU使用量、IO使用量
  */
 public interface RelOptCost {
   //~ Methods ----------------------------------------------------------------
@@ -62,6 +64,7 @@ public interface RelOptCost {
    *
    * @param cost another cost
    * @return true iff this is exactly equal to other cost
+   * 资源是否相等
    */
   boolean equals(RelOptCost cost);
 
@@ -71,6 +74,7 @@ public interface RelOptCost {
    * @param cost another cost
    * @return true iff this is the same as the other cost within a roundoff
    * margin of error
+   * 资源是否相等
    */
   boolean isEqWithEpsilon(RelOptCost cost);
 
@@ -79,6 +83,8 @@ public interface RelOptCost {
    *
    * @param cost another cost
    * @return true iff this is less than or equal to other cost
+   *
+   * <=
    */
   boolean isLe(RelOptCost cost);
 
@@ -87,6 +93,7 @@ public interface RelOptCost {
    *
    * @param cost another cost
    * @return true iff this is strictly less than other cost
+   * <
    */
   boolean isLt(RelOptCost cost);
 
@@ -95,6 +102,7 @@ public interface RelOptCost {
    *
    * @param cost another cost
    * @return sum of this and other cost
+   * 资源求和
    */
   RelOptCost plus(RelOptCost cost);
 
@@ -103,6 +111,7 @@ public interface RelOptCost {
    *
    * @param cost another cost
    * @return difference between this and other cost
+   * 资源求差
    */
   RelOptCost minus(RelOptCost cost);
 
@@ -111,6 +120,7 @@ public interface RelOptCost {
    *
    * @param factor scalar factor
    * @return scalar product of this and factor
+   * 资源*因子
    */
   RelOptCost multiplyBy(double factor);
 
@@ -123,6 +133,7 @@ public interface RelOptCost {
    *
    * @param cost Other cost
    * @return Ratio between costs
+   * 资源相除
    */
   double divideBy(RelOptCost cost);
 

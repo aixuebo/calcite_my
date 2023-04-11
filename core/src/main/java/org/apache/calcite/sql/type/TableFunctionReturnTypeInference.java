@@ -34,8 +34,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  * TableFunctionReturnTypeInference implements rules for deriving table function
  * output row types by expanding references to cursor parameters.
  */
-public class TableFunctionReturnTypeInference
-    extends ExplicitReturnTypeInference {
+public class TableFunctionReturnTypeInference extends ExplicitReturnTypeInference {
+
   //~ Instance fields --------------------------------------------------------
 
   private final List<String> paramNames;
@@ -66,6 +66,8 @@ public class TableFunctionReturnTypeInference
     columnMappings = new HashSet<RelColumnMapping>();
     RelDataType unexpandedOutputType =
         protoType.apply(opBinding.getTypeFactory());
+
+    //解析扩展的属性名称与类型
     List<RelDataType> expandedOutputTypes = new ArrayList<RelDataType>();
     List<String> expandedFieldNames = new ArrayList<String>();
     for (RelDataTypeField field : unexpandedOutputType.getFieldList()) {

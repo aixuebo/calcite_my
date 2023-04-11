@@ -22,19 +22,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Represents a named parameter expression.
+ * 代表一个变量,定义变量类型+名称即可
+ *
+ * 即demo:  private String name
  */
 public class ParameterExpression extends Expression {
   private static final AtomicInteger SEQ = new AtomicInteger();
 
-  public final int modifier;
+  public final int modifier;//代表public 等定义方式
   public final String name;
 
+  //匿名属性,即不需要具体name,统一赋予p0
   public ParameterExpression(Type type) {
     this(0, type, "p" + SEQ.getAndIncrement());
   }
 
   public ParameterExpression(int modifier, Type type, String name) {
-    super(ExpressionType.Parameter, type);
+    super(ExpressionType.Parameter, type);//表达式类型 以及 值类型
     assert name != null : "name should not be null";
     assert Character.isJavaIdentifierStart(name.charAt(0))
       : "parameter name should be valid java identifier: "
@@ -59,6 +63,7 @@ public class ParameterExpression extends Expression {
     return declString(type);
   }
 
+  //比如 string name  用于生产java的方法的参数信息
   String declString(Type type) {
     final String modifiers = Modifier.toString(modifier);
     return modifiers + (modifiers.isEmpty() ? "" : " ") + Types.className(type)

@@ -326,18 +326,21 @@ public enum BuiltInMethod {
     MAP = builder.build();
   }
 
+  //是一个方法
   BuiltInMethod(Class clazz, String methodName, Class... argumentTypes) {
     this.method = Types.lookupMethod(clazz, methodName, argumentTypes);
     this.constructor = null;
     this.field = null;
   }
 
+  //是构造函数
   BuiltInMethod(Class clazz, Class... argumentTypes) {
     this.method = null;
     this.constructor = Types.lookupConstructor(clazz, argumentTypes);
     this.field = null;
   }
 
+  //是一个属性
   BuiltInMethod(Class clazz, String fieldName, boolean dummy) {
     this.method = null;
     this.constructor = null;

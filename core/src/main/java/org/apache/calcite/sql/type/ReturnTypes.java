@@ -42,8 +42,7 @@ public abstract class ReturnTypes {
   }
 
   //返回第一个规则结果不是null的结果,相当于coalesce方法
-  public static SqlReturnTypeInferenceChain chain(
-      SqlReturnTypeInference... rules) {
+  public static SqlReturnTypeInferenceChain chain(SqlReturnTypeInference... rules) {
     return new SqlReturnTypeInferenceChain(rules);
   }
 
@@ -51,8 +50,13 @@ public abstract class ReturnTypes {
    * transforms.
    * 级联操作,一层套一层的进行运算
    * 需要一个初始类型才能走通,因此参数第一个是SqlReturnTypeInference
+   *
+   * 经过一系列的转换,每一个输出，等于下一个结果的输入
+   * cast(
+   *   cast( a as int) as double
+   * )
    **/
-  public static SqlTypeTransformCascade cascade(SqlReturnTypeInference rule,
+  public static SqlTypeTransformCascade cascade(SqlReturnTypeInference rule, //初始化返回值
       SqlTypeTransform... transforms) {
     return new SqlTypeTransformCascade(rule, transforms);
   }
@@ -65,7 +69,7 @@ public abstract class ReturnTypes {
 
   /**
    * Creates an inference rule which returns a copy of a given data type.
-   * 复制参数类型
+   * 返回的类型非常精准，就是对应的参数类型
    */
   public static ExplicitReturnTypeInference explicit(RelDataType type) {
     return explicit(RelDataTypeImpl.proto(type));
@@ -75,6 +79,7 @@ public abstract class ReturnTypes {
    * Creates an inference rule which returns a type with no precision or scale,
    * such as {@code DATE}.
    * 返回一个精准的字段类型,类型为SqlTypeName
+   * 返回的类型非常精准，就是对应的参数类型
    */
   public static ExplicitReturnTypeInference explicit(SqlTypeName typeName) {
     return explicit(RelDataTypeImpl.proto(typeName, false));
@@ -102,31 +107,36 @@ public abstract class ReturnTypes {
    * type of the first argument. The length returned is the same as length of
    * the first argument. If any of the other operands are nullable the
    * returned type will also be nullable. First Arg must be of string type.
-   * 第一个参数允许值为null,并且转换成string类型
+   * 初始化类型是第一个参数的类型，然后根据参数中是否有允许null的类型，判断是否允许结果类型是null，
+   * 最终转换成string类型 或者 null
    */
   public static final SqlReturnTypeInference ARG0_NULLABLE_VARYING =
       cascade(
-          ARG0, SqlTypeTransforms.TO_NULLABLE,
-          SqlTypeTransforms.TO_VARYING);
+          ARG0,//初始化类型是第一个参数类型
+          SqlTypeTransforms.TO_NULLABLE,//类型转换,对typeToTransform类型进一步包装，包装是否允许是null
+          SqlTypeTransforms.TO_VARYING);//最终转换成varchar类型
   /**
    * Type-inference strategy whereby the result type of a call is the type of
    * the operand #0 (0-based). If any of the other operands are nullable the
    * returned type will also be nullable.
+   * 初始化类型是第一个参数的类型，然后根据参数中是否有允许null的类型，判断是否允许结果类型是null
    */
   public static final SqlReturnTypeInference ARG0_NULLABLE =
       cascade(ARG0, SqlTypeTransforms.TO_NULLABLE);
   /**
    * Type-inference strategy whereby the result type of a call is the type of
    * the operand #0 (0-based), with nulls always allowed.
-   * 第一个参数强制是允许值为null
+   * 返回第一个参数类型，并且强制是允许值为null的
    */
   public static final SqlReturnTypeInference ARG0_FORCE_NULLABLE =
       cascade(ARG0, SqlTypeTransforms.FORCE_NULLABLE);
 
+  //从第0个元素开始查找 日期返回类型，直到找到第一个匹配的类型返回
   public static final SqlReturnTypeInference ARG0_INTERVAL =
       new MatchReturnTypeInference(0,
           SqlTypeFamily.DATETIME_INTERVAL.getTypeNames());
 
+  //对ARG0_INTERVAL的返回值，包装一层允许是null
   public static final SqlReturnTypeInference ARG0_INTERVAL_NULLABLE =
       cascade(ARG0_INTERVAL, SqlTypeTransforms.TO_NULLABLE);
 
@@ -136,17 +146,18 @@ public abstract class ReturnTypes {
    * "GROUP BY ()" query. E.g. in "select sum(1) as s from empty", s may be
    * null.
    * 第0个参数,如果是empty,则设置值为null
+   *
+   * 返回第0个元素的类型，并且允许设置为null。比如sum(1)允许结果是null
    */
   public static final SqlReturnTypeInference ARG0_NULLABLE_IF_EMPTY =
       new OrdinalReturnTypeInference(0) {
         @Override public RelDataType
         inferReturnType(SqlOperatorBinding opBinding) {
-          final RelDataType type = super.inferReturnType(opBinding);
+          final RelDataType type = super.inferReturnType(opBinding); //返回第0个参数的类型
           if (opBinding.getGroupCount() == 0) {//无group by
-            return opBinding.getTypeFactory()
-                .createTypeWithNullability(type, true);
+            return opBinding.getTypeFactory().createTypeWithNullability(type, true); //如果无group by,则该参数值允许设置为null
           } else {
-            return type;
+            return type;//参与group by,则该返回值不允许是null
           }
         }
       };

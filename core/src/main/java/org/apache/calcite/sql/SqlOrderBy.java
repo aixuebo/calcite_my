@@ -49,9 +49,9 @@ public class SqlOrderBy extends SqlCall {
     }
   };
 
-  public final SqlNode query;
-  public final SqlNodeList orderList;
-  public final SqlNode offset;
+  public final SqlNode query;//查询语句
+  public final SqlNodeList orderList;//order by 语句
+  public final SqlNode offset; //limit 语句
   public final SqlNode fetch;
 
   //~ Constructors -----------------------------------------------------------

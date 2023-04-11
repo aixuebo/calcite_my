@@ -35,6 +35,8 @@ import java.util.List;
  * <p>This class is useful as a base class for classes which implement the
  * {@link SqlVisitor} interface and have {@link SqlNode} as the return type. The
  * derived class can override whichever methods it chooses.
+ *
+ * SqlShuttle字面量含义,表示sql穿梭
  */
 public class SqlShuttle extends SqlBasicVisitor<SqlNode> {
   //~ Methods ----------------------------------------------------------------

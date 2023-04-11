@@ -37,6 +37,9 @@ import java.util.Map;
  * objects are canonical: two types are equal if and only if they are
  * represented by the same Java object. This reduces memory consumption and
  * comparison cost.
+ *
+ * 转换成java对象，在内存中使用该对象存储数据
+ * 数据库类型转换成java类型
  */
 public interface RelDataTypeFactory {
   //~ Methods ----------------------------------------------------------------
@@ -61,6 +64,7 @@ public interface RelDataTypeFactory {
    *
    * @return canonical join type descriptor
    * @param types array of types to be joined
+   * 用于A left join B时,传入的参数是A类型和B类型的对象，两个对象都是object类型,因为都是子查询,包含了很多个列
    */
   RelDataType createJoinType(RelDataType... types);
 
@@ -290,12 +294,14 @@ public interface RelDataTypeFactory {
 
   /**
    * Callback which provides enough information to create fields.
+   * 定义schema
    */
   public interface FieldInfo {
     /**
      * Returns the number of fields.
      *
      * @return number of fields
+     * 多少个字段
      */
     int getFieldCount();
 
@@ -304,6 +310,7 @@ public interface RelDataTypeFactory {
      *
      * @param index Ordinal of field
      * @return Name of given field
+     * 每一个字段的名称
      */
     String getFieldName(int index);
 
@@ -312,6 +319,7 @@ public interface RelDataTypeFactory {
      *
      * @param index Ordinal of field
      * @return Type of given field
+     * 每一个字段的类型
      */
     RelDataType getFieldType(int index);
   }
@@ -319,6 +327,7 @@ public interface RelDataTypeFactory {
   /**
    * Implementation of {@link FieldInfo} that provides a fluid API to build
    * a list of fields.
+   * 构造一组属性集合
    */
   public static class FieldInfoBuilder implements FieldInfo {
     private final List<String> names = new ArrayList<String>();
@@ -348,6 +357,7 @@ public interface RelDataTypeFactory {
 
     /**
      * Adds a field with given name and type.
+     * 添加一个属性与对应的类型映射
      */
     public FieldInfoBuilder add(String name, RelDataType type) {
       names.add(name);
@@ -421,6 +431,7 @@ public interface RelDataTypeFactory {
 
     /**
      * Creates a struct type with the current contents of this builder.
+     * 创建一个包含多个列的对象
      */
     public RelDataType build() {
       return typeFactory.createStructType(types, names);

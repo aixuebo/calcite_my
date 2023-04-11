@@ -125,6 +125,7 @@ public interface SqlValidator {
    * Returns the operator table used by this validator.
    *
    * @return operator table
+   * 返回操作的是哪个table表对象
    */
   SqlOperatorTable getOperatorTable();
 
@@ -185,6 +186,7 @@ public interface SqlValidator {
    *
    * @param node the node of interest
    * @return validated type, or null if unknown or not applicable
+   * sqlNode节点的返回值类型
    */
   RelDataType getValidatedNodeTypeIfKnown(SqlNode node);
 
@@ -437,6 +439,7 @@ public interface SqlValidator {
    * @deprecated This method should not be in the {@link SqlValidator}
    * interface. The validator should drive the type-derivation process, and
    * store nodes' types when they have been derived.
+   * 说明node已经推测计算出返回值类型了,因此做一个设置，即设置node的返回值类型为type
    */
   void setValidatedNodeType(
       SqlNode node,

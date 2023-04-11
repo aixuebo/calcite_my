@@ -300,7 +300,9 @@ public abstract class FilterJoinRule extends RelOptRule {
   }
 
   /** Rule that tries to push filter expressions into a join
-   * condition and into the inputs of the join. */
+   * condition and into the inputs of the join.
+   * 谓词下推
+   **/
   public static class FilterIntoJoinRule extends FilterJoinRule {
     public FilterIntoJoinRule(boolean smart,
         RelFactories.FilterFactory filterFactory,
@@ -313,6 +315,7 @@ public abstract class FilterJoinRule extends RelOptRule {
           predicate);
     }
 
+    //join + filter时,匹配成功
     @Override public void onMatch(RelOptRuleCall call) {
       Filter filter = call.rel(0);
       Join join = call.rel(1);

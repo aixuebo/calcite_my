@@ -46,6 +46,7 @@ public class ArrayImpl implements Array {
     return elementType.type;
   }
 
+  //将list转换成数组
   public Object getArray() throws SQLException {
     return getArray(list);
   }
@@ -61,6 +62,8 @@ public class ArrayImpl implements Array {
    * @return array
    * @throws ClassCastException   if any element is not of the box type
    * @throws NullPointerException if any element is null
+   *
+   * list转换成数组
    */
   @SuppressWarnings("unchecked")
   protected Object getArray(List list) throws SQLException {

@@ -38,6 +38,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  *
  * <p>It is convenient, because we never need to check whether a scope's parent
  * is null. (This scope knows not to ask about its parents, just like Adam.)
+ *
+ * 空的scope,用于表示最顶层的根,看到该对象，程序就知道他不会有父类了
  */
 class EmptyScope implements SqlValidatorScope {
   //~ Instance fields --------------------------------------------------------

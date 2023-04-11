@@ -25,12 +25,13 @@ import java.util.List;
 
 /**
  * Declaration of a constructor.
+ * 创建构造函数代码
  */
 public class ConstructorDeclaration extends MemberDeclaration {
   public final int modifier;
-  public final Type resultType;
-  public final List<ParameterExpression> parameters;
-  public final BlockStatement body;
+  public final Type resultType;//构造函数对应的class
+  public final List<ParameterExpression> parameters;//构造函数参数
+  public final BlockStatement body;//构造函数方法体
   /**
    * Cache the hash code for the expression
    */
@@ -54,6 +55,7 @@ public class ConstructorDeclaration extends MemberDeclaration {
     return visitor.visit(this, body);
   }
 
+  //public ConstructorDeclaration()
   public void accept(ExpressionWriter writer) {
     String modifiers = Modifier.toString(modifier);
     writer.append(modifiers);

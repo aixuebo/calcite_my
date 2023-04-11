@@ -21,6 +21,8 @@ import java.util.List;
 /**
  * SqlOperatorTable defines a directory interface for enumerating and looking up
  * SQL operators and functions.
+ *
+ * sql operators对象字典表接口，实现类目标返回所有的操作对象
  */
 public interface SqlOperatorTable {
   //~ Methods ----------------------------------------------------------------

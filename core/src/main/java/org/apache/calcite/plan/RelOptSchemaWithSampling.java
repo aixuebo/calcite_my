@@ -38,7 +38,7 @@ public interface RelOptSchemaWithSampling extends RelOptSchema {
    * @return Table, or null if not found
    */
   RelOptTable getTableForMember(
-      List<String> names,
+      List<String> names,//表名字全路径
       String datasetName,
       boolean[] usedDataset);
 }

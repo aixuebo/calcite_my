@@ -39,6 +39,7 @@ public abstract class ListScope extends DelegatingScope {
   /**
    * List of child {@link SqlValidatorNamespace} objects and their names.
    * 表示子查询的别名与子查询表之间的映射关系,即每一个元素都是一个子查询表。。。所有的子查询表都共存在一个scope中
+   * key是别名,value是别名对应的空间
    */
   protected final List<Pair<String, SqlValidatorNamespace>> children = new ArrayList<Pair<String, SqlValidatorNamespace>>();
 
@@ -50,6 +51,7 @@ public abstract class ListScope extends DelegatingScope {
 
   //~ Methods ----------------------------------------------------------------
 
+  //添加一个子空间映射
   public void addChild(SqlValidatorNamespace ns, String alias) {
     assert alias != null;
     children.add(Pair.of(alias, ns));
@@ -59,12 +61,13 @@ public abstract class ListScope extends DelegatingScope {
    * Returns an immutable list of child namespaces.
    *
    * @return list of child namespaces
+   * 获取所有包含的子空间
    */
   public List<SqlValidatorNamespace> getChildren() {
     return Pair.right(children);
   }
 
-  //通过别名找空间
+  //通过别名找空间 --如果别名是null,直接返回第一个空间(校验有且只有一个空间)
   protected SqlValidatorNamespace getChild(String alias) {
     if (alias == null) {
       if (children.size() != 1) {

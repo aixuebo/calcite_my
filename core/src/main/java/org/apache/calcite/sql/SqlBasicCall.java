@@ -29,6 +29,9 @@ import java.util.List;
  * 3.额外提供参数
  * boolean expanded
  * SqlLiteral functionQuantifier;//DISTINCT等关键词常量
+ *
+ * 最简单的SqlCall，相比较select、delete等复杂的SqlCall来说
+ * 说简单的原因是，他是基础SqlNode的基础上，套一层SqlOperator，比如from (query) as xx
  */
 public class SqlBasicCall extends SqlCall {
   private SqlOperator operator;//具体的操作对象,比如具体的函数、具体的insert操作对象---真正执行函数的实现体--主要createCall和acceptCall方法
@@ -43,9 +46,10 @@ public class SqlBasicCall extends SqlCall {
     this(operator, operands, pos, false, null);
   }
 
+  //比如 from () as xx
   protected SqlBasicCall(
-      SqlOperator operator,
-      SqlNode[] operands,
+      SqlOperator operator,//SqlAsOperator
+      SqlNode[] operands,//query表达式
       SqlParserPos pos,
       boolean expanded,
       SqlLiteral functionQualifier) {

@@ -21,6 +21,7 @@ package org.apache.calcite.linq4j.function;
  * may be null.
  *
  * @param <T0> Type of argument #0
+ * 将对象转换成Float值
  */
 public interface NullableFloatFunction1<T0> extends Function1<T0, Float> {
 }

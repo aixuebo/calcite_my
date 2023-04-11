@@ -106,7 +106,7 @@ public interface SqlValidatorScope {
    * the "empno" in "select empno from emp natural join dept" becomes
    * "emp.empno".
    *
-   * @return A qualified identifier, never null
+   * @return A qualified identifier, never null,绝不会返回null
    * 将列名字补全,比如empno转换成emp.empno
    */
   SqlQualified fullyQualify(SqlIdentifier identifier);

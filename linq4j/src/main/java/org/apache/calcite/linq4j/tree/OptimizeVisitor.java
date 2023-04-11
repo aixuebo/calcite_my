@@ -35,21 +35,21 @@ import static org.apache.calcite.linq4j.tree.ExpressionType.NotEqual;
  * optimization, expressions such as {@code false == null} will be left in,
  * which are invalid to Janino (because it does not automatically box
  * primitives).</p>
+ *
+ * 访问者,目标去优化表达式,如果没有优化,则比如"false == null"这样的表达式将对Janino(java的轻量级动态编译器)是无效的
  */
 public class OptimizeVisitor extends Visitor {
-  public static final ConstantExpression FALSE_EXPR =
-      Expressions.constant(false);
-  public static final ConstantExpression TRUE_EXPR =
-      Expressions.constant(true);
-  public static final MemberExpression BOXED_FALSE_EXPR =
-      Expressions.field(null, Boolean.class, "FALSE");
-  public static final MemberExpression BOXED_TRUE_EXPR =
-      Expressions.field(null, Boolean.class, "TRUE");
+
+  //定义boolean常量表达式
+  public static final ConstantExpression FALSE_EXPR = Expressions.constant(false);
+  public static final ConstantExpression TRUE_EXPR = Expressions.constant(true);
+  public static final MemberExpression BOXED_FALSE_EXPR = Expressions.field(null, Boolean.class, "FALSE");
+  public static final MemberExpression BOXED_TRUE_EXPR = Expressions.field(null, Boolean.class, "TRUE");
+
   public static final Statement EMPTY_STATEMENT = Expressions.statement(null);
 
-  private static final Set<Method> KNOWN_NON_NULL_METHODS =
-      new HashSet<Method>();
-
+  //定义不允许是null的方法返回值
+  private static final Set<Method> KNOWN_NON_NULL_METHODS = new HashSet<Method>();
   static {
     for (Class aClass : new Class[]{Boolean.class, Byte.class, Short.class,
       Integer.class, Long.class, String.class}) {
@@ -62,23 +62,20 @@ public class OptimizeVisitor extends Visitor {
     }
   }
 
-  private static final Map<ExpressionType, ExpressionType>
-  NOT_BINARY_COMPLEMENT =
-      new EnumMap<ExpressionType, ExpressionType>(ExpressionType.class);
-
+  //一对相反动作表达式
+  private static final Map<ExpressionType, ExpressionType> NOT_BINARY_COMPLEMENT = new EnumMap<ExpressionType, ExpressionType>(ExpressionType.class);
   static {
     addComplement(ExpressionType.Equal, ExpressionType.NotEqual);
     addComplement(ExpressionType.GreaterThanOrEqual, ExpressionType.LessThan);
     addComplement(ExpressionType.GreaterThan, ExpressionType.LessThanOrEqual);
   }
-
   private static void addComplement(ExpressionType eq, ExpressionType ne) {
     NOT_BINARY_COMPLEMENT.put(eq, ne);
     NOT_BINARY_COMPLEMENT.put(ne, eq);
   }
 
-  private static final Method BOOLEAN_VALUEOF_BOOL =
-      Types.lookupMethod(Boolean.class, "valueOf", boolean.class);
+  private static final Method BOOLEAN_VALUEOF_BOOL = Types.lookupMethod(Boolean.class, "valueOf", boolean.class);
+
 
   @Override public Expression visit(
       TernaryExpression ternary,

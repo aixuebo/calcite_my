@@ -24,6 +24,8 @@ package org.apache.calcite.linq4j.tree;
  * ConstantExpression(null, Object.class) is not equal to ConstantUntypedNull
  * However, optimizers might treat all the nulls equal (e.g. in case of
  * comparison).
+ *
+ * 代表一个null的常量
  */
 public class ConstantUntypedNull extends ConstantExpression {
   public static final ConstantExpression INSTANCE = new ConstantUntypedNull();

@@ -113,6 +113,7 @@ public class SqlValidatorUtil {
     return rowType.getField(columnName, caseSensitive, elideRecord);
   }
 
+  //对字符串类型的参数进一步校验编码正确性
   public static void checkCharsetAndCollateConsistentIfCharType(
       RelDataType type) {
     //(every charset must have a default collation)
@@ -159,10 +160,11 @@ public class SqlValidatorUtil {
    *
    * @return An alias, if one can be derived; or a synthetic alias
    * "expr$<i>ordinal</i>" if ordinal &lt; 0; otherwise null
+   * 获取select 中的别名
    */
   public static String getAlias(SqlNode node, int ordinal) {
     switch (node.getKind()) {
-    case AS:
+    case AS: //如果是as 则获取as后的名字是别名
       // E.g. "1 + 2 as foo" --> "foo"
       return ((SqlCall) node).operand(1).toString();
 
@@ -170,7 +172,7 @@ public class SqlValidatorUtil {
       // E.g. "bids over w" --> "bids"
       return getAlias(((SqlCall) node).operand(0), ordinal);
 
-    case IDENTIFIER:
+    case IDENTIFIER: //如果就是正常的字符串,则获取最后一部分为别名
       // E.g. "foo.bar" --> "bar"
       return Util.last(((SqlIdentifier) node).names);
 
@@ -178,7 +180,7 @@ public class SqlValidatorUtil {
       if (ordinal < 0) {
         return null;
       } else {
-        return SqlUtil.deriveAliasFromOrdinal(ordinal);//EXPR$+序号
+        return SqlUtil.deriveAliasFromOrdinal(ordinal);//EXPR$+序号方式做别名
       }
     }
   }
@@ -191,16 +193,20 @@ public class SqlValidatorUtil {
    * @param nameList  Collection of names already used
    * @param suggester Base for name when input name is null
    * @return Unique name
+   *
+   * 返回唯一的名字
    */
   public static String uniquify(
-      String name,
-      Set<String> nameList,
+      String name,//此时要添加的名字
+      Set<String> nameList,//已存在的名字集合
       Suggester suggester) {
     if (name != null) {
-      if (nameList.add(name)) {
+      if (nameList.add(name)) { //说明名字就是唯一的,直接返回
         return name;
       }
     }
+
+    //为名字重新分配一个新的名字，名字为name+序号
     final String originalName = name;
     for (int j = 0;; j++) {
       name = suggester.apply(originalName, j, nameList.size());

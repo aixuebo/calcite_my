@@ -34,6 +34,8 @@ import java.util.List;
  *
  * <p>The optimizer figures out which rules are applicable, then calls
  * {@link #onMatch} on each of them.</p>
+ * rel表达式操作规则类,将一个表达式转换成另外一个表达式。
+ * 他有一组参数集合,用来决定是否该规则应用到一部分语法树上
  */
 public abstract class RelOptRule {
   //~ Static fields/initializers ---------------------------------------------
@@ -138,12 +140,15 @@ public abstract class RelOptRule {
    * @param <R> Class of relational expression to match
    * @return Operand that matches a relational expression that has a
    *   particular trait and predicate
+   *   判断是否匹配的规则
+   *
+   *   参考 ProjectTableRule.INSTANCE
    */
   public static <R extends RelNode> RelOptRuleOperand operand(
-      Class<R> clazz,
-      RelTrait trait,
-      Predicate<? super R> predicate,
-      RelOptRuleOperandChildren operandList) {
+      Class<R> clazz,//准备去匹配的class
+      RelTrait trait,//class要满足该trait
+      Predicate<? super R> predicate,//class要满足校验函数
+      RelOptRuleOperandChildren operandList) {//要满足子操作
     return new RelOptRuleOperand(clazz, trait, predicate, operandList);
   }
 
@@ -171,11 +176,13 @@ public abstract class RelOptRule {
   /**
    * Creates an operand that matches a relational expression with a given
    * list of children.
+   * 创建一个操作对象,去匹配符合条件的场景
    *
    * <p>Shorthand for <code>operand(clazz, some(...))</code>.
    *
    * <p>If you wish to match a relational expression that has no children
    * (that is, a leaf node), write <code>operand(clazz, none())</code></p>.
+   * 如果你期待匹配的是叶子节点,则operand(clazz, none())即可
    *
    * <p>If you wish to match a relational expression that has any number of
    * children, write <code>operand(clazz, any())</code></p>.
@@ -205,6 +212,7 @@ public abstract class RelOptRule {
    * @param rest  Remaining child operands (may be empty)
    * @return List of child operands that matches child relational
    *   expressions in the order
+   * 按照顺序匹配操作
    */
   public static RelOptRuleOperandChildren some(
       RelOptRuleOperand first,
@@ -241,6 +249,7 @@ public abstract class RelOptRule {
    * @param rest  Remaining child operands (may be empty)
    * @return List of child operands that matches child relational
    *   expressions in any order
+   * 无序的匹配操作
    */
   public static RelOptRuleOperandChildren unordered(
       RelOptRuleOperand first,
@@ -255,6 +264,7 @@ public abstract class RelOptRule {
    * Creates an empty list of child operands.
    *
    * @return Empty list of child operands
+   * 匹配叶子操作
    */
   public static RelOptRuleOperandChildren none() {
     return RelOptRuleOperandChildren.LEAF_CHILDREN;
@@ -266,6 +276,7 @@ public abstract class RelOptRule {
    *
    * @return List of child operands that signifies that the operand matches
    *   any number of child relational expressions
+   * 匹配任意操作
    */
   public static RelOptRuleOperandChildren any() {
     return RelOptRuleOperandChildren.ANY_CHILDREN;

@@ -157,7 +157,7 @@ public class SqlLiteral extends SqlNode {
    */
   protected SqlLiteral(
       Object value,
-      SqlTypeName typeName,
+      SqlTypeName typeName,//SYMBOL时，value表示join、left等信息
       SqlParserPos pos) {
     super(pos);
     this.value = value;
@@ -379,6 +379,7 @@ public class SqlLiteral extends SqlNode {
    * 'Hello world!')</code>.
    *
    * @see #symbolValue()
+   * 参考left join，他就是一个SYMBOL的SqlLiteral
    */
   public static SqlLiteral createSymbol(
       SqlLiteral.SqlSymbol o,
@@ -619,7 +620,7 @@ public class SqlLiteral extends SqlNode {
         pos);
   }
 
-  //负数
+  //负数  对BigDecimal进行处理,转换成负数对应的BigDecimal
   public static SqlNumericLiteral createNegative(
       SqlNumericLiteral num,//本身是正数
       SqlParserPos pos) {
@@ -662,7 +663,7 @@ public class SqlLiteral extends SqlNode {
         pos);
   }
 
-  //s是科学技术法，比如3.5e+5
+  //s是科学技术法，比如3.5e+5 转换成具体的小数
   public static SqlNumericLiteral createApproxNumeric(
       String s,
       SqlParserPos pos) {
@@ -730,6 +731,7 @@ public class SqlLiteral extends SqlNode {
    * @throws UnsupportedCharsetException if charSet is not null but there is
    *                                     no character set with that name in this
    *                                     environment
+   * 对字符串进行编码，转换成新的字符串
    */
   public static SqlCharStringLiteral createCharString(
       String s,
@@ -804,6 +806,9 @@ public class SqlLiteral extends SqlNode {
    * <p>The {@link #toString()} method should return how the symbol should be
    * unparsed, which is sometimes not the same as the enumerated value's name
    * (e.g. "UNBOUNDED PRECEDING" versus "UnboundedPreceeding").
+   *
+   * 表示枚举值。枚举值可以转换成SqlLiteral。
+   * 参见JoinType
    */
   public interface SqlSymbol {
     String name();

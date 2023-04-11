@@ -26,6 +26,7 @@ import java.util.List;
  * Table that can be scanned, optionally applying supplied filter expressions,
  * and projecting a given list of columns,
  * without creating an intermediate relational expression.
+ * 表可以被扫描,可以对接filter表达式,可以对接select 表达式
  *
  * <p>If you wish to write a table that can apply projects but not filters,
  * simply decline all filters.</p>
@@ -56,6 +57,8 @@ public interface ProjectableFilterableTable extends Table {
    * @return Enumerable over all rows that match the accepted filters, returning
    * for each row an array of column values, one value for each ordinal in
    * {@code projects}.
+   * 返回表的数据集合迭代器,返回值object[]代表一行的所有列集合信息。
+   * 支持对表进行where 以及 select投影处理
    */
   Enumerable<Object[]> scan(DataContext root, List<RexNode> filters,
       int[] projects);

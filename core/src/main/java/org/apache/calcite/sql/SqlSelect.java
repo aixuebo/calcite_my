@@ -42,7 +42,7 @@ public class SqlSelect extends SqlCall {
   public static final int WHERE_OPERAND = 3;
   public static final int HAVING_OPERAND = 5;
 
-  SqlNodeList keywordList;
+  SqlNodeList keywordList;//存储distinct关键词
   SqlNodeList selectList;
   SqlNode from;
   SqlNode where;
@@ -131,6 +131,7 @@ public class SqlSelect extends SqlCall {
     }
   }
 
+  //是否包含distinct关键词
   public final boolean isDistinct() {
     return getModifierNode(SqlSelectKeyword.DISTINCT) != null;
   }

@@ -33,6 +33,8 @@ import java.util.List;
  * go into it. It has precisely one argument of numeric type (<code>int</code>,
  * <code>long</code>, <code>float</code>, <code>double</code>), and the result
  * is the same type.
+ *
+ * sum操作,返回值取决于第一个参数,如果参数是double,则返回值是double
  */
 public class SqlSumAggFunction extends SqlAggFunction {
   //~ Instance fields --------------------------------------------------------
@@ -45,7 +47,7 @@ public class SqlSumAggFunction extends SqlAggFunction {
     super(
         "SUM",
         SqlKind.OTHER_FUNCTION,
-        ReturnTypes.ARG0_NULLABLE_IF_EMPTY,
+        ReturnTypes.ARG0_NULLABLE_IF_EMPTY,//返回第0个参数的类型
         null,
         OperandTypes.NUMERIC,
         SqlFunctionCategory.NUMERIC);

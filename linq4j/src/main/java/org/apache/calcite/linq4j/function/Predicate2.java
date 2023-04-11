@@ -21,6 +21,8 @@ package org.apache.calcite.linq4j.function;
  *
  * @param <T0> Type of argument #0
  * @param <T1> Type of argument #1
+ *
+ * 接收两个参数,判断boolean返回值
  */
 public interface Predicate2<T0, T1> extends Function<Boolean> {
   /**

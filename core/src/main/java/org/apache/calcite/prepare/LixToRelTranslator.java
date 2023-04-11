@@ -63,17 +63,23 @@ class LixToRelTranslator implements RelOptTable.ToRelContext {
     return cluster;
   }
 
+  /**
+   * 将sql转换成RelNode
+   */
   public RelNode expandView(RelDataType rowType, String queryString,
       List<String> schemaPath) {
     return preparingStmt.expandView(rowType, queryString, schemaPath);
   }
 
+  /**
+   * 将Queryable转换成RelNode
+   */
   public <T> RelNode translate(Queryable<T> queryable) {
-    QueryableRelBuilder<T> translatorQueryable =
-        new QueryableRelBuilder<T>(this);
+    QueryableRelBuilder<T> translatorQueryable = new QueryableRelBuilder<T>(this);
     return translatorQueryable.toRel(queryable);
   }
 
+  //将一个表达式转换成RelNode
   public RelNode translate(Expression expression) {
     if (expression instanceof MethodCallExpression) {
       final MethodCallExpression call = (MethodCallExpression) expression;
@@ -134,8 +140,7 @@ class LixToRelTranslator implements RelOptTable.ToRelContext {
         "unknown expression type " + expression.getNodeType());
   }
 
-  private List<RexNode> toRex(
-      RelNode child, FunctionExpression expression) {
+  private List<RexNode> toRex(RelNode child, FunctionExpression expression) {
     RexBuilder rexBuilder = cluster.getRexBuilder();
     List<RexNode> list =
         Collections.singletonList(
@@ -162,19 +167,21 @@ class LixToRelTranslator implements RelOptTable.ToRelContext {
         "unsupported expression type " + expression);
   }
 
+  //针对select内容中函数进行转换
   List<RexNode> toRexList(
-      FunctionExpression expression,
-      RelNode... inputs) {
+      FunctionExpression expression,//函数+代码块--其中代码块引用了字段变量,属于select中的内容
+      RelNode... inputs) {//输入的字段变量
     List<RexNode> list = new ArrayList<RexNode>();
     RexBuilder rexBuilder = cluster.getRexBuilder();
     for (RelNode input : inputs) {
       list.add(rexBuilder.makeRangeReference(input));
     }
     return CalcitePrepareImpl.EmptyScalarTranslator.empty(rexBuilder)
-        .bind(expression.parameterList, list)
+        .bind(expression.parameterList, list)//映射变量与字段的映射
         .toRexList(expression.body);
   }
 
+  //针对select内容中函数进行转换
   RexNode toRex(
       FunctionExpression expression,
       RelNode... inputs) {
@@ -184,7 +191,7 @@ class LixToRelTranslator implements RelOptTable.ToRelContext {
       list.add(rexBuilder.makeRangeReference(input));
     }
     return CalcitePrepareImpl.EmptyScalarTranslator.empty(rexBuilder)
-        .bind(expression.parameterList, list)
+        .bind(expression.parameterList, list)//映射变量与字段的映射
         .toRex(expression.body);
   }
 }

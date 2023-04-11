@@ -53,6 +53,7 @@ public class SqlUserDefinedAggFunction extends SqlAggFunction {
     this.function = function;
   }
 
+  //根据函数参数FunctionParameter,返回参数类型
   public List<RelDataType> getParameterTypes(
       final RelDataTypeFactory typeFactory) {
     return Lists.transform(function.getParameters(),
@@ -63,6 +64,7 @@ public class SqlUserDefinedAggFunction extends SqlAggFunction {
         });
   }
 
+  //函数返回值类型
   public RelDataType getReturnType(RelDataTypeFactory typeFactory) {
     return function.getReturnType(typeFactory);
   }

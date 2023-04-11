@@ -23,6 +23,9 @@ import java.math.BigDecimal;
  * may be null.
  *
  * @param <T0> Type of argument #0
+ *
+ * 数据 ---> 转换成 BigDecimal
+ * 可能返回值是null
  */
 public interface NullableBigDecimalFunction1<T0>
     extends Function1<T0, BigDecimal> {

@@ -59,12 +59,12 @@ public class SqlFunction extends SqlOperator {
    * @param category             categorization for function
    */
   public SqlFunction(
-      String name,
-      SqlKind kind,
+      String name,//函数名
+      SqlKind kind,//函数操作类型，比如trim
       SqlReturnTypeInference returnTypeInference,//返回值类型
       SqlOperandTypeInference operandTypeInference,//参数类型
       SqlOperandTypeChecker operandTypeChecker,//如何校验参数
-      SqlFunctionCategory category) {
+      SqlFunctionCategory category) { //函数操作类型，比如是字符串函数，还是数值函数
     // We leave sqlIdentifier as null to indicate
     // that this is a builtin.  Same for paramTypes.
     this(name, null, kind, returnTypeInference, operandTypeInference,

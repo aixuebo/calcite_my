@@ -20,11 +20,14 @@ import java.lang.reflect.Modifier;
 
 /**
  * Declaration of a field.
+ *
+ *  * 声明class里的成员,比如声明field
+ *  * 即创建class代码中的field
  */
 public class FieldDeclaration extends MemberDeclaration {
   public final int modifier;
   public final ParameterExpression parameter;
-  public final Expression initializer;
+  public final Expression initializer;//属性初始化的值对象
 
   public FieldDeclaration(int modifier, ParameterExpression parameter,
       Expression initializer) {
@@ -43,6 +46,8 @@ public class FieldDeclaration extends MemberDeclaration {
   }
 
   public void accept(ExpressionWriter writer) {
+
+    //public String name = value
     String modifiers = Modifier.toString(modifier);
     writer.append(modifiers);
     if (!modifiers.isEmpty()) {
@@ -50,7 +55,7 @@ public class FieldDeclaration extends MemberDeclaration {
     }
     writer.append(parameter.type).append(' ').append(parameter.name);
     if (initializer != null) {
-      writer.append(" = ").append(initializer);
+      writer.append(" = ").append(initializer);//调用initializer的accept0方法
     }
     writer.append(';');
     writer.newlineAndIndent();

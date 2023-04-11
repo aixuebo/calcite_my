@@ -31,7 +31,7 @@ import java.util.List;
  * will be considered equal; this is not desired, but not too damaging, because
  * of the immutability.
  *
- * <p>Variables are immutable.
+ * <p>Variables are immutable.变量是不可变对象
  */
 public class RexLocalRef extends RexSlot {
   //~ Static fields/initializers ---------------------------------------------

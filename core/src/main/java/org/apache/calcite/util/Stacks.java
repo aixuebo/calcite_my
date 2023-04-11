@@ -20,6 +20,7 @@ import java.util.List;
 
 /**
  * Utilities to make vanilla lists look like stacks.
+ * 简单的一个堆栈对象
  */
 public class Stacks {
   private Stacks() {
@@ -28,6 +29,7 @@ public class Stacks {
   /**
    * Returns the most recently added element in the stack. Throws if the
    * stack is empty.
+   * 查看top1的元素是什么
    */
   public static <T> T peek(List<T> stack) {
     return stack.get(stack.size() - 1);
@@ -35,6 +37,7 @@ public class Stacks {
 
   /**
    * Adds an element to the stack.
+   * 添加一个元素到队列中
    */
   public static <T> void push(List<T> stack, T element) {
     stack.add(element);
@@ -43,6 +46,7 @@ public class Stacks {
   /**
    * Removes an element from the stack. Asserts of the element is not the
    * one last added; throws if the stack is empty.
+   * 弹出一个元素，并且校验该元素就是参数2
    */
   public static <T> void pop(List<T> stack, T element) {
     assert stack.get(stack.size() - 1) == element;

@@ -21,10 +21,13 @@ import java.util.List;
 
 /**
  * Holds context for evaluating expressions.
+ * 实现一个先进后出的队列
  */
 class Evaluator {
-  final List<ParameterExpression> parameters =
-      new ArrayList<ParameterExpression>();
+
+  //先进后出
+  final List<ParameterExpression> parameters = new ArrayList<ParameterExpression>();
+
   final List<Object> values = new ArrayList<Object>();
 
   Evaluator() {
@@ -35,6 +38,7 @@ class Evaluator {
     values.add(value);
   }
 
+  //弹出n个数据
   void pop(int n) {
     while (n > 0) {
       parameters.remove(parameters.size() - 1);
@@ -43,6 +47,7 @@ class Evaluator {
     }
   }
 
+  //找到堆栈内匹配参数的对象,返回参数值
   Object peek(ParameterExpression param) {
     for (int i = parameters.size() - 1; i >= 0; i--) {
       if (parameters.get(i) == param) {

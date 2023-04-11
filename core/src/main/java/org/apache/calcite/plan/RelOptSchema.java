@@ -22,6 +22,7 @@ import java.util.List;
 
 /**
  * A <code>RelOptSchema</code> is a set of {@link RelOptTable} objects.
+ * 操作schema的对象
  */
 public interface RelOptSchema {
   //~ Methods ----------------------------------------------------------------
@@ -37,18 +38,21 @@ public interface RelOptSchema {
    * from JDBC.</p>
    *
    * @param names Qualified name
+   * 通过表名全路径找表
    */
   RelOptTable getTableForMember(List<String> names);
 
   /**
    * Returns the {@link RelDataTypeFactory type factory} used to generate
    * types for this schema.
+   * 获取sql类型与java类型的映射关系工程
    */
   RelDataTypeFactory getTypeFactory();
 
   /**
    * Registers all of the rules supported by this schema. Only called by
    * {@link RelOptPlanner#registerSchema}.
+   * 为schema注册查询计划规则
    */
   void registerRules(RelOptPlanner planner) throws Exception;
 }

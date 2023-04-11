@@ -19,9 +19,11 @@ package org.apache.calcite.rel.core;
 /**
  * Describes the necessary parameters for an implementation in order to
  * identify and set dynamic variables
+ *
+ * 设置变量id 与 name映射关系
  */
-public class CorrelationId implements Cloneable, Comparable<CorrelationId> {
-  private static final String CORREL_PREFIX = "$cor";
+public class CorrelationId implements Cloneable, Comparable<CorrelationId> {//按照id排序
+  private static final String CORREL_PREFIX = "$cor"; //id前缀
 
   private final int id;
   private final String name;

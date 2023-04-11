@@ -36,8 +36,8 @@ public class SqlTypeAssignmentRules {
   private static SqlTypeAssignmentRules instance = null;
 
   //key类型,value该类型可以转换成其他的类型集合
-  private final Map<SqlTypeName, Set<SqlTypeName>> rules;
-  private final Map<SqlTypeName, Set<SqlTypeName>> coerceRules;
+  private final Map<SqlTypeName, Set<SqlTypeName>> rules;//比如integer --> 可以由TINYINT、SMALLINT、INTEGER转换成integer
+  private final Map<SqlTypeName, Set<SqlTypeName>> coerceRules; //可以允许强制转换的映射  比如integer/varchar 可以被强制转换成为TINYINT
 
   //~ Constructors -----------------------------------------------------------
 
@@ -47,6 +47,7 @@ public class SqlTypeAssignmentRules {
     Set<SqlTypeName> rule;
 
     // IntervalYearMonth is assignable from...
+    //日期类型，只能由日期类型转换
     rule = new HashSet<SqlTypeName>();
     rule.add(SqlTypeName.INTERVAL_YEAR_MONTH);
     rules.put(SqlTypeName.INTERVAL_YEAR_MONTH, rule);
@@ -73,6 +74,7 @@ public class SqlTypeAssignmentRules {
     rules.put(SqlTypeName.SMALLINT, rule);
 
     // Int is assignable from...
+    //比如integer --> 可以由TINYINT、SMALLINT、INTEGER转换成integer
     rule = new HashSet<SqlTypeName>();
     rule.add(SqlTypeName.TINYINT);
     rule.add(SqlTypeName.SMALLINT);
@@ -195,6 +197,7 @@ public class SqlTypeAssignmentRules {
 
     // Make numbers symmetrical and
     // make varchar/char castable to/from numbers
+    //设置所有的基础类型都可以互相转换
     rule = new HashSet<SqlTypeName>();
     rule.add(SqlTypeName.TINYINT);
     rule.add(SqlTypeName.SMALLINT);
@@ -208,6 +211,7 @@ public class SqlTypeAssignmentRules {
     rule.add(SqlTypeName.CHAR);
     rule.add(SqlTypeName.VARCHAR);
 
+    //比如所有的基础类型都可以转换成TINYINT
     coerceRules.put(
         SqlTypeName.TINYINT,
         copy(rule));
@@ -325,15 +329,16 @@ public class SqlTypeAssignmentRules {
     return instance;
   }
 
+  //判断是否可以转换成功
   public boolean canCastFrom(
       SqlTypeName to,
       SqlTypeName from,
-      boolean coerce) {
+      boolean coerce) {//是否允许强制转换
     assert to != null;
     assert from != null;
 
     Map<SqlTypeName, Set<SqlTypeName>> ruleset =
-        coerce ? coerceRules : rules;
+        coerce ? coerceRules : rules; //是否使用强制转换类型
 
     if (to.equals(SqlTypeName.NULL)) {
       return false;

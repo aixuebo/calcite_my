@@ -87,6 +87,8 @@ public abstract class Types {
    * Returns a list backed by a copy of an array. The contents of the list
    * will not change even if the contents of the array are subsequently
    * modified.
+   * 数组 转 List
+   * 实现上是复制,即参数数组还是保持不变
    */
   private static <T> List<T> toList(T[] ts) {
     switch (ts.length) {
@@ -187,6 +189,7 @@ public abstract class Types {
     return null; // not an array type
   }
 
+  //返回数组的底层类型
   static Type getComponentTypeN(Type type) {
     for (;;) {
       final Type oldType = type;

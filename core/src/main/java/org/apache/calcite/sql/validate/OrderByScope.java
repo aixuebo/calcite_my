@@ -84,11 +84,11 @@ public class OrderByScope extends DelegatingScope {
     return super.fullyQualify(identifier);
   }
 
-  //获取某一个列的类型
+  //获取某一个列的类型 --- 该name一定是select中的某一个字段
   public RelDataType resolveColumn(String name, SqlNode ctx) {
     final SqlValidatorNamespace selectNs = validator.getNamespace(select);//select的输出表空间
     final RelDataType rowType = selectNs.getRowType();//表字段类型
-    final RelDataTypeField field = validator.catalogReader.field(rowType, name);//找到列对象
+    final RelDataTypeField field = validator.catalogReader.field(rowType, name);//找到列对象 -- 该name一定是select中的某一个字段
     if (field != null) {
       return field.getType();
     }

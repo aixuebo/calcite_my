@@ -34,6 +34,7 @@ import static org.apache.calcite.util.Static.RESOURCE;
 
 /**
  * <code>SqlBinaryOperator</code> is a binary operator.
+ * 代表二元操作，持有两个sqlNode进行操作
  */
 public class SqlBinaryOperator extends SqlOperator {
   //~ Constructors -----------------------------------------------------------
@@ -43,7 +44,7 @@ public class SqlBinaryOperator extends SqlOperator {
    *
    * @param name                 Name of operator
    * @param kind                 Kind
-   * @param prec                 Precedence
+   * @param prec                 Precedence 优先权
    * @param leftAssoc            Left-associativity
    * @param returnTypeInference  Strategy to infer return type
    * @param operandTypeInference Strategy to infer operand types

@@ -221,6 +221,7 @@ public abstract class Expressions {
   /**
    * Creates an expression that represents applying an array
    * index operator to an array of rank one.
+   * 获取数组中的某一个元素
    */
   public static IndexExpression arrayIndex(Expression array,
       Expression indexExpression) {
@@ -600,6 +601,7 @@ public abstract class Expressions {
   /**
    * Creates a UnaryExpression that represents a type conversion
    * operation.
+   * 一元操作,将表达式expression转换成目标class对象
    */
   public static UnaryExpression convert_(Expression expression, Type type) {
     return new UnaryExpression(ExpressionType.Convert, type, expression);

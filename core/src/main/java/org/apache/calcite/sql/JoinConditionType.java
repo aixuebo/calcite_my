@@ -20,6 +20,7 @@ import org.apache.calcite.sql.parser.SqlParserPos;
 
 /**
  * Enumerates the types of condition in a join expression.
+ * 一种字面量对象  即特殊字符串含义的对象
  */
 public enum JoinConditionType implements SqlLiteral.SqlSymbol {
   /**

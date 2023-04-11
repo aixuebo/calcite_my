@@ -23,11 +23,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Abstract base class for {@link RexInputRef} and {@link RexLocalRef}.
+ * 为数据源做一个基类,记录该变量是数据源的第几个字段
  */
 public abstract class RexSlot extends RexVariable {
   //~ Instance fields --------------------------------------------------------
 
-  protected final int index;//属性序号
+  protected final int index;//属性序号,即第几个字段
 
   //~ Constructors -----------------------------------------------------------
 

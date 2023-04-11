@@ -49,10 +49,13 @@ import com.google.common.cache.LoadingCache;
  * registered with each new planner instantiated.</p>
  *
  * @param <T> Trait that this trait definition is based upon
+ *
+ * 定义特性
  */
 public abstract class RelTraitDef<T extends RelTrait> {
   //~ Instance fields --------------------------------------------------------
 
+  //内存存储对应的T对象
   private final LoadingCache<T, T> canonicalMap =
       CacheBuilder.newBuilder()
           .softValues()
@@ -82,14 +85,22 @@ public abstract class RelTraitDef<T extends RelTrait> {
 
   /**
    * @return the specific RelTrait type associated with this RelTraitDef.
+   * 返回具体的特性是什么对象
    */
   public abstract Class<T> getTraitClass();
 
   /**
    * @return a simple name for this RelTraitDef (for use in
    * {@link org.apache.calcite.rel.RelNode#explain}).
+   * 为特性起一个简称名字,比如sort简称排序特性
    */
   public abstract String getSimpleName();
+
+  /**
+   * Returns the default member of this trait.
+   * 返回特性的实现类
+   */
+  public abstract T getDefault();
 
   /**
    * Takes an arbitrary RelTrait and returns the canonical representation of
@@ -102,9 +113,11 @@ public abstract class RelTraitDef<T extends RelTrait> {
    *
    * @param trait a possibly non-canonical RelTrait
    * @return a canonical RelTrait.
+   *
+   * 格式化--标准化
    */
   public final T canonize(T trait) {
-    assert getTraitClass().isInstance(trait)
+    assert getTraitClass().isInstance(trait) //校验trait一定是要求的子类
         : getClass().getName()
         + " cannot canonize a "
         + trait.getClass().getName();
@@ -167,10 +180,7 @@ public abstract class RelTraitDef<T extends RelTrait> {
       ConverterRule converterRule) {
   }
 
-  /**
-   * Returns the default member of this trait.
-   */
-  public abstract T getDefault();
+
 }
 
 // End RelTraitDef.java

@@ -36,6 +36,8 @@ public interface SqlOperandTypeChecker {
    * @param throwOnFailure whether to throw an exception if check fails
    *                       (otherwise returns false in that case) 如果是true,则表示校验失败要抛异常
    * @return whether check succeeded
+   *
+   * 校验参数类型
    */
   boolean checkOperandTypes(
       SqlCallBinding callBinding,
@@ -44,6 +46,7 @@ public interface SqlOperandTypeChecker {
   /**
    * @return range of operand counts allowed in a call
    * 返回函数允许的参数数量
+   * 校验参数的数量是否符合预期
    */
   SqlOperandCountRange getOperandCountRange();
 

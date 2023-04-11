@@ -21,10 +21,12 @@ import org.apache.calcite.sql.SqlKind;
 
 /**
  * Reference to the current row of a correlating relational expression.
+ * 引用当前行的相关表达式
  *
  * <p>Correlating variables are introduced when performing nested loop joins.
  * Each row is received from one side of the join, a correlating variable is
  * assigned a value, and the other side of the join is restarted.</p>
+ * 用于select 嵌套join中
  */
 public class RexCorrelVariable extends RexVariable {
   //~ Constructors -----------------------------------------------------------

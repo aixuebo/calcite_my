@@ -50,7 +50,7 @@ public class SqlTrimFunction extends SqlFunction {
   public enum Flag implements SqlLiteral.SqlSymbol {
     BOTH(1, 1), LEADING(1, 0), TRAILING(0, 1);
 
-    private final int left;
+    private final int left;//是否trim左边
     private final int right;
 
     Flag(int left, int right) {

@@ -21,6 +21,8 @@ package org.apache.calcite.linq4j.function;
  *
  * @param <R> Result type
  * @param <T0> Type of parameter 0
+ *
+ * 数据一个参数,计算后返回值
  */
 public interface Function1<T0, R> extends Function<R> {
   /**

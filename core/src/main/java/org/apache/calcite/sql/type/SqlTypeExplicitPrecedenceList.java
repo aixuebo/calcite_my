@@ -33,13 +33,14 @@ import java.util.Map;
  * SqlTypeExplicitPrecedenceList implements the
  * {@link RelDataTypePrecedenceList} interface via an explicit list of
  * {@link SqlTypeName} entries.
+ * 定义一个sqlType集合，优先推荐哪个类型，比如都是数字类型，看优先推荐哪个类型作为基础类型
  */
 public class SqlTypeExplicitPrecedenceList
     implements RelDataTypePrecedenceList {
   //~ Static fields/initializers ---------------------------------------------
 
   // NOTE jvs 25-Jan-2005:  the null entries delimit equivalence
-  // classes
+  // classes 数字类型对应的sql类型集合
   private static final List<SqlTypeName> NUMERIC_TYPES =
       ImmutableNullableList.of(
           SqlTypeName.TINYINT,
@@ -57,6 +58,7 @@ public class SqlTypeExplicitPrecedenceList
           SqlTypeName.FLOAT,
           SqlTypeName.DOUBLE);
 
+  //定义可以比较的数字类型集合
   private static final List<SqlTypeName> COMPACT_NUMERIC_TYPES =
       ImmutableList.copyOf(
           Iterables.filter(NUMERIC_TYPES, Predicates.notNull()));
@@ -107,6 +109,7 @@ public class SqlTypeExplicitPrecedenceList
     return new SqlTypeExplicitPrecedenceList(ImmutableList.copyOf(array));
   }
 
+  //优先推荐哪个类型
   private static SqlTypeExplicitPrecedenceList numeric(SqlTypeName typeName) {
     int i = getListPosition(typeName, COMPACT_NUMERIC_TYPES);
     return new SqlTypeExplicitPrecedenceList(

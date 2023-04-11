@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 /**
  * A numeric SQL literal.
  * 表示一个数字，正数、小数、科学计数法3.1e+5、负数
+ *
+ * 总之无论是正数、负数 、还是科学计数法，最终都会转换成BigDecimal对象
  */
 public class SqlNumericLiteral extends SqlLiteral {
   //~ Instance fields --------------------------------------------------------
@@ -90,6 +92,7 @@ public class SqlNumericLiteral extends SqlLiteral {
     return Util.toScientificNotation(bd);
   }
 
+  //数据库类型转换成java类型
   public RelDataType createSqlType(RelDataTypeFactory typeFactory) {
     if (isExact) {
       int scaleValue = scale.intValue();

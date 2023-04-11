@@ -23,10 +23,12 @@ import java.util.List;
  * Enumerator over the cartesian product of enumerators.
  *
  * @param <T> Element type
+ *
+ * 笛卡尔乘积
  */
 class CartesianProductEnumerator<T> implements Enumerator<List<T>> {
-  private final List<Enumerator<T>> enumerators;
-  private final T[] elements;
+  private final List<Enumerator<T>> enumerators;//多个表集合,每一个集合都是一个迭代器
+  private final T[] elements;//如果T是数组,则结果是二维数组,即每一个元素表示一个表的所有列集合
   private boolean first = true;
 
   public CartesianProductEnumerator(List<Enumerator<T>> enumerators) {
@@ -53,12 +55,12 @@ class CartesianProductEnumerator<T> implements Enumerator<List<T>> {
     }
     for (int ordinal = enumerators.size() - 1; ordinal >= 0; --ordinal) {
       final Enumerator<T> enumerator = enumerators.get(ordinal);
-      if (enumerator.moveNext()) {
+      if (enumerator.moveNext()) { //计算笛卡尔成功,直接返回
         elements[ordinal] = enumerator.current();
         return true;
       }
 
-      // Move back to first element.
+      // Move back to first element. 说明有一个集合没有数据了
       enumerator.reset();
       if (!enumerator.moveNext()) {
         // Very strange... this was empty all along.

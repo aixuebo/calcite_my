@@ -27,6 +27,11 @@ import com.google.common.collect.ImmutableList;
  * {@link SqlTypeTransform}s
  * 级联操作,一层套一层的进行运算
  * 需要一个初始类型才能走通,因此参数第一个是SqlReturnTypeInference
+ *
+ * 经过一系列的转换,每一个输出，等于下一个结果的输入
+ * cast(
+ *    cast( a as int) as double
+ * )
  */
 public class SqlTypeTransformCascade implements SqlReturnTypeInference {
   //~ Instance fields --------------------------------------------------------

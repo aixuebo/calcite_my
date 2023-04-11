@@ -19,7 +19,7 @@ package org.apache.calcite.rel.type;
 /**
  * RelDataTypePrecedenceList defines a type precedence list for a particular
  * type.
- *
+ * 定义一个sqlType集合
  * @sql.99 Part 2 Section 9.5
  */
 public interface RelDataTypePrecedenceList {

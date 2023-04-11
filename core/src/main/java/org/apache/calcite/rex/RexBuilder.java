@@ -240,7 +240,7 @@ public class RexBuilder {
   public RexNode makeCall(
       SqlOperator op,
       List<? extends RexNode> exprs) {
-    final RelDataType type = deriveReturnType(op, exprs);
+    final RelDataType type = deriveReturnType(op, exprs);//推测返回值
     return new RexCall(type, op, exprs);
   }
 
@@ -803,9 +803,9 @@ public class RexBuilder {
    * 返回常数表达式
    */
   protected RexLiteral makeLiteral(
-      Comparable o,
-      RelDataType type,
-      SqlTypeName typeName) {
+      Comparable o,//具体的值
+      RelDataType type,//类型
+      SqlTypeName typeName) { //sql类型
     // All literals except NULL have NOT NULL types.
     type = typeFactory.createTypeWithNullability(type, o == null);
     if (typeName == SqlTypeName.CHAR) {

@@ -717,6 +717,7 @@ SqlNode LeafQuery(ExprContext exprContext) :
 
 /**
  * Parses a parenthesized query or single row expression.
+ 子查询 或者 row表达式，大多数场景是子查询
  */
 SqlNode ParenthesizedExpression(ExprContext exprContext) :
 {
@@ -745,19 +746,24 @@ SqlNode ParenthesizedExpression(ExprContext exprContext) :
 
 /**
  * Parses a parenthesized query or comma-list of row expressions.
- *
+ * 解析一个()子查询，或者是List<行表达式>,行表达式用于模拟子查询结果集
+
  * <p>REVIEW jvs 8-Feb-2004: There's a small hole in this production.  It can be
  * used to construct something like
+   很少用的情况，比如以下语法:
  *
  * <code>WHERE x IN (select count(*) from t where c=d,5)</code>,
  *
  * which should be illegal.  The above is interpreted as equivalent to
- *
+ * 上面的sql是非法的,他等价于下面的sql,即 in ((),()),每一个in的元素其实是一个子查询结果
  * <code>WHERE x IN ((select count(*) from t where c=d),5)</code>,
  *
  * which is a legal use of a subquery.  The only way to fix the hole is to be
  * able to remember whether a subexpression was parenthesized or not, which
- * means preserving parentheses in the SqlNode tree.  This is probably
+ * means preserving parentheses in the SqlNode tree.
+ 这种语法是合法的，他用括号的方式确定了子查询
+
+ This is probably
  * desirable anyway for use in purely syntactic parsing applications (e.g. SQL
  * pretty-printer).  However, if this is done, it's important to also make
  * isA() on the paren node call down to its operand so that we can
@@ -813,6 +819,10 @@ SqlNodeList ParenthesizedQueryOrCommaList(
  *
  * <p>This is pretty much the same as ParenthesizedQueryOrCommaList but allows
  * the DISTINCT keyword to follow the left paren and not be followed by a comma.
+
+ 代码函数的参数部分
+ (DISTINCT/ALL OrderedQueryOrExpr [,Expression]) -->
+ List(new SqlLiteral("DISTINCT/ALL", SqlTypeName.SYMBOL),OrderedQueryOrExpr,Expression...)
  */
 List FunctionParameterList(
     ExprContext exprContext) :
@@ -1510,7 +1520,9 @@ SqlLiteral JoinType() :
     }
 }
 
-/** Matches "LEFT JOIN t ON ...", "RIGHT JOIN t USING ...", "JOIN t". */
+/** Matches "LEFT JOIN t ON ...", "RIGHT JOIN t USING ...", "JOIN t".
+这部分代码没有被用到，因为代码逻辑在FromClause中已经有体现,所以这部分代码冗余
+*/
 SqlNode JoinTable(SqlNode e) :
 {
     SqlNode e2, condition;
@@ -1730,6 +1742,7 @@ SqlNode TableRef() :
             }
         }
     |
+        ### 现实场景不常用，因此不用在研究该函数场景
         <UNNEST> { pos = getPos(); }
         args = ParenthesizedQueryOrCommaList(ExprContext.ACCEPT_SUBQUERY)
         {
@@ -1899,6 +1912,12 @@ SqlNode TableFunctionCall(SqlParserPos pos) :
 
 /**
  * Parses an explicit TABLE t reference.
+ 精准的查询某一个表。类似于from 表名
+ 语法 TABLE xx.xx ---> SqlStdOperatorTable.EXPLICIT_TABLE.createCall(SqlIdentifier);
+
+ 等同from 表名的方式
+ 1.table 表名
+ 2.select * from (table 表名)
  */
 SqlNode ExplicitTable(SqlParserPos pos) :
 {
@@ -2418,6 +2437,7 @@ SqlNode SqlExpressionEof() :
 
 /**
  * Parses either a row expression or a query expression without ORDER BY.
+ 这部分没有order by语法，因为他们在做union all等操作，此时是不需要order by的
  */
 SqlNode QueryOrExpr(ExprContext exprContext) :
 {
@@ -2878,7 +2898,7 @@ SqlNode AtomicRowExpression() :
     |
     e = DynamicParam() { return e; } //SqlDynamicParam 动态参数?
     |
-    e = BuiltinFunctionCall() { return e; } //解析内部函数 SqlFunction
+    e = BuiltinFunctionCall() { return e; } //解析特殊语法的内置函数 SqlFunction
     |
     e = JdbcFunctionCall() { return e; }
     |
@@ -3021,6 +3041,7 @@ SqlSetOption SqlSetOption() :
     }
 }
 
+//遇到SYSTEM或者SESSION，则显示，遇不到就返回空，不会走到{}逻辑里
 String Scope() :
 {
 }
@@ -3658,6 +3679,7 @@ SqlNodeList ParenthesizedSimpleIdentifierList() :
 <#if parser.includeCompoundIdentifier >
 /**
  * Parses a compound identifier.
+ 解析xx.xx 或者xx.xx.*对应的字符串对象
  */
 SqlIdentifier CompoundIdentifier() :
 {
@@ -3980,6 +4002,7 @@ SqlNode CursorExpression(ExprContext exprContext) :
 
 /**
  * Parses a call to a builtin function with special syntax.
+ * 解析特殊语法的内置函数
  */
 SqlNode BuiltinFunctionCall() :
 {
@@ -4165,7 +4188,7 @@ SqlNode BuiltinFunctionCall() :
         <TRIM>
         {
             SqlLiteral flag = null;
-            SqlNode trimChars = null;
+            SqlNode trimChars = null;//要被去空格的字符串
             pos = getPos();
         }
         <LPAREN>
@@ -5244,6 +5267,7 @@ SqlPostfixOperator PostfixRowOperator() :
  * and "reserved word" in reference below).
  *
  * @sql.2003 Part 2 Section 5.2
+ 非常用的保留关键词
  */
 String CommonNonReservedKeyWord() :
 {
@@ -5479,22 +5503,22 @@ String CommonNonReservedKeyWord() :
 
 <DEFAULT, DQID, BTID> TOKEN :
 {
-    < UNSIGNED_INTEGER_LITERAL: (["0"-"9"])+ >
+    < UNSIGNED_INTEGER_LITERAL: (["0"-"9"])+ > /* 正数 */
     |
     < APPROX_NUMERIC_LITERAL:
-    (<UNSIGNED_INTEGER_LITERAL> | <DECIMAL_NUMERIC_LITERAL>) <EXPONENT> > //数字+e+9科学计数法
+    (<UNSIGNED_INTEGER_LITERAL> | <DECIMAL_NUMERIC_LITERAL>) <EXPONENT> > //(正数 or 小数) +e+9科学计数法
     |
-    < DECIMAL_NUMERIC_LITERAL:
+    < DECIMAL_NUMERIC_LITERAL: /* double类型的小数 */
     (["0"-"9"])+(".")?(["0"-"9"])*
     | "."(["0"-"9"])+
     >
     |
-    < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+    < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ > /* 科学计数法 e+正数 */
     |
-    < #HEXDIGIT: ["0"-"9","a"-"f","A"-"F"] >
+    < #HEXDIGIT: ["0"-"9","a"-"f","A"-"F"] >   /* 16进制内容 */
     |
     < #WHITESPACE:
-    [ " ","\t","\n","\r","\f" ]
+    [ " ","\t","\n","\r","\f" ] /* 空格符 */
     >
     |
     /* To improve error reporting, we allow all kinds of characters,
@@ -5508,7 +5532,7 @@ String CommonNonReservedKeyWord() :
     < UNICODE_STRING_LITERAL: "U" "&" <QUOTED_STRING> >
     |
     < #CHARSETNAME: (["a"-"z","A"-"Z","0"-"9"])
-    (["a"-"z","A"-"Z","0"-"9",":",".","-","_"])*
+    (["a"-"z","A"-"Z","0"-"9",":",".","-","_"])*    /* 字符串 */
     >
 }
 

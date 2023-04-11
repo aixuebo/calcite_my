@@ -147,7 +147,9 @@ public class CalcitePrepareImpl implements CalcitePrepare {
   private static final boolean ENABLE_COLLATION_TRAIT = true;
 
   /** Whether the bindable convention should be the root convention of any
-   * plan. If not, enumerable convention is the default. */
+   * plan. If not, enumerable convention is the default.
+   * 是否允许用户自己实现枚举查询数据源
+   **/
   public static final boolean ENABLE_BINDABLE = false;
 
   /** Whether the enumerable convention is enabled. */
@@ -227,7 +229,8 @@ public class CalcitePrepareImpl implements CalcitePrepare {
   }
 
   /** Shared implementation for {@link #parse} and {@link #convert}.
-   * 参数 convert 表示返回值是ParseResult还是ConvertResult
+   * 参数 convert 表示返回值是ParseResult还是ConvertResult(进一步做逻辑表达式操作)
+   * 将sql解析成表达式
    **/
   private ParseResult parse_(Context context, String sql, boolean convert) {
     final JavaTypeFactory typeFactory = context.getTypeFactory();
@@ -237,10 +240,10 @@ public class CalcitePrepareImpl implements CalcitePrepare {
             context.config().caseSensitive(),
             context.getDefaultSchemaPath(),
             typeFactory);
-    SqlParser parser = SqlParser.create(sql);
+    SqlParser parser = SqlParser.create(sql);//解析sql语法
     SqlNode sqlNode;
     try {
-      sqlNode = parser.parseStmt();
+      sqlNode = parser.parseStmt();//解析成功,返回解析的sqlNode 树
     } catch (SqlParseException e) {
       throw new RuntimeException("parse failed", e);
     }
@@ -252,6 +255,8 @@ public class CalcitePrepareImpl implements CalcitePrepare {
       return new ParseResult(this, validator, sql, sqlNode1,
           validator.getValidatedNodeType(sqlNode1));
     }
+
+    //需要进一步对sqlNode进行逻辑表达式转换操作
     final CalcitePreparingStmt preparingStmt =
         new CalcitePreparingStmt(
             context,
@@ -262,11 +267,9 @@ public class CalcitePrepareImpl implements CalcitePrepare {
             new HepPlanner(new HepProgramBuilder().build()),
             ENABLE_BINDABLE ? BindableConvention.INSTANCE
                 : EnumerableConvention.INSTANCE);
-    final SqlToRelConverter converter =
-        preparingStmt.getSqlToRelConverter(validator, catalogReader);
-    final RelNode relNode = converter.convertQuery(sqlNode1, false, true);
-    return new ConvertResult(this, validator, sql, sqlNode1,
-        validator.getValidatedNodeType(sqlNode1), relNode);
+    final SqlToRelConverter converter = preparingStmt.getSqlToRelConverter(validator, catalogReader);
+    final RelNode relNode = converter.convertQuery(sqlNode1, false, true);//返回逻辑表达式对象
+    return new ConvertResult(this, validator, sql, sqlNode1,validator.getValidatedNodeType(sqlNode1), relNode);
   }
 
   /** Creates a collection of planner factories.
@@ -285,6 +288,8 @@ public class CalcitePrepareImpl implements CalcitePrepare {
    *
    * <p>The default implementation returns a factory that calls
    * {@link #createPlanner(org.apache.calcite.jdbc.CalcitePrepare.Context)}.</p>
+   *
+   * 输入Context,输出RelOptPlanner
    */
   protected List<Function1<Context, RelOptPlanner>> createPlannerFactories() {
     return Collections.<Function1<Context, RelOptPlanner>>singletonList(
@@ -302,11 +307,16 @@ public class CalcitePrepareImpl implements CalcitePrepare {
   }
 
   /** Creates a query planner and initializes it with a default set of
-   * rules. */
+   * rules.
+   *
+   * 初始化一个查询planner,并且初始化一组规则
+   **/
   protected RelOptPlanner createPlanner(
       final CalcitePrepare.Context prepareContext,
       org.apache.calcite.plan.Context externalContext,
       RelOptCostFactory costFactory) {
+
+    //初始化全局变量上下文对象
     if (externalContext == null) {
       externalContext = Contexts.withConfig(prepareContext.config());
     }
@@ -941,13 +951,28 @@ public class CalcitePrepareImpl implements CalcitePrepare {
     }
   }
 
-  /** Translator from Java AST to {@link RexNode}. */
+  /** Translator from Java AST to {@link RexNode}.
+   *
+   demo:解析表达式 select function(a+b) + function(c+d) * e + 5
+   1.首先设置a、b、c、d四个变量对应的RexNode
+   ScalarTranslator bind(List<ParameterExpression> parameterList,List<RexNode> values)
+   2.分别获取a、b、c、d四个变量对应的RexNode
+   3.基础模块拆解
+   RexNode X1 = function(a+b) = rexNode.call(返回值,+操作,A的RexNode,B的RexNode)
+   RexNode X2 = function(c+d) = rexNode.call(返回值,+操作,C的RexNode,D的RexNode)
+   RexNode X3 = function(c+d) * e = rexNode.call(返回值,*操作,X2的RexNode,E的RexNode)
+   RexNode X4 = 5 = rexNode(Constant)
+   4.最终结果
+   RexNode result1 = rexNode.call(返回值,+操作,X1的RexNode,X3的RexNode)
+   RexNode result2 = rexNode.call(返回值,+操作,result1的RexNode,X4的RexNode)
+   return result2
+
+   **/
   interface ScalarTranslator {
-    RexNode toRex(BlockStatement statement);
-    List<RexNode> toRexList(BlockStatement statement);
-    RexNode toRex(Expression expression);
-    ScalarTranslator bind(List<ParameterExpression> parameterList,
-        List<RexNode> values);
+    RexNode toRex(BlockStatement statement);//将statement-->Expression,然后调用toRex,将Expression-->RexNode
+    List<RexNode> toRexList(BlockStatement statement);//将statement-->List<Expression>,然后循环调用toRex,将List<Expression>-->List<RexNode>
+    RexNode toRex(Expression expression);//表达式转换成RexNode
+    ScalarTranslator bind(List<ParameterExpression> parameterList,List<RexNode> values);//返回变量与函数的映射关系
   }
 
   /** Basic translator. */
@@ -963,16 +988,16 @@ public class CalcitePrepareImpl implements CalcitePrepare {
     }
 
     public List<RexNode> toRexList(BlockStatement statement) {
-      final List<Expression> simpleList = simpleList(statement);
+      final List<Expression> simpleList = simpleList(statement);//转换成List<Expression>
       final List<RexNode> list = new ArrayList<RexNode>();
       for (Expression expression1 : simpleList) {
-        list.add(toRex(expression1));
+        list.add(toRex(expression1));//每一个Expression转换成RexNode
       }
       return list;
     }
 
     public RexNode toRex(BlockStatement statement) {
-      return toRex(Blocks.simple(statement));
+      return toRex(Blocks.simple(statement));//将statement转换成Expression
     }
 
     private static List<Expression> simpleList(BlockStatement statement) {
@@ -985,20 +1010,21 @@ public class CalcitePrepareImpl implements CalcitePrepare {
       }
     }
 
+    //表达式转换成RexNode
     public RexNode toRex(Expression expression) {
       switch (expression.getNodeType()) {
-      case MemberAccess:
+      case MemberAccess://.的形式的对象的访问  被抛弃的方式,暂时可不看
         // Case-sensitive name match because name was previously resolved.
         return rexBuilder.makeFieldAccess(
             toRex(
                 ((MemberExpression) expression).expression),
             ((MemberExpression) expression).field.getName(),
             true);
-      case GreaterThan:
+      case GreaterThan://二元操作
         return binary(expression, SqlStdOperatorTable.GREATER_THAN);
       case LessThan:
         return binary(expression, SqlStdOperatorTable.LESS_THAN);
-      case Parameter:
+      case Parameter://变量对应的RexNode
         return parameter((ParameterExpression) expression);
       case Call:
         MethodCallExpression call = (MethodCallExpression) expression;
@@ -1008,27 +1034,24 @@ public class CalcitePrepareImpl implements CalcitePrepare {
           return rexBuilder.makeCall(
               type(call),
               operator,
-              toRex(
-                  Expressions.<Expression>list()
-                      .appendIfNotNull(call.targetExpression)
-                      .appendAll(call.expressions)));
+              toRex( //对Expression集合一个个转换成RexNode
+                  Expressions.<Expression>list() //空Expression集合
+                      .appendIfNotNull(call.targetExpression)//如果不是null,九田家
+                      .appendAll(call.expressions)));//添加
         }
         throw new RuntimeException(
             "Could translate call to method " + call.method);
       case Constant:
-        final ConstantExpression constant =
-            (ConstantExpression) expression;
+        final ConstantExpression constant = (ConstantExpression) expression;
         Object value = constant.value;
         if (value instanceof Number) {
           Number number = (Number) value;
           if (value instanceof Double || value instanceof Float) {
-            return rexBuilder.makeApproxLiteral(
-                BigDecimal.valueOf(number.doubleValue()));
+            return rexBuilder.makeApproxLiteral(BigDecimal.valueOf(number.doubleValue()));
           } else if (value instanceof BigDecimal) {
             return rexBuilder.makeExactLiteral((BigDecimal) value);
           } else {
-            return rexBuilder.makeExactLiteral(
-                BigDecimal.valueOf(number.longValue()));
+            return rexBuilder.makeExactLiteral(BigDecimal.valueOf(number.longValue()));
           }
         } else if (value instanceof Boolean) {
           return rexBuilder.makeLiteral((Boolean) value);
@@ -1042,6 +1065,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
       }
     }
 
+    //二元操作
     private RexNode binary(Expression expression, SqlBinaryOperator op) {
       BinaryExpression call = (BinaryExpression) expression;
       return rexBuilder.makeCall(type(call), op,
@@ -1056,26 +1080,30 @@ public class CalcitePrepareImpl implements CalcitePrepare {
       return list;
     }
 
+    //返回表达式的类型
     protected RelDataType type(Expression expression) {
       final Type type = expression.getType();
       return ((JavaTypeFactory) rexBuilder.getTypeFactory()).createType(type);
     }
 
+    //返回变量与RexNode的映射关系
     public ScalarTranslator bind(
         List<ParameterExpression> parameterList, List<RexNode> values) {
-      return new LambdaScalarTranslator(
-          rexBuilder, parameterList, values);
+      return new LambdaScalarTranslator(rexBuilder, parameterList, values);
     }
 
+    //需要子类LambdaScalarTranslator去实现变量对应的RexNode的映射关系
     public RexNode parameter(ParameterExpression param) {
       throw new RuntimeException("unknown parameter " + param);
     }
   }
 
-  /** Translator that looks for parameters. */
+  /** Translator that looks for parameters.
+   * 定义变量 与 对应的RexNode映射关系
+   **/
   private static class LambdaScalarTranslator extends EmptyScalarTranslator {
-    private final List<ParameterExpression> parameterList;
-    private final List<RexNode> values;
+    private final List<ParameterExpression> parameterList;//变量包含变量名称、变量类型
+    private final List<RexNode> values;//变量对应的函数
 
     public LambdaScalarTranslator(
         RexBuilder rexBuilder,
@@ -1086,6 +1114,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
       this.values = values;
     }
 
+    //给一个变量对象,返回对应的RexNode对象。
     public RexNode parameter(ParameterExpression param) {
       int i = parameterList.indexOf(param);
       if (i >= 0) {

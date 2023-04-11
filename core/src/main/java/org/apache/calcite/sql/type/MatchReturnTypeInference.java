@@ -31,8 +31,8 @@ import java.util.List;
 public class MatchReturnTypeInference implements SqlReturnTypeInference {
   //~ Instance fields --------------------------------------------------------
 
-  private final int start;
-  private final List<SqlTypeName> typeNames;
+  private final int start;//参数序号开始查找的位置
+  private final List<SqlTypeName> typeNames;//待查找的类型集合
 
   //~ Constructors -----------------------------------------------------------
 
@@ -60,6 +60,7 @@ public class MatchReturnTypeInference implements SqlReturnTypeInference {
 
   //~ Methods ----------------------------------------------------------------
 
+  //找到第一个匹配的类型
   public RelDataType inferReturnType(
       SqlOperatorBinding opBinding) {
     for (int i = start; i < opBinding.getOperandCount(); i++) {

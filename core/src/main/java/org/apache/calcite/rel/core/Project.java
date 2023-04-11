@@ -405,7 +405,7 @@ public abstract class Project extends SingleRel {
           inputRef.getType(),
           "underlying field",
           fields.get(index).getType(),
-          fail)) {
+          fail)) { //如果两个类型不同,则表示错误,计数
         assert !fail;
         ++failCount;
         return false;

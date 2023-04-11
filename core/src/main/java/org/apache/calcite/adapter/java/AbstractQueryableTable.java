@@ -29,7 +29,7 @@ import java.lang.reflect.Type;
  */
 public abstract class AbstractQueryableTable extends AbstractTable
     implements QueryableTable {
-  protected final Type elementType;//表示那个class
+  protected final Type elementType;//表示那个class,该class表示一个表,属性表示字段
 
   protected AbstractQueryableTable(Type elementType) {
     super();

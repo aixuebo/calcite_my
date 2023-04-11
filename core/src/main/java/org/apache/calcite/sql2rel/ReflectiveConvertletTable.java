@@ -223,7 +223,7 @@ public class ReflectiveConvertletTable implements SqlRexConvertletTable {
    * @param target Operator to translate calls to
    * 添加别名
    */
-  protected void addAlias(final SqlOperator alias, final SqlOperator target) {
+  protected void addAlias(final SqlOperator alias, final SqlOperator target) {//target被用于未来使用,被引用在SqlRexConvertlet方法里
     map.put(
         alias,//别名
         new SqlRexConvertlet() {

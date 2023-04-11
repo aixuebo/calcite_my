@@ -26,7 +26,7 @@ import org.apache.calcite.sql.SqlOperatorBinding;
 public class OrdinalReturnTypeInference implements SqlReturnTypeInference {
   //~ Instance fields --------------------------------------------------------
 
-  private final int ordinal;
+  private final int ordinal;//下标从0开始计数，1表示返回第二个参数类型
 
   //~ Constructors -----------------------------------------------------------
 
@@ -36,8 +36,7 @@ public class OrdinalReturnTypeInference implements SqlReturnTypeInference {
 
   //~ Methods ----------------------------------------------------------------
 
-  public RelDataType inferReturnType(
-      SqlOperatorBinding opBinding) {
+  public RelDataType inferReturnType(SqlOperatorBinding opBinding) {
     return opBinding.getOperandType(ordinal);
   }
 }

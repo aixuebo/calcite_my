@@ -22,7 +22,7 @@ import org.apache.calcite.DataContext;
  * Context for executing a scalar expression in an interpreter.
  */
 public class Context {
-  public final DataContext root;
+  public final DataContext root;//环境上下文对象
 
   /** Values of incoming columns from all inputs. */
   public Object[] values;//持有一行数据的值

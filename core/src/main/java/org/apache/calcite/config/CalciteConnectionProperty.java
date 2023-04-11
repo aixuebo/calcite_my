@@ -27,6 +27,9 @@ import static org.apache.calcite.avatica.ConnectionConfigImpl.parse;
 
 /**
  * Properties that may be specified on the JDBC connect string.
+ *
+ * 代表一个连接要带的Property属性
+ * key、类型、值、是否必须
  */
 public enum CalciteConnectionProperty implements ConnectionProperty {
   /** Whether to store query results in temporary tables. */
@@ -96,6 +99,9 @@ public enum CalciteConnectionProperty implements ConnectionProperty {
     }
   }
 
+  /**
+   * key、类型、值、是否必须
+   */
   CalciteConnectionProperty(String camelName, Type type, Object defaultValue,
       boolean required) {
     this.camelName = camelName;

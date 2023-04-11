@@ -106,10 +106,13 @@ import java.util.Map;
  * It would be wrong to infer that the function is allowed to return null.</li>
  *
  * </ul>
+ *
+ * 提供一些扩展的公共计算函数方法,为全局使用
  */
 public abstract class Extensions {
   private Extensions() {}
 
+  //double类型的sum函数
   static final Function2<BigDecimal, BigDecimal, BigDecimal> BIG_DECIMAL_SUM =
       new Function2<BigDecimal, BigDecimal, BigDecimal>() {
         public BigDecimal apply(BigDecimal v1, BigDecimal v2) {

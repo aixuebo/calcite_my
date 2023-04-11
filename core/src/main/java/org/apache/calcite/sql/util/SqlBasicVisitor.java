@@ -33,7 +33,7 @@ import org.apache.calcite.sql.SqlNodeList;
  * methods it chooses.
  *
  * @param <R> Return type
- * 属于代理类
+ * 访问者模式中,访问者的基础类
  */
 public class SqlBasicVisitor<R> implements SqlVisitor<R> {
   //~ Methods ----------------------------------------------------------------

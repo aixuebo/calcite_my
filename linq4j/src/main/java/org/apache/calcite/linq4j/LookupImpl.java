@@ -32,6 +32,8 @@ import java.util.Set;
  *
  * @param <K> Key type
  * @param <V> Value type
+ *
+ * 持有Map<K,List<V>>数据
  */
 class LookupImpl<K, V> extends AbstractEnumerable<Grouping<K, V>>
     implements Lookup<K, V> {
@@ -48,7 +50,8 @@ class LookupImpl<K, V> extends AbstractEnumerable<Grouping<K, V>>
 
   /**
    * 转换成Grouping<K, list<V>>>的迭代器
-   * @return
+   *
+   * 迭代map的entry对象
    */
   public Enumerator<Grouping<K, V>> enumerator() {
     return new Enumerator<Grouping<K, V>>() {
@@ -124,6 +127,7 @@ class LookupImpl<K, V> extends AbstractEnumerable<Grouping<K, V>>
     return map.keySet();
   }
 
+  //返回value集合,每一个value又是一个子集合
   public Collection<Enumerable<V>> values() {
     final Collection<List<V>> lists = map.values();
     return new AbstractCollection<Enumerable<V>>() {
@@ -151,6 +155,7 @@ class LookupImpl<K, V> extends AbstractEnumerable<Grouping<K, V>>
     };
   }
 
+  //返回 key,List<v> --> key,Enumerable<v>
   public Set<Entry<K, Enumerable<V>>> entrySet() {
     final Set<Entry<K, List<V>>> entries = map.entrySet();
     return new AbstractSet<Entry<K, Enumerable<V>>>() {

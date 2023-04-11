@@ -18,6 +18,9 @@ package org.apache.calcite.linq4j.tree;
 
 /**
  * Declaration of a member of a class.
+ *
+ * 声明class里的成员,比如声明field
+ * 即创建class代码中的field
  */
 public abstract class MemberDeclaration implements Node {
   public abstract MemberDeclaration accept(Visitor visitor);

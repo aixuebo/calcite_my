@@ -40,10 +40,10 @@ public class SqlInsert extends SqlCall {
   public static final SqlSpecialOperator OPERATOR =
       new SqlSpecialOperator("INSERT", SqlKind.INSERT);
 
-  SqlNodeList keywords;
-  SqlNode targetTable;
-  SqlNode source;
-  SqlNodeList columnList;
+  SqlNodeList keywords;//用于UPSERT into 语法，SqlLiteral("UPSERT", SqlTypeName.SYMBOL);
+  SqlNode targetTable;//insert into targetTable
+  SqlNode source;//插入数据的values部分
+  SqlNodeList columnList;//插入哪些列，insert into targetTable (xx,xx,xx) 代表其中(xx,xx,xx)
 
   //~ Constructors -----------------------------------------------------------
 
@@ -78,7 +78,10 @@ public class SqlInsert extends SqlCall {
    *
    * <p>In SQL, this is represented using the {@code UPSERT} keyword rather than
    * {@code INSERT}; in the abstract syntax tree, an UPSERT is indicated by the
-   * presence of a {@link SqlInsertKeyword#UPSERT} keyword. */
+   * presence of a {@link SqlInsertKeyword#UPSERT} keyword.
+   *
+   * 是否是upsert语法，而不是insert语法
+   **/
   public final boolean isUpsert() {
     return getModifierNode(SqlInsertKeyword.UPSERT) != null;
   }

@@ -61,9 +61,9 @@ import java.util.List;
 
  */
 public class SqlWithItem extends SqlCall {
-  public SqlIdentifier name;
-  public SqlNodeList columnList; // may be null
-  public SqlNode query;
+  public SqlIdentifier name;//临时表名
+  public SqlNodeList columnList; // may be null  表字段集合
+  public SqlNode query;//临时表的查询sql
 
   public SqlWithItem(SqlParserPos pos, SqlIdentifier name,
       SqlNodeList columnList, SqlNode query) {

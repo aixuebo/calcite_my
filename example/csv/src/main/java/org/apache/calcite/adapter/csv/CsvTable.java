@@ -31,7 +31,7 @@ import java.util.List;
  */
 public abstract class CsvTable extends AbstractTable {
   protected final File file;
-  private final RelProtoDataType protoRowType;
+  private final RelProtoDataType protoRowType;//类型工厂对象,可以转换成csv文件对应的类型
   protected List<CsvFieldType> fieldTypes;
 
   /** Creates a CsvAbstractTable. */
@@ -40,6 +40,11 @@ public abstract class CsvTable extends AbstractTable {
     this.protoRowType = protoRowType;
   }
 
+  /**
+   * 有两种方式可以获取csv文件的字段格式。
+   * 1.一个是第一行有描述,通过deduceRowType方法解析
+   * 2.明确字段的类型,通过构造函数传过来
+   */
   public RelDataType getRowType(RelDataTypeFactory typeFactory) {
     if (protoRowType != null) {
       return protoRowType.apply(typeFactory);

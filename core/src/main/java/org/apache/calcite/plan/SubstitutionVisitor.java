@@ -84,6 +84,7 @@ import java.util.logging.Logger;
 
 /**
  * Substitutes part of a tree of relational expressions with another tree.
+ * 关系表达式的代替部分 使用其他tree代替
  *
  * <p>The call {@code new SubstitutionVisitor(target, query).go(replacement))}
  * will return {@code query} with every occurrence of {@code target} replaced
@@ -93,14 +94,17 @@ import java.util.logging.Logger;
  * for materialized view recognition.</p>
  *
  * <ul>
- * <li>query = SELECT a, c FROM t WHERE x = 5 AND b = 4</li>
- * <li>target = SELECT a, b, c FROM t WHERE x = 5</li>
- * <li>replacement = SELECT * FROM mv</li>
- * <li>result = SELECT a, c FROM mv WHERE b = 4</li>
+ * <li>query = SELECT a, c FROM t WHERE x = 5 AND b = 4</li> 已知
+ * <li>target = SELECT a, b, c FROM t WHERE x = 5</li> 可被替代的内容
+ * <li>replacement = SELECT * FROM mv</li> 用他去替代target
+ * <li>result = SELECT a, c FROM mv WHERE b = 4</li> 结果
  * </ul>
+ *
+ *
  *
  * <p>Note that {@code result} uses the materialized view table {@code mv} and a
  * simplified condition {@code b = 4}.</p>
+ * 上面的demo使用了物化视图代替
  *
  * <p>Uses a bottom-up matching algorithm. Nodes do not need to be identical.
  * At each level, returns the residue.</p>

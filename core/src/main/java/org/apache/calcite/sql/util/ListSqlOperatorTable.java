@@ -29,6 +29,8 @@ import java.util.List;
 /**
  * Implementation of the {@link SqlOperatorTable} interface by using a list of
  * {@link SqlOperator operators}.
+ *
+ * 构造函数传递可用的函数集合
  */
 public class ListSqlOperatorTable implements SqlOperatorTable {
   //~ Instance fields --------------------------------------------------------

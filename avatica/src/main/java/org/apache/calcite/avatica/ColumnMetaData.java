@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * Metadata for a column.
  * (Compare with {@link ResultSetMetaData}.)
- * 列对象的元数据
+ * 代表一个列对象的元数据
  */
 public class ColumnMetaData {
   public final int ordinal; // 0-based 第几个列 从0开始计数
@@ -252,7 +252,7 @@ public class ColumnMetaData {
 
   /** Record type. */
   public static class StructType extends AvaticaType {
-    public final List<ColumnMetaData> columns;
+    public final List<ColumnMetaData> columns;//列集合
 
     @JsonCreator
     public StructType(List<ColumnMetaData> columns) {

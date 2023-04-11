@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableList;
  * {@link RelOptRule#unordered},</p>
  */
 public class RelOptRuleOperandChildren {
+
+  //默认的两个策略,分配匹配任意数量的操作、匹配叶子操作
   static final RelOptRuleOperandChildren ANY_CHILDREN =
       new RelOptRuleOperandChildren(
           RelOptRuleOperandChildPolicy.ANY,
@@ -39,6 +41,7 @@ public class RelOptRuleOperandChildren {
           RelOptRuleOperandChildPolicy.LEAF,
           ImmutableList.<RelOptRuleOperand>of());
 
+  //匹配的策略 以及 策略对应的操作集合
   final RelOptRuleOperandChildPolicy policy;
   final ImmutableList<RelOptRuleOperand> operands;
 

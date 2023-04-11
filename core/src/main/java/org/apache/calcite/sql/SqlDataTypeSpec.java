@@ -54,11 +54,21 @@ import static org.apache.calcite.util.Static.RESOURCE;
  * with optional precision and scale.</p>
  * 用于描述sql类型的节点。
  * 包含字段描述符、类型、精准度、字符串编码、时间分区、是否允许null，将这些信息都解析后生成该SqlDataTypeSpec节点
+ *
+ * 用于定义字段的DDL部分，columnName varchar(20) key  comment  ''
+ * 注意:
+ * 1.SqlDataTypeSpec只是表示一个字段的定义。 并且不包含字段的name
+ * 2.最终表的DDL组成形式是Map<SqlIdentifier,SqlDataTypeSpec>
+ *
+ 1.SqlIdentifier typeName = TypeName() 解析并且设置字段类型
+ 2. (precision,scale) 解析并且设置精准度
+ 3.CHARACTER SET Identifier(),解析并且设置charSetName
+ 4.解析并且设置collectionTypeName = CollectionsTypeName() --- 不太重要，核心关键词是MULTISET
  */
 public class SqlDataTypeSpec extends SqlNode {
   //~ Instance fields --------------------------------------------------------
 
-  private final SqlIdentifier collectionsTypeName;
+  private final SqlIdentifier collectionsTypeName;//不太重要，也不常用
   private final SqlIdentifier typeName;
   private final int scale;
   private final int precision;

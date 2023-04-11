@@ -21,6 +21,10 @@ import java.lang.reflect.Type;
 /**
  * Contains the parts of the {@link java.lang.reflect.Field} class needed
  * for code generation, but might be implemented differently.
+ *
+ * 代表一个属性或者字段
+ *
+ * 包含属性类型、名称、属性值、以及访问方式public等信息
  */
 public interface PseudoField {
   String getName();

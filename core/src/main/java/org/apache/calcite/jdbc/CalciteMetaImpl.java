@@ -142,27 +142,31 @@ public class CalciteMetaImpl extends MetaImpl {
    *
    * @param enumerable 结果集迭代器
    * @param clazz 每一个迭代器元素是什么对象
-   * @param names name数属性名,属性值从class中获取---即迭代器内容是值,这些值对外叫什么名字,相当于列
+   * @param names 一行数据对应的字段的顺序,按照name的先后顺序排序
+   *  name数属性名,属性值从class中获取---即迭代器内容是值,这些值对外叫什么名字,相当于列
    * @param <E>
    * @return
    */
   private <E> MetaResultSet createResultSet(Enumerable<E> enumerable,
       Class clazz, String... names) {
+
+    //三个对象都是描述字段的:字段的name、字段对应的java属性对象、字段对应的元数据对象
     final List<ColumnMetaData> columns = new ArrayList<ColumnMetaData>();//对应的sql属性对象
     final List<Field> fields = new ArrayList<Field>();//按照顺序添加name对应的field属性对象
     final List<String> fieldNames = new ArrayList<String>();//驼峰方式的属性name
+
     for (String name : names) {//添加列信息
       final int index = fields.size();
-      final String fieldName = AvaticaUtils.toCamelCase(name);
+      final String fieldName = AvaticaUtils.toCamelCase(name);//转换成驼峰
       final Field field;
       try {
-        field = clazz.getField(fieldName);
+        field = clazz.getField(fieldName);//找到该属性对象
       } catch (NoSuchFieldException e) {
         throw new RuntimeException(e);
       }
-      columns.add(columnMetaData(name, index, field.getType()));
-      fields.add(field);
-      fieldNames.add(fieldName);
+      columns.add(columnMetaData(name, index, field.getType()));//生产元数据对象
+      fields.add(field);//生产java属性对象
+      fieldNames.add(fieldName);//生产java名称
     }
     //noinspection unchecked
     final Iterable<Object> iterable = (Iterable<Object>) (Iterable) enumerable;
@@ -213,19 +217,22 @@ public class CalciteMetaImpl extends MetaImpl {
     return SqlParser.create("").getMetadata().getJdbcKeywords();
   }
 
-  //返回所有数值型函数
+  //返回所有数学函数,用逗号分隔
   public String getNumericFunctions() {
     return SqlJdbcFunctionCall.getNumericFunctions();
   }
 
+  //返回所有字符串处理函数,用逗号分隔
   public String getStringFunctions() {
     return SqlJdbcFunctionCall.getStringFunctions();
   }
 
+  //返回所有系统函数,用逗号分隔
   public String getSystemFunctions() {
     return SqlJdbcFunctionCall.getSystemFunctions();
   }
 
+  //返回所有日期和时间函数,用逗号分隔
   public String getTimeDateFunctions() {
     return SqlJdbcFunctionCall.getTimeDateFunctions();
   }
@@ -318,6 +325,7 @@ public class CalciteMetaImpl extends MetaImpl {
         "IS_GENERATEDCOLUMN");
   }
 
+  //从connection中获取 catalog 信息
   Enumerable<MetaCatalog> catalogs() {
     return Linq4j.asEnumerable(
         ImmutableList.of(new MetaCatalog(connection.getCatalog())));

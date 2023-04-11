@@ -238,15 +238,16 @@ public class SqlIdentifier extends SqlNode {
     validator.validateIdentifier(this, scope);
   }
 
+  //通常情况下，该方法与validate方法是一样的，只有在SqlIdentifier这个子类的时候，对validateExpr进行了覆写,有自己的实现方式
   public void validateExpr(SqlValidator validator, SqlValidatorScope scope) {
     // First check for builtin functions which don't have parentheses,
     // like "LOCALTIME".
     SqlCall call =
         SqlUtil.makeCall(
-            validator.getOperatorTable(),
-            this);
+            validator.getOperatorTable(),//返回操作的是哪个table表对象
+            this); //判断是否是无参数内置函数
     if (call != null) {
-      validator.validateCall(call, scope);
+      validator.validateCall(call, scope);//校验无参数构造函数
       return;
     }
 

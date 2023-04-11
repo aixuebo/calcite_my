@@ -20,12 +20,19 @@ import java.lang.reflect.Type;
 
 /**
  * Represents an expression that has a binary operator.
+ * 接收两个参数,参与运算
  */
 public class BinaryExpression extends Expression {
-  public final Expression expression0;
+  public final Expression expression0; //两个参数
   public final Expression expression1;
-  private final Primitive primitive;
+  private final Primitive primitive; //表达式参数的类型
 
+  /**
+   * @param nodeType 参与什么运算
+   * @param type 运算结果返回值
+   * @param expression0 两个参数
+   * @param expression1
+   */
   BinaryExpression(ExpressionType nodeType, Type type, Expression expression0,
       Expression expression1) {
     super(nodeType, type);
@@ -48,7 +55,7 @@ public class BinaryExpression extends Expression {
     case AndAlso:
       return (Boolean) expression0.evaluate(evaluator)
              && (Boolean) expression1.evaluate(evaluator);
-    case Add:
+    case Add://+
       switch (primitive) {
       case INT:
         return (Integer) expression0.evaluate(evaluator) + (Integer) expression1
@@ -59,7 +66,7 @@ public class BinaryExpression extends Expression {
       default:
         throw cannotEvaluate();
       }
-    case Divide:
+    case Divide:// 除法
       switch (primitive) {
       case INT:
         return (Integer) expression0.evaluate(evaluator) / (Integer) expression1
@@ -70,7 +77,7 @@ public class BinaryExpression extends Expression {
       default:
         throw cannotEvaluate();
       }
-    case Equal:
+    case Equal:// =
       return expression0.evaluate(evaluator)
           .equals(expression1.evaluate(evaluator));
     case GreaterThan:

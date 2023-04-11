@@ -66,6 +66,18 @@ import static org.apache.calcite.util.Static.RESOURCE;
  * which case we drop these qualifiers.
  * sql操作
  * 比如delete操作,name=delete,sqlKind=SqlKind.DELETE
+ *
+ *
+ *
+ * 1.RelDataType validateOperands 校验操作的参数合法性，根据参数类型,推测出返回值类型，并且设置到SqlValidator中。
+ * a.校验参数数量是否符合规范。
+ * b.校验参数类型是否符合规范。
+ * c.根据参数类型推测返回值类型策略,推测返回值类型。
+ * d.将代码块sqlNode与返回值类型映射,设置到全局的SqlValidator中。
+ *
+ * 2.RelDataType deriveType 获得操作调用的最终类型
+ * a.校验每一个参数必须有返回值，
+ * b.调用validateOperands，校验以及返回最终类型。
  */
 public abstract class SqlOperator {
   //~ Static fields/initializers ---------------------------------------------
@@ -109,6 +121,7 @@ public abstract class SqlOperator {
 
   /**
    * used to infer the return type of a call to this operator
+   * 操作返回类型,与参数类型之间的关系，即返回类型以哪个参数类型为base去创建
    */
   private final SqlReturnTypeInference returnTypeInference;
 
@@ -118,7 +131,7 @@ public abstract class SqlOperator {
   private final SqlOperandTypeInference operandTypeInference;
 
   /**
-   * used to validate operand types
+   * used to validate operand types 如何校验参数
    */
   private final SqlOperandTypeChecker operandTypeChecker;
 
@@ -195,6 +208,7 @@ public abstract class SqlOperator {
    * operator.
    *
    * @return acceptable range
+   * 返回参数的允许数量，用于校验参数数量是否符合标准
    */
   public SqlOperandCountRange getOperandCountRange() {
     if (operandTypeChecker != null) {
@@ -241,6 +255,9 @@ public abstract class SqlOperator {
    * @param pos               parser position of the identifier of the call
    * @param operands          array of operands
    * 创建一个函数,提供参数数组SqlNode,functionQualifier为函数名
+   *
+   * 创建sqlNode
+   * 操作是明确的，只需要操作需要的参数operands 以及为操作起一个名字functionQualifier
    */
   public SqlCall createCall(
       SqlLiteral functionQualifier,
@@ -260,6 +277,8 @@ public abstract class SqlOperator {
    * @param operands List of arguments
    * @return call to this operator
    * 匿名函数
+   *
+   * 创建sqlNode --- 最常用的，因为操作是明确的，只需要操作需要的参数operands
    */
   public final SqlCall createCall(
       SqlParserPos pos,
@@ -276,6 +295,8 @@ public abstract class SqlOperator {
    * @param nodeList List of arguments
    * @return call to this operator
    * 匿名函数
+   *
+   * 创建sqlNode
    */
   public final SqlCall createCall(
       SqlNodeList nodeList) {
@@ -291,6 +312,8 @@ public abstract class SqlOperator {
    * <p>The position of the resulting call is the union of the <code>
    * pos</code> and the positions of all of the operands.
    * 匿名函数
+   *
+   * 创建sqlNode
    */
   public final SqlCall createCall(
       SqlParserPos pos,
@@ -399,6 +422,8 @@ public abstract class SqlOperator {
    *                     some operators introduce new scopes
    * @see SqlNode#validateExpr(SqlValidator, SqlValidatorScope)
    * @see #deriveType(SqlValidator, SqlValidatorScope, SqlCall)
+   *
+   * 递归操作，对每一个sqlNode进行校验
    */
   public void validateCall(
       SqlCall call,
@@ -419,6 +444,13 @@ public abstract class SqlOperator {
    * @param scope     validation scope
    * @param call      call to be validated
    * @return inferred type
+   * 校验所有的参数,推导出一个返回值类型
+   *
+  校验操作的参数合法性，根据参数类型,推测出返回值类型，并且设置到SqlValidator中。
+  a.校验参数数量是否符合规范。
+  b.校验参数类型是否符合规范。
+  c.根据参数类型推测返回值类型策略,推测返回值类型。
+  d.将代码块sqlNode与返回值类型映射,设置到全局的SqlValidator中。
    */
   public final RelDataType validateOperands(
       SqlValidator validator,
@@ -427,17 +459,19 @@ public abstract class SqlOperator {
     // Let subclasses know what's up.
     preValidateCall(validator, scope, call);
 
-    // Check the number of operands
+    // Check the number of operands 用于校验参数数量是否符合标准
     checkOperandCount(validator, operandTypeChecker, call);
 
     SqlCallBinding opBinding = new SqlCallBinding(validator, scope, call);
 
+    //校验参数类型是否符合规范
     checkOperandTypes(
         opBinding,
         true);
 
     // Now infer the result type.
-    RelDataType ret = inferReturnType(opBinding);
+    RelDataType ret = inferReturnType(opBinding);//根据参数类型,推测出返回值类型
+    //说明node已经推测计算出返回值类型了,因此做一个设置，即设置node的返回值类型为type
     validator.setValidatedNodeType(call, ret);
     return ret;
   }
@@ -450,6 +484,8 @@ public abstract class SqlOperator {
    * @param validator invoking validator
    * @param scope     validation scope
    * @param call      the call being validated
+   *
+   * 默认空实现,主要用于接收校验调研通知前,做一些前置操作
    */
   protected void preValidateCall(
       SqlValidator validator,
@@ -470,17 +506,18 @@ public abstract class SqlOperator {
    */
   public RelDataType inferReturnType(
       SqlOperatorBinding opBinding) {
-    if (returnTypeInference != null) {
+    if (returnTypeInference != null) { //直接根据参数类型策略,推导出返回类型
       return returnTypeInference.inferReturnType(opBinding);
     }
 
     // Derived type should have overridden this method, since it didn't
     // supply a type inference rule.
-    throw Util.needToImplement(this);
+    throw Util.needToImplement(this); //必须returnTypeInference不是null,否则抛异常
   }
 
   /**
    * Derives the type of a call to this operator.
+   * 获得操作调用的最终类型
    *
    * <p>This method is an intrinsic part of the validation process so, unlike
    * {@link #inferReturnType}, specific operators would not typically override
@@ -490,21 +527,29 @@ public abstract class SqlOperator {
    * @param scope     Scope of validation
    * @param call      Call to this operator
    * @return Type of call
+   * 获得操作调用的最终类型
+   *  a.校验每一个参数必须有返回值，
+   *  b.调用1，校验以及返回最终类型。
    */
   public RelDataType deriveType(
       SqlValidator validator,
       SqlValidatorScope scope,
-      SqlCall call) {
+      SqlCall call) {//操作的sql语法块
+
+    //确保每一个参数都有合理的返回值
     for (SqlNode operand : call.getOperandList()) {
-      RelDataType nodeType = validator.deriveType(scope, operand);
+      RelDataType nodeType = validator.deriveType(scope, operand); //获取每一个参数的返回值,该过程是一个递归的过程
       assert nodeType != null;
     }
 
+    //校验操作的参数合法性，根据参数类型,推测出返回值类型，并且设置到SqlValidator中。
     RelDataType type = validateOperands(validator, scope, call);
 
     // Validate and determine coercibility and resulting collation
     // name of binary operator if needed.
     type = adjustType(validator, call, type);
+
+    //对字符串类型的参数进一步校验编码正确性
     SqlValidatorUtil.checkCharsetAndCollateConsistentIfCharType(type);
     return type;
   }
@@ -512,6 +557,7 @@ public abstract class SqlOperator {
   /**
    * Validates and determines coercibility and resulting collation name of
    * binary operator if needed.
+   * 基本上忽略，主要用于对结果进一步转换成可压缩的字节。默认啥也没有做
    */
   protected RelDataType adjustType(
       SqlValidator validator,
@@ -523,6 +569,7 @@ public abstract class SqlOperator {
   /**
    * Infers the type of a call to this operator with a given set of operand
    * types. Shorthand for {@link #inferReturnType(SqlOperatorBinding)}.
+   * 明确设置操作的每一个参数的类型
    */
   public final RelDataType inferReturnType(
       RelDataTypeFactory typeFactory,
@@ -543,12 +590,13 @@ public abstract class SqlOperator {
    * @param throwOnFailure whether to throw an exception if check fails
    *                       (otherwise returns false in that case)
    * @return whether check succeeded
+   * 校验参数类型是否符合规范
    */
   public boolean checkOperandTypes(
       SqlCallBinding callBinding,
       boolean throwOnFailure) {
     // Check that all of the operands are of the right type.
-    if (null == operandTypeChecker) {
+    if (null == operandTypeChecker) { //不允许为null,null则抛异常
       // If you see this you must either give operandTypeChecker a value
       // or override this method.
       throw Util.needToImplement(this);
@@ -559,12 +607,13 @@ public abstract class SqlOperator {
         throwOnFailure);
   }
 
+  //用于校验参数数量是否符合标准
   protected void checkOperandCount(
       SqlValidator validator,
       SqlOperandTypeChecker argType,
       SqlCall call) {
     SqlOperandCountRange od = call.getOperator().getOperandCountRange();
-    if (od.isValidCount(call.operandCount())) {
+    if (od.isValidCount(call.operandCount())) { //是否参数数量是符合的
       return;
     }
     if (od.getMin() == od.getMax()) {
@@ -730,6 +779,7 @@ public abstract class SqlOperator {
    *
    * @param call  Call to this operator
    * @param scope Scope in which the call occurs
+   * 返回该函数是否具有单调性
    */
   public SqlMonotonicity getMonotonicity(
       SqlCall call,

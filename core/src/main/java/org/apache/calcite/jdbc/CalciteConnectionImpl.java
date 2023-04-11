@@ -91,10 +91,11 @@ abstract class CalciteConnectionImpl
    *
    * <p>Not public; method is called only from the driver.</p>
    *
-   * @param driver Driver
-   * @param factory Factory for JDBC objects
-   * @param url Server URL
-   * @param info Other connection properties
+   * @param driver Driver 连接的驱动器对象，是该驱动器产生的连接，因此持有该对象也没有什么问题，万一以后有用处呢，所以持有是合理的
+   * @param factory Factory for JDBC objects 用于创建Statement等信息提供方便
+   * @param url Server URL 连接来自于哪个url请求
+   * @param info Other connection properties 连接自带的元属性信息
+   *
    * @param rootSchema Root schema, or null
    * @param typeFactory Type factory, or null
    * 创建rootSchema以及JavaTypeFactory
@@ -103,7 +104,7 @@ abstract class CalciteConnectionImpl
       String url, Properties info, CalciteRootSchema rootSchema,
       JavaTypeFactory typeFactory) {
     super(driver, factory, url, info);
-    CalciteConnectionConfig cfg = new CalciteConnectionConfigImpl(info);//info是从Url中解析出来的
+    CalciteConnectionConfig cfg = new CalciteConnectionConfigImpl(info);//info是从Url中解析出来的，通过connect连接后带来的元数据信息，扩展Connection配置信息
     this.prepareFactory = driver.prepareFactory;
     if (typeFactory != null) {
       this.typeFactory = typeFactory;
@@ -143,6 +144,7 @@ abstract class CalciteConnectionImpl
     }
   }
 
+  //仅简单的创建一个很薄的CalciteStatement对象，用于存储此次执行sql的语句 以及返回结果、列集合信息而已，核心功能还是由connection完成
   @Override public CalciteStatement createStatement(int resultSetType,
       int resultSetConcurrency, int resultSetHoldability) throws SQLException {
     return (CalciteStatement) super.createStatement(resultSetType,
@@ -155,8 +157,7 @@ abstract class CalciteConnectionImpl
       int resultSetConcurrency,
       int resultSetHoldability) throws SQLException {
     try {
-      Meta.Signature signature =
-          parseQuery(sql, new ContextImpl(this), -1);
+      Meta.Signature signature = parseQuery(sql, new ContextImpl(this), -1);
       return (CalcitePreparedStatement) factory.newPreparedStatement(this, null,
           signature, resultSetType, resultSetConcurrency, resultSetHoldability);
     } catch (RuntimeException e) {
@@ -216,20 +217,19 @@ abstract class CalciteConnectionImpl
   public <T> Enumerator<T> executeQuery(Queryable<T> queryable) {
     try {
       CalciteStatement statement = (CalciteStatement) createStatement();
-      CalcitePrepare.CalciteSignature<T> signature =
-          statement.prepare(queryable);
+      CalcitePrepare.CalciteSignature<T> signature = statement.prepare(queryable);
       return enumerable(statement.handle, signature).enumerator();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
+  //核心执行sql的方法
   public <T> Enumerable<T> enumerable(Meta.StatementHandle handle,
       CalcitePrepare.CalciteSignature<T> signature) throws SQLException {
     Map<String, Object> map = Maps.newLinkedHashMap();
     AvaticaStatement statement = lookupStatement(handle);
-    final List<Object> parameterValues =
-        TROJAN.getParameterValues(statement);//获取动态参数值
+    final List<Object> parameterValues = TROJAN.getParameterValues(statement);//获取动态参数值
     for (Ord<Object> o : Ord.zip(parameterValues)) {
       map.put("?" + o.i, o.e);//添加key?1 value动态值序号对应的数值
     }

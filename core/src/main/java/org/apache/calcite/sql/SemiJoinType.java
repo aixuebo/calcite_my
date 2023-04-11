@@ -23,6 +23,7 @@ import org.apache.calcite.sql.parser.SqlParserPos;
 /**
  * Enumeration representing different join types used in correlation
  * relations.
+ * 枚举对象，代表如何去真实的做join操作
  */
 public enum SemiJoinType implements SqlLiteral.SqlSymbol {
   /**

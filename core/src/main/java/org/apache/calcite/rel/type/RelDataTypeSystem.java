@@ -26,12 +26,16 @@ import org.apache.calcite.sql.type.SqlTypeName;
  * overrides to 38.
  *
  * <p>The default implementation is {@link #DEFAULT}.
+ *
+ * 提供全局配置信息，返回指定类型的精准度，或者数值类型的精准度
  */
 public interface RelDataTypeSystem {
   /** Default type system. */
   RelDataTypeSystem DEFAULT = new RelDataTypeSystemImpl() { };
 
-  /** Returns the maximum scale of a given type. */
+  /** Returns the maximum scale of a given type.
+   * 返回给定类型的精准度
+   **/
   int getMaxScale(SqlTypeName typeName);
 
   /**
@@ -50,7 +54,9 @@ public interface RelDataTypeSystem {
    */
   int getMaxPrecision(SqlTypeName typeName);
 
-  /** Returns the maximum scale of a NUMERIC or DECIMAL type. */
+  /** Returns the maximum scale of a NUMERIC or DECIMAL type.
+   * 返回述职类型的精准度
+   **/
   int getMaxNumericScale();
 
   /** Returns the maximum precision of a NUMERIC or DECIMAL type. */

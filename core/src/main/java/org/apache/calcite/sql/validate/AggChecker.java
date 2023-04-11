@@ -33,12 +33,14 @@ import static org.apache.calcite.util.Static.RESOURCE;
 /**
  * Visitor which throws an exception if any component of the expression is not a
  * group expression.
+ *
+ * 用于校验聚合函数的合法性
  */
 class AggChecker extends SqlBasicVisitor<Void> {
   //~ Instance fields --------------------------------------------------------
 
   private final List<SqlValidatorScope> scopes = Lists.newArrayList();
-  private final List<SqlNode> groupExprs;
+  private final List<SqlNode> groupExprs;//group by的表达式集合
   private boolean distinct;
   private SqlValidatorImpl validator;
 
@@ -67,26 +69,34 @@ class AggChecker extends SqlBasicVisitor<Void> {
 
   //~ Methods ----------------------------------------------------------------
 
+  //确保参数是group by表达式中的某一个字段
   boolean isGroupExpr(SqlNode expr) {
     for (SqlNode groupExpr : groupExprs) {
-      if (groupExpr.equalsDeep(expr, false)) {
+      if (groupExpr.equalsDeep(expr, false)) { //字段相同,则返回true
         return true;
       }
     }
     return false;
   }
 
+  /**
+   * 1.id是group by中用到的字段
+   * 2.id是一个无参数的内置函数
+   */
   public Void visit(SqlIdentifier id) {
+
+    //确保参数是group by中的某一个,则返回null,不需要再进一步访问
     if (isGroupExpr(id)) {
       return null;
     }
 
-    // If it '*' or 'foo.*'?
+    // If it '*' or 'foo.*'? 不应该出现*
     if (id.isStar()) {
       assert false : "star should have been expanded";
     }
 
     // Is it a call to a parentheses-free function?
+    //id是无参数函数,则调用该函数
     SqlCall call =
         SqlUtil.makeCall(
             validator.getOperatorTable(),
@@ -99,6 +109,7 @@ class AggChecker extends SqlBasicVisitor<Void> {
     // it fully-qualified.
     // TODO: It would be better if we always compared fully-qualified
     // to fully-qualified.
+    //打印错误信息，即此时id既不是group by的字段，也不是无参数函数
     final SqlQualified fqId = Stacks.peek(scopes).fullyQualify(id);
     if (isGroupExpr(fqId.identifier)) {
       return null;
@@ -113,7 +124,7 @@ class AggChecker extends SqlBasicVisitor<Void> {
 
   public Void visit(SqlCall call) {
     if (call.getOperator().isAggregator()) {
-      if (distinct) {
+      if (distinct) { //聚合函数,不能用于distinct关键词一起用
         // Cannot use agg fun in ORDER BY clause if have SELECT DISTINCT.
         SqlNode originalExpr = validator.getOriginal(call);
         final String exprString = originalExpr.toString();

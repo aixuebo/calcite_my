@@ -107,6 +107,7 @@ public class Row {
 
   /**
    * Utility class to build row objects.
+   * 使用set的方式,创建一行数据
    */
   public static class RowBuilder {
     Object[] values;

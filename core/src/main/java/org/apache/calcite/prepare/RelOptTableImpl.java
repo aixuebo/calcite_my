@@ -52,12 +52,14 @@ import java.util.List;
 
 /**
  * Implementation of {@link org.apache.calcite.plan.RelOptTable}.
+ *
+ * 重要信息://数据库schema、schema路径、表类型、表对象、表行数、表达式(读取表数据返回enumerable迭代器)
  */
 public class RelOptTableImpl implements Prepare.PreparingTable {
   private final RelOptSchema schema;//表所在schema
   private final RelDataType rowType;//表的schema数据结构
   private final Table table;//具体表对象
-  private final Function<Class, Expression> expressionFunction;
+  private final Function<Class, Expression> expressionFunction; //明确如何读取数据源返回enumerable数据
   private final ImmutableList<String> names;//表的schema全路径
 
   /** Estimate for the row count, or null.
@@ -90,10 +92,10 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
       RelOptSchema schema,
       RelDataType rowType,
       List<String> names,
-      Expression expression) {
+      Expression expression) {//常量表达式,返回结果是一个常量
     //noinspection unchecked
     final Function<Class, Expression> expressionFunction =
-        (Function) Functions.constant(expression);
+        (Function) Functions.constant(expression);//返回常量
     return new RelOptTableImpl(schema, rowType, names, null,
         expressionFunction, null);
   }
@@ -114,6 +116,7 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
     } else if (table instanceof ScannableTable
         || table instanceof FilterableTable
         || table instanceof ProjectableFilterableTable) {
+      //明确如何读取数据源返回enumerable数据
       expressionFunction = new Function<Class, Expression>() {
         public Expression apply(Class clazz) {
           return Schemas.tableExpression(tableEntry.schema.plus(),
@@ -122,6 +125,7 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
         }
       };
     } else {
+      //不支持 Expression
       expressionFunction = new Function<Class, Expression>() {
         public Expression apply(Class input) {
           throw new UnsupportedOperationException();
@@ -136,13 +140,15 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
       RelOptSchema schema,
       RelDataType rowType,
       TranslatableTable table) {
+    //不支持expression表达式
     final Function<Class, Expression> expressionFunction =
         new Function<Class, Expression>() {
           public Expression apply(Class input) {
             throw new UnsupportedOperationException();
           }
         };
-    return new RelOptTableImpl(schema, rowType, ImmutableList.<String>of(),
+    return new RelOptTableImpl(schema, rowType,
+            ImmutableList.<String>of(),//无schema路径
         table, expressionFunction, null);
   }
 
@@ -161,10 +167,12 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
     return null;
   }
 
+  //返回如何读取数据源,返回enumerable数据的表达式
   public Expression getExpression(Class clazz) {
     return expressionFunction.apply(clazz);
   }
 
+  //转换成扩展表，因为要扩展字段
   public RelOptTable extend(List<RelDataTypeField> extendedFields) {
     if (table instanceof ExtensibleTable) {
       final Table extendedTable =
@@ -195,7 +203,7 @@ public class RelOptTableImpl implements Prepare.PreparingTable {
   }
 
   //如何转换成表达式
-  public RelNode toRel(ToRelContext context) {
+  public RelNode toRel(ToRelContext context) { //参数 实现类是LixToRelTranslator
     if (table instanceof TranslatableTable) {
       return ((TranslatableTable) table).toRel(context, this);
     }

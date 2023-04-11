@@ -69,6 +69,7 @@ public abstract class DefaultEnumerable<T> implements OrderedEnumerable<T> {
     return this;
   }
 
+  //相当于for循环,用于输出打印结果即可,最终会返回最后一个元素的参与function1的计算结果
   public <R> R foreach(Function1<T, R> func) {
     R result = null;
     final Enumerator<T> enumerator = enumerator();
@@ -91,6 +92,7 @@ public abstract class DefaultEnumerable<T> implements OrderedEnumerable<T> {
   protected OrderedQueryable<T> asOrderedQueryable() {
     return EnumerableDefaults.asOrderedQueryable(this);
   }
+
 
   public T aggregate(Function2<T, T, T> func) {
     return EnumerableDefaults.aggregate(getThis(), func);
@@ -123,6 +125,7 @@ public abstract class DefaultEnumerable<T> implements OrderedEnumerable<T> {
     return EnumerableDefaults.asEnumerable(getThis());
   }
 
+  //扫描两次集合,分别计算sum/count
   public BigDecimal average(BigDecimalFunction1<T> selector) {
     return EnumerableDefaults.average(getThis(), selector);
   }
@@ -599,10 +602,12 @@ public abstract class DefaultEnumerable<T> implements OrderedEnumerable<T> {
     return EnumerableDefaults.skipWhile(getThis(), predicate);
   }
 
+  //数据转换成BigDecimal,然后求和，注意,元素不允许是null
   public BigDecimal sum(BigDecimalFunction1<T> selector) {
     return EnumerableDefaults.sum(getThis(), selector);
   }
 
+  //数据转换成BigDecimal,然后求和，注意,元素允许是null
   public BigDecimal sum(NullableBigDecimalFunction1<T> selector) {
     return EnumerableDefaults.sum(getThis(), selector);
   }

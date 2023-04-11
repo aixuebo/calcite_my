@@ -39,6 +39,11 @@ import java.util.List;
  * 1.主要子类实现两个方法:
  * SqlOperator getOperator() 返回对应的操作是什么操作。
  * List<SqlNode> getOperandList() 操作的参数集合
+ *
+ *
+ * sqlCall本身只表示解析parse.jj后的对象，比如sqlSelect对象，包含select from where等对象，分别代表解析后的结果。
+ * 只是sqlCall除了包含解析后的对象外，还有一个能力，就是他可以根据参数信息做一些处理，
+ * 因此每一个sqlCall对象都实现了自己的SqlOperator对象。
  */
 public abstract class SqlCall extends SqlNode {
   //~ Constructors -----------------------------------------------------------

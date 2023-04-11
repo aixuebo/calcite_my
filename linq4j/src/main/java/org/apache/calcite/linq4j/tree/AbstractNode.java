@@ -22,8 +22,8 @@ import java.lang.reflect.Type;
  * Abstract implementation of {@link Node}.
  */
 public abstract class AbstractNode implements Node {
-  public final ExpressionType nodeType;
-  public final Type type;
+  public final ExpressionType nodeType; //表达式本身归属分类,比如常数表达式、变量表达式
+  public final Type type;//表达式对应的值,背后的类型
 
   AbstractNode(ExpressionType nodeType, Type type) {
     this.type = type;

@@ -54,6 +54,8 @@ import java.util.Map;
  *
  * <p><strong>NOTE: This class is experimental and subject to
  * change/removal without notice</strong>.</p>
+ *
+ * 参数是给定一个class,里面包含了很多属性,因此相当于告诉了我们列字段信息是什么
  */
 public class JavaTypeFactoryImpl
     extends SqlTypeFactoryImpl
@@ -70,7 +72,8 @@ public class JavaTypeFactoryImpl
     super(typeSystem);
   }
 
-  //java对象转换成 sql对象struck
+  //java对象转换成 sql对象struck ，说明参数class是一个对象，即列是一个java对象
+  //参数是给定一个class,里面包含了很多属性,因此相当于告诉了我们列字段信息是什么
   public RelDataType createStructType(Class type) {
     List<RelDataTypeField> list = new ArrayList<RelDataTypeField>();
     for (Field field : type.getFields()) {
@@ -78,9 +81,9 @@ public class JavaTypeFactoryImpl
         // FIXME: watch out for recursion
         list.add(
             new RelDataTypeFieldImpl(
-                field.getName(),
-                list.size(),
-                createType(field.getType())));
+                field.getName(),//字段名称
+                list.size(),//第几个字段
+                createType(field.getType())));//对应的类型---列类型依然可以是一个对象，形成嵌套
       }
     }
     return canonize(new JavaRecordType(list, type));
@@ -100,7 +103,7 @@ public class JavaTypeFactoryImpl
       throw new UnsupportedOperationException("TODO: implement " + type);
     }
     final Class clazz = (Class) type;
-    switch (Primitive.flavor(clazz)) {
+    switch (Primitive.flavor(clazz)) { //class就是基础的对象,比如int long等，同时他区分为是否是包装对象,比如Integer
     case PRIMITIVE:
       return createJavaType(clazz);
     case BOX:

@@ -23,6 +23,7 @@ import java.util.List;
 
 /**
  * Abstract base for character and binary string literals.
+ * 字符串类型的字面量sqlNode
  */
 abstract class SqlAbstractStringLiteral extends SqlLiteral {
   //~ Constructors -----------------------------------------------------------

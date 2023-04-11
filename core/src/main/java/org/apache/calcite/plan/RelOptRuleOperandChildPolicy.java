@@ -19,10 +19,12 @@ package org.apache.calcite.plan;
 /**
  * Policy by which operands will be matched by relational expressions with
  * any number of children.
+ * 匹配策略,匹配多少个子操作
  */
 public enum RelOptRuleOperandChildPolicy {
   /**
    * Signifies that operand can have any number of children.
+   * 可以匹配任意数量的子操作
    */
   ANY,
 
@@ -33,18 +35,21 @@ public enum RelOptRuleOperandChildPolicy {
    * <p>{@code RelOptRuleOperand(Foo.class, NONE)} is equivalent to
    * {@code RelOptRuleOperand(Foo.class)} but we prefer the former because
    * it is more explicit.</p>
+   * 匹配叶子操作
    */
   LEAF,
 
   /**
    * Signifies that the operand's children must precisely match its
    * child operands, in order.
+   * 必须按照顺序,精准的匹配子操作
    */
   SOME,
 
   /**
    * Signifies that the rule matches any one of its parents' children.
    * The parent may have one or more children.
+   * 无序的,即匹配任意一个子操作都可以
    */
   UNORDERED,
 }

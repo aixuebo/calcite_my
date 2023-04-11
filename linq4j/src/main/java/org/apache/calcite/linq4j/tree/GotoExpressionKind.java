@@ -18,6 +18,7 @@ package org.apache.calcite.linq4j.tree;
 
 /**
  * Specifies what kind of jump a {@link GotoStatement} represents.
+ * 定义goto语法的枚举信息
  */
 public enum GotoExpressionKind {
   /**

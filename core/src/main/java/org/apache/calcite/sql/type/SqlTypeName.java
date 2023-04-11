@@ -43,6 +43,8 @@ import java.util.Map;
  * <li>SqlTypeName provides a place to hang extra information such as whether
  * the type carries precision and scale.
  * </ul>
+ *
+ * sql的数据类型,比如varchr等
  */
 public enum SqlTypeName {
   BOOLEAN(PrecScale.NO_NO, false, Types.BOOLEAN, SqlTypeFamily.BOOLEAN),

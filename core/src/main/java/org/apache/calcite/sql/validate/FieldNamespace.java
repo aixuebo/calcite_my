@@ -46,7 +46,7 @@ class FieldNamespace extends AbstractNamespace {
 
   //~ Methods ----------------------------------------------------------------
 
-  //不需要设置类型,因为具体字段类型赢存在了(他是字段,比较特别,从构造函数传递过来)
+  //不需要设置类型,因为具体字段类型存在了(他是字段,比较特别,从构造函数传递过来)
   public void setType(RelDataType type) {
     throw new UnsupportedOperationException();
   }

@@ -32,8 +32,7 @@ import java.util.Stack;
 public abstract class SqlScopedShuttle extends SqlShuttle {
   //~ Instance fields --------------------------------------------------------
 
-  private final Stack<SqlValidatorScope> scopes =
-      new Stack<SqlValidatorScope>();
+  private final Stack<SqlValidatorScope> scopes = new Stack<SqlValidatorScope>();
 
   //~ Constructors -----------------------------------------------------------
 

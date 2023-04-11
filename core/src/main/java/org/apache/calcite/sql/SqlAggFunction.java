@@ -56,7 +56,7 @@ public abstract class SqlAggFunction extends SqlFunction {
   }
 
   //~ Methods ----------------------------------------------------------------
-
+  //表示函数是聚合函数
   @Override public boolean isAggregator() {
     return true;
   }

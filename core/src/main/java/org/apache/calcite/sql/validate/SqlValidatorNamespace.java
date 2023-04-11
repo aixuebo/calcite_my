@@ -61,12 +61,13 @@ public interface SqlValidatorNamespace {
   /**
    * Returns the validator.
    *
-   * @return validator 返回SqlValidatorImpl
+   * @return validator 返回SqlValidatorImpl,即返回校验器对象,这个对象是全局一起用，核心类,但在该空间内可忽略
    */
   SqlValidator getValidator();
 
   /**
    * Returns the underlying table, or null if there is none.
+   * 如果是一个table表,则设置表空间
    */
   SqlValidatorTable getTable();
 
@@ -103,7 +104,9 @@ public interface SqlValidatorNamespace {
   /**
    * Returns the row type of this namespace, sans any system columns.
    *
+   * sans 表示无，即不包含系统列的所有列信息
    * @return Row type sans system columns
+   * 返回getRowType 不包含所有系统列集合
    */
   RelDataType getRowTypeSansSystemColumns();
 
@@ -120,7 +123,8 @@ public interface SqlValidatorNamespace {
 
   /**
    * Returns the parse tree node at the root of this namespace.
-   * 该命名空间持有的根节点,比如SelectNode
+   * 该命名空间持有的根节点,比如SelectNode、或者SqlJoin extends SqlCall等节点
+   * 即属于哪个sqlNode节点的空间
    *
    * @return parse tree node; null for {@link TableNamespace}
    */
@@ -153,6 +157,7 @@ public interface SqlValidatorNamespace {
    *
    * @param name Field name
    * @return Whether field exists
+   * 是否存在某一个列
    */
   boolean fieldExists(String name);
 

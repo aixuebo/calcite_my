@@ -22,6 +22,7 @@ package org.apache.calcite.linq4j.tree;
 public interface Node {
   Node accept(Visitor visitor);
 
+  //生成java的class代码
   void accept(ExpressionWriter expressionWriter);
 }
 

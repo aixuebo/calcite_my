@@ -34,15 +34,15 @@ public interface SqlTypeTransform {
 
   /**
    * Transforms a type.
+   * 类型转换，最终转换成typeToTransform类型
    *
    * @param opBinding       call context in which transformation is being
-   *                        performed
+   *                        performed 可以获取每一个参数的真实类型
    * @param typeToTransform type to be transformed, never null 目标结果类型
    * @return transformed type, never null 返回转换后的类型,一定不允许是null
    */
-  RelDataType transformType(
-      SqlOperatorBinding opBinding,
-      RelDataType typeToTransform);
+  RelDataType transformType(SqlOperatorBinding opBinding,RelDataType typeToTransform);
+
 }
 
 // End SqlTypeTransform.java

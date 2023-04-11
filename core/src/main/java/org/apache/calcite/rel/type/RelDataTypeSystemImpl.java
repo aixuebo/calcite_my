@@ -32,6 +32,8 @@ import org.apache.calcite.sql.type.SqlTypeName;
  * </table>
  */
 public abstract class RelDataTypeSystemImpl implements RelDataTypeSystem {
+
+  //返回数据类型的精准度
   public int getMaxScale(SqlTypeName typeName) {
     switch (typeName) {
     case DECIMAL:
@@ -44,6 +46,7 @@ public abstract class RelDataTypeSystemImpl implements RelDataTypeSystem {
     }
   }
 
+  //返回数据类型的精准度
   public int getDefaultPrecision(SqlTypeName typeName) {
     switch (typeName) {
     case CHAR:

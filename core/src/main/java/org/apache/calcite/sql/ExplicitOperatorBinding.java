@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * <code>ExplicitOperatorBinding</code> implements {@link SqlOperatorBinding}
  * via an underlying array of known operand types.
- * 确定具体参数的值
+ * 精准的知道了每一个参数的类型
  */
 public class ExplicitOperatorBinding extends SqlOperatorBinding {
   //~ Instance fields --------------------------------------------------------

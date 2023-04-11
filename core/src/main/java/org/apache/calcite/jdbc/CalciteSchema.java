@@ -91,6 +91,7 @@ public class CalciteSchema {
   //functionMap中的key,即函数名称
   private final NavigableSet<String> functionNames =
       new TreeSet<String>(COMPARATOR);
+
   //functionMap的子集,即无参数的function集合
   private final NavigableMap<String, FunctionEntry> nullaryFunctionMap =
       new TreeMap<String, FunctionEntry>(COMPARATOR);
@@ -718,6 +719,7 @@ public class CalciteSchema {
   /**
    * Implementation of {@link FunctionEntry}
    * where all properties are held in fields.
+   * function的名字、函数本身、以及归属哪个schema
    */
   public static class FunctionEntryImpl extends FunctionEntry {
     private final Function function;

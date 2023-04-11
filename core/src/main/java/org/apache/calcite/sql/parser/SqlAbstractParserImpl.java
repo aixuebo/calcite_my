@@ -282,6 +282,7 @@ public abstract class SqlAbstractParserImpl {
 
   /**
    * Type-safe enum for context of acceptable expressions.
+   * 表达式的接受范围
    */
   protected enum ExprContext {
     /**
@@ -503,6 +504,7 @@ public abstract class SqlAbstractParserImpl {
 
     /**
      * Returns comma-separated list of JDBC keywords.
+     * 返回逗号分隔的关键词集合
      */
     String getJdbcKeywords();
 

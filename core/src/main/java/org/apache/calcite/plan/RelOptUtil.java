@@ -1623,7 +1623,7 @@ public abstract class RelOptUtil {
 
   /**
    * Returns whether two types are equal using '='.
-   *
+   * 返回两个类型是否是相同的
    * @param desc1 Description of first type
    * @param type1 First type
    * @param desc2 Description of second type

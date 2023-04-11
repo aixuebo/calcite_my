@@ -39,8 +39,7 @@ abstract class AbstractNamespace implements SqlValidatorNamespace {
    * cycles.
    * 校验的状态
    */
-  private SqlValidatorImpl.Status status =
-      SqlValidatorImpl.Status.UNVALIDATED;
+  private SqlValidatorImpl.Status status = SqlValidatorImpl.Status.UNVALIDATED;
 
   /**
    * Type of the output row, which comprises the name and type of each output
@@ -86,11 +85,13 @@ abstract class AbstractNamespace implements SqlValidatorNamespace {
         Util.permAssert(
             rowType == null,
             "Namespace.rowType must be null before validate has been called");
-        RelDataType type = validateImpl();
+        RelDataType type = validateImpl();//校验,并且返回sqlNode对应的类型
+
+        //断言,一定有返回类型
         Util.permAssert(
             type != null,
             "validateImpl() returned null");
-        if (forceNullable) {
+        if (forceNullable) { //包装一层null,即允许该值为null
           // REVIEW jvs 10-Oct-2005: This may not be quite right
           // if it means that nullability will be forced in the
           // ON clause where it doesn't belong.

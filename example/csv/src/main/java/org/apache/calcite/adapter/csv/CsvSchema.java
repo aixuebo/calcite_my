@@ -48,7 +48,9 @@ public class CsvSchema extends AbstractSchema {
 
   /** Looks for a suffix on a string and returns
    * either the string with the suffix removed
-   * or the original string. */
+   * or the original string.
+   *  去除后缀
+   **/
   private static String trim(String s, String suffix) {
     String trimmed = trimOrNull(s, suffix);
     return trimmed != null ? trimmed : s;
@@ -56,16 +58,22 @@ public class CsvSchema extends AbstractSchema {
 
   /** Looks for a suffix on a string and returns
    * either the string with the suffix removed
-   * or null. */
+   * or null.
+   *  去除后缀
+   **/
   private static String trimOrNull(String s, String suffix) {
     return s.endsWith(suffix)
         ? s.substring(0, s.length() - suffix.length())
         : null;
   }
 
+  /**
+   * 假设文件是aaa.json，则解析后表名是aaa，解析的内容是table对象
+   */
   @Override protected Map<String, Table> getTableMap() {
     // Look for files in the directory ending in ".csv", ".csv.gz", ".json",
     // ".json.gz".
+    //查找以下文件".csv", ".csv.gz", ".json",".json.gz".
     File[] files = directoryFile.listFiles(
         new FilenameFilter() {
           public boolean accept(File dir, String name) {
@@ -83,11 +91,12 @@ public class CsvSchema extends AbstractSchema {
     for (File file : files) {
       String tableName = trim(file.getName(), ".gz");
       final String tableNameSansJson = trimOrNull(tableName, ".json");
-      if (tableNameSansJson != null) {
+      if (tableNameSansJson != null) {//说明是json文件
         JsonTable table = new JsonTable(file);
         builder.put(tableNameSansJson, table);
         continue;
       }
+      //说明是csv文件
       tableName = trim(tableName, ".csv");
 
       final Table table = createTable(file);

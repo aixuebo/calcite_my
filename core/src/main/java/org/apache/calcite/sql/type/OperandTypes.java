@@ -49,6 +49,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  * @see org.apache.calcite.sql.type.SqlOperandTypeChecker
  * @see org.apache.calcite.sql.type.ReturnTypes
  * @see org.apache.calcite.sql.type.InferTypes
+ *
+ * 参数校验器的工厂类
  */
 public abstract class OperandTypes {
   private OperandTypes() {
@@ -179,6 +181,7 @@ public abstract class OperandTypes {
   /**
    * Operand type-checking strategy type must be a positive integer non-NULL
    * literal.
+   * 限制参数都是整数类型
    */
   public static final SqlSingleOperandTypeChecker POSITIVE_INTEGER_LITERAL =
       new FamilyOperandTypeChecker(ImmutableList.of(SqlTypeFamily.INTEGER)) {
@@ -350,6 +353,7 @@ public abstract class OperandTypes {
       // TODO:  compatibility check
       OperandTypes.or(NUMERIC_NUMERIC, INTERVAL_SAME_SAME, DATETIME_INTERVAL);
 
+  //限制参数是日期类型
   public static final SqlSingleOperandTypeChecker MINUS_DATE_OPERATOR =
       new FamilyOperandTypeChecker(
           ImmutableList.of(SqlTypeFamily.DATETIME, SqlTypeFamily.DATETIME,

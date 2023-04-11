@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * Operand that determines whether a {@link RelOptRule}
  * can be applied to a particular expression.
+ * 操作规则
  *
  * <p>For example, the rule to pull a filter up from the left side of a join
  * takes operands: <code>Join(Filter, Any)</code>.</p>
@@ -39,28 +40,33 @@ import java.util.List;
 public class RelOptRuleOperand {
   //~ Instance fields --------------------------------------------------------
 
-  private RelOptRuleOperand parent;
-  private RelOptRule rule;
-  private final Predicate<RelNode> predicate;
+  private RelOptRuleOperand parent;//设置父类
+  private RelOptRule rule;//如果匹配成功,则返回规则对象
+
 
   // REVIEW jvs 29-Aug-2004: some of these are Volcano-specific and should be
   // factored out
   public int[] solveOrder;
   public int ordinalInParent;
   public int ordinalInRule;
-  private final RelTrait trait;
-  private final Class<? extends RelNode> clazz;
-  private final ImmutableList<RelOptRuleOperand> children;
 
+
+  //构造函数需要的内容,匹配class、匹配trait、校验规则
+  private final Class<? extends RelNode> clazz;
+  private final RelTrait trait;
+  private final Predicate<RelNode> predicate;
   /**
    * Whether child operands can be matched in any order.
+   * 子操作匹配策略
    */
   public final RelOptRuleOperandChildPolicy childPolicy;
+  private final ImmutableList<RelOptRuleOperand> children;//子操作集合
 
   //~ Constructors -----------------------------------------------------------
 
   /**
    * Creates an operand.
+   * 创建一个匹配操作
    *
    * <p>The {@code childOperands} argument is often populated by calling one
    * of the following methods:
@@ -82,13 +88,14 @@ public class RelOptRuleOperand {
       Predicate<? super R> predicate,
       RelOptRuleOperandChildren children) {
     assert clazz != null;
+    //校验
     switch (children.policy) {
-    case ANY:
+    case ANY://随意匹配
       break;
-    case LEAF:
+    case LEAF://必须叶子操作
       assert children.operands.size() == 0;
       break;
-    case UNORDERED:
+    case UNORDERED://无序--操作一定是1?不知道为什么
       assert children.operands.size() == 1;
       break;
     default:
@@ -184,15 +191,16 @@ public class RelOptRuleOperand {
   /**
    * Returns whether a relational expression matches this operand. It must be
    * of the right class and trait.
+   * 去校验是否匹配
    */
   public boolean matches(RelNode rel) {
-    if (!clazz.isInstance(rel)) {
+    if (!clazz.isInstance(rel)) { //匹配class
       return false;
     }
-    if ((trait != null) && !rel.getTraitSet().contains(trait)) {
+    if ((trait != null) && !rel.getTraitSet().contains(trait)) { //匹配trait,即rel必须包含待规定的trait
       return false;
     }
-    return predicate.apply(rel);
+    return predicate.apply(rel); //校验规则必须通过
   }
 }
 

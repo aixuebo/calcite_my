@@ -36,6 +36,7 @@ public interface AggregatingScope extends SqlValidatorScope {
    * returns true. If the expression is constant within the group, but does
    * not exactly match, returns false. If the expression is not constant,
    * throws an exception. Examples:
+   * 校验having等表达式是否在group by里
    *
    * <ul>
    * <li>If we are 'f(b, c)' in 'SELECT a + f(b, c) FROM t GROUP BY a', then

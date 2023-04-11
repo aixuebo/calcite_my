@@ -43,12 +43,12 @@ public class SqlUpdate extends SqlCall {
   public static final SqlSpecialOperator OPERATOR =
       new SqlSpecialOperator("UPDATE", SqlKind.UPDATE);
 
-  SqlNode targetTable;
-  SqlNodeList targetColumnList;
-  SqlNodeList sourceExpressionList;
-  SqlNode condition;
-  SqlSelect sourceSelect;
-  SqlIdentifier alias;
+  SqlNode targetTable;//准备更新的表
+  SqlNodeList targetColumnList;//set 的key集合
+  SqlNodeList sourceExpressionList;//set的value集合
+  SqlNode condition;//where条件
+  SqlSelect sourceSelect;//通常是null,阅读代码的时候可忽略
+  SqlIdentifier alias;//targetTable别名
 
   //~ Constructors -----------------------------------------------------------
 

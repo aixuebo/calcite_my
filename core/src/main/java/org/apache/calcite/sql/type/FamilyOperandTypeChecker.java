@@ -34,6 +34,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  * Operand type-checking strategy which checks operands for inclusion in type
  * families.
  * 校验参数策略:必须是给定类型中 依次对应的关系
+ *
+ * 限制参数List的类型以及参数数量，每一个类型与families中映射相关
  */
 public class FamilyOperandTypeChecker implements SqlSingleOperandTypeChecker {
   //~ Instance fields --------------------------------------------------------
@@ -55,8 +57,8 @@ public class FamilyOperandTypeChecker implements SqlSingleOperandTypeChecker {
   //校验某一个参数
   public boolean checkSingleOperandType(
       SqlCallBinding callBinding,
-      SqlNode node,
-      int iFormalOperand,
+      SqlNode node,//参数对象
+      int iFormalOperand,//参数序号 -- 获取该序号应该的参数类型families
       boolean throwOnFailure) {
     SqlTypeFamily family = families.get(iFormalOperand);//获取要求的参数类型
     if (family == SqlTypeFamily.ANY) {
@@ -100,10 +102,10 @@ public class FamilyOperandTypeChecker implements SqlSingleOperandTypeChecker {
     }
 
     for (Ord<SqlNode> op : Ord.zip(callBinding.getCall().getOperandList())) {//一个一个参数校验
-      if (!checkSingleOperandType(
+      if (!checkSingleOperandType( //校验每一个参数类型是否符合预期
           callBinding,
-          op.e,
-          op.i,
+          op.e,//参数对象
+          op.i,//参数序号
           throwOnFailure)) {
         return false;
       }

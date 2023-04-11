@@ -47,17 +47,17 @@ import java.util.TimeZone;
  * for the Avatica engine.
  */
 public class AvaticaResultSet implements ResultSet, ArrayImpl.Factory {
-  protected final AvaticaStatement statement;
+  protected final AvaticaStatement statement;//查询的statement对象
   protected final Meta.Signature signature;
-  protected final Iterable<Object> iterable;
+  protected final Iterable<Object> iterable;//结果集
   protected final List<ColumnMetaData> columnMetaDataList;//查询的列信息
   protected final ResultSetMetaData resultSetMetaData;//列信息的元数据
   protected final Calendar localCalendar;
 
-  protected Cursor cursor;
+  protected Cursor cursor;//游标对象
   protected List<Cursor.Accessor> accessorList;
-  private int row;
-  private boolean afterLast;
+  private int row;//统计移动了多少行
+  private boolean afterLast;//是否是最后一行
   private int fetchDirection;
   private int fetchSize;
   private int type;

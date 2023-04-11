@@ -74,6 +74,8 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.UPPER;
  * {@link Expression linq4j expressions}.
  */
 public class RexToLixTranslator {
+
+  //java与sql方法映射
   public static final Map<Method, SqlOperator> JAVA_TO_SQL_METHOD_MAP =
       Util.<Method, SqlOperator>mapOf(
           findMethod(String.class, "toUpperCase"), UPPER,
@@ -95,6 +97,7 @@ public class RexToLixTranslator {
   private final RexToLixTranslator parent;
   private final Function1<String, InputGetter> correlates;
 
+  //查找method对象
   private static Method findMethod(
       Class<?> clazz, String name, Class... parameterTypes) {
     try {

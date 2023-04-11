@@ -27,13 +27,19 @@ import java.util.Collection;
  * <p>Every row-expression has a type.
  * (Compare with {@link org.apache.calcite.sql.SqlNode}, which is created before
  * validation, and therefore types may not be available.)
+ * 每一行表达式都是RexNode类型,即RexNode是行表达式的根节点
+ * 与SqlNode比较差异的话,SqlNode是在校验前创建的,因此他可能是不可用的。而RexNode一定是校验后产生的,一定可用
  *
  * <p>Some common row-expressions are: {@link RexLiteral} (constant value),
  * {@link RexVariable} (variable), {@link RexCall} (call to operator with
  * operands). Expressions are generally created using a {@link RexBuilder}
  * factory.</p>
+ * 比如RexLiteral表示常量,RexVariable表示变量,RexCall表示一个带参数的方法。
+ * 他们通常都通过RexBuilder创建
  *
  * <p>All sub-classes of RexNode are immutable.</p>
+ * 所有的行表达式都是不可变对象
+ *
  * 表示一个表达式
  */
 public abstract class RexNode {
@@ -90,6 +96,9 @@ public abstract class RexNode {
    *
    * <p>Also see {@link RexProgram#apply(RexVisitor, java.util.List, RexNode)},
    * which applies a visitor to several expressions simultaneously.
+   *
+   * 参数是访问器,该访问器是明确要拿到什么内容的。
+   * 依次递归访问即可,属于访问者模式。
    */
   public abstract <R> R accept(RexVisitor<R> visitor);
 }

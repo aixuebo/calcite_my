@@ -30,6 +30,8 @@ import org.apache.calcite.plan.RelTraitDef;
  * {@link org.apache.calcite.runtime.ArrayBindable}.
  * Unlike {@link org.apache.calcite.adapter.enumerable.EnumerableConvention},
  * no code generation is required.
+ *
+ * 返回值是 []org.apache.calcite.linq4j.Enumerable
  */
 public enum BindableConvention implements Convention {
   INSTANCE;

@@ -23,6 +23,7 @@ import java.util.Iterator;
 
 /**
  * Converts an expression to Java code.
+ * 用于将表达式转换成java代码
  */
 class ExpressionWriter {
   static final Indent INDENT = new Indent(20);

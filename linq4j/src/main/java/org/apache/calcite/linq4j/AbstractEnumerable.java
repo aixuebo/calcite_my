@@ -29,6 +29,8 @@ import java.util.Iterator;
  * @param <T> Element type
  */
 public abstract class AbstractEnumerable<T> extends DefaultEnumerable<T> {
+
+  //将Enumerator转换成Iterator处理
   public Iterator<T> iterator() {
     return Linq4j.enumeratorIterator(enumerator());
   }

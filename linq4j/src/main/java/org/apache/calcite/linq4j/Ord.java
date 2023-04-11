@@ -26,6 +26,7 @@ import java.util.Map;
  * Pair of an element and an ordinal.
  *
  * @param <E> Element type
+ * 元素+序号 组成新的对象
  */
 public class Ord<E> implements Map.Entry<Integer, E> {
   public final int i;

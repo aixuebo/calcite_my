@@ -23,6 +23,7 @@ package org.apache.calcite.linq4j;
  * <p>Analogous to LINQ's System.Linq.IQueryable.</p>
  *
  * @param <T> Element type
+ * 查询接口
  */
 public interface Queryable<T> extends RawQueryable<T>, ExtendedQueryable<T> {
 }

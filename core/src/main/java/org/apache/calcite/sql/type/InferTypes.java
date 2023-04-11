@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * Strategies for inferring operand types.
- * 推测参数类型
+ * 推测参数类型工厂类
  * @see org.apache.calcite.sql.type.SqlOperandTypeInference
  * @see org.apache.calcite.sql.type.ReturnTypes
  */
@@ -37,7 +37,7 @@ public abstract class InferTypes {
   /**
    * Operand type-inference strategy where an unknown operand type is derived
    * from the first operand with a known type.
-   * 设置参数类型为第一个识别的类型
+   * 返回参数类型为第一个识别的类型，作为推测的类型
    */
   public static final SqlOperandTypeInference FIRST_KNOWN =
       new SqlOperandTypeInference() {
@@ -81,8 +81,8 @@ public abstract class InferTypes {
           for (int i = 0; i < operandTypes.length; ++i) {
             operandTypes[i] =
                 returnType.isStruct()
-                    ? returnType.getFieldList().get(i).getType()
-                    : returnType;
+                    ? returnType.getFieldList().get(i).getType() //如果return类型是明确的对象，他表示为每一个参数都设置了一个类型
+                    : returnType;//参数类型统一设置为returnType
           }
         }
       };

@@ -42,16 +42,18 @@ public abstract class SqlTypeTransforms {
    * transformed into the same type but nullable if any of a calls operands is
    * nullable
    * 如果参数中有任意一个字段允许为null,则返回值就允许为null
+   *
+   * 对typeToTransform类型进一步包装，包装类型允许是null
    */
   public static final SqlTypeTransform TO_NULLABLE =
       new SqlTypeTransform() {
         public RelDataType transformType(
             SqlOperatorBinding opBinding,
             RelDataType typeToTransform) {//返回值类型
-          return SqlTypeUtil.makeNullableIfOperandsAre(//如果参数中有任意一个字段允许为null,则返回值就允许为null
+          return SqlTypeUtil.makeNullableIfOperandsAre(//如果参数中有任意一个字段允许为null,则返回值就允许为null --即对typeToTransform类型进一步包装，包装是否允许是null
               opBinding.getTypeFactory(),
               opBinding.collectOperandTypes(),//收集每一个参数的具体类型
-              Preconditions.checkNotNull(typeToTransform));
+              Preconditions.checkNotNull(typeToTransform));//不允许是null,是null则抛异常
         }
       };
 
@@ -103,7 +105,7 @@ public abstract class SqlTypeTransforms {
           switch (typeToTransform.getSqlTypeName()) {
           case VARCHAR:
           case VARBINARY:
-            return typeToTransform;
+            return typeToTransform; //说明目标类型就是varchar,直接返回
           }
 
           SqlTypeName retTypeName = toVar(typeToTransform);
@@ -112,7 +114,7 @@ public abstract class SqlTypeTransforms {
               opBinding.getTypeFactory().createSqlType(
                   retTypeName,
                   typeToTransform.getPrecision());
-          if (SqlTypeUtil.inCharFamily(typeToTransform)) {
+          if (SqlTypeUtil.inCharFamily(typeToTransform)) { //确保目标类型是varchar类型,这样才能真正做转换
             ret =
                 opBinding.getTypeFactory()
                     .createTypeWithCharsetAndCollation(

@@ -28,6 +28,8 @@ import java.util.List;
 /**
  * ChainedSqlOperatorTable implements the {@link SqlOperatorTable} interface by
  * chaining together any number of underlying operator table instances.
+ *
+ * 组合,可以多种方式初始化函数集合
  */
 public class ChainedSqlOperatorTable implements SqlOperatorTable {
   //~ Instance fields --------------------------------------------------------
@@ -60,7 +62,7 @@ public class ChainedSqlOperatorTable implements SqlOperatorTable {
 
   public void lookupOperatorOverloads(SqlIdentifier opName,
       SqlFunctionCategory category, SqlSyntax syntax,
-      List<SqlOperator> operatorList) {
+      List<SqlOperator> operatorList) { //符合所有函数名条件的操作，都添加到该集合中
     for (SqlOperatorTable table : tableList) {
       table.lookupOperatorOverloads(opName, category, syntax, operatorList);
     }

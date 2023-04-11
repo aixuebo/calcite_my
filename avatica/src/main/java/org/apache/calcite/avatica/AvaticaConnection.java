@@ -49,29 +49,28 @@ import java.util.concurrent.Executor;
  * <p>Abstract to allow newer versions of JDBC to add methods.
  */
 public abstract class AvaticaConnection implements Connection {
-  protected int statementCount;
-  private boolean autoCommit;
+  protected int statementCount;//创建的第几个statement
+  private boolean autoCommit;//是否自动commit
   private boolean closed;
   private boolean readOnly;
-  private int transactionIsolation;
+  private int transactionIsolation;//隔离级别
   private int holdability;
   private int networkTimeout;
   private String catalog;//是schema的父层名称，一般都是空,即一个catalog包含多个schema,每一个schema包含多个table
 
-  public final int id;
+  public final int id;//Connection的唯一id,该id是自增长的
   protected final UnregisteredDriver driver;
   protected final AvaticaFactory factory;
   final String url;
-  protected final Properties info;
-  protected final Meta meta;
+  protected final Properties info;//连接的配置信息
+  protected final Meta meta;//通过持有connection,创建一个元数据管理对象,查询数据库元信息 new CalciteMetaImpl((CalciteConnectionImpl) connection);
   private String schema;
-  protected final AvaticaDatabaseMetaData metaData;
+  protected final AvaticaDatabaseMetaData metaData;//数据库本身的元数据信息，比如url等信息
   public final Helper helper = Helper.INSTANCE;
-  public final Map<InternalProperty, Object> properties =
-      new HashMap<InternalProperty, Object>();
-  public final Map<Integer, AvaticaStatement> statementMap = Maps.newHashMap();
+  public final Map<InternalProperty, Object> properties = new HashMap<InternalProperty, Object>();
+  public final Map<Integer, AvaticaStatement> statementMap = Maps.newHashMap();//该连接产生的所有segment
 
-  private static int nextId;
+  private static int nextId;//全局静态id,用于为每一个Connection创建唯一id
 
   /**
    * Creates an AvaticaConnection.
@@ -93,7 +92,7 @@ public abstract class AvaticaConnection implements Connection {
     this.factory = factory;
     this.url = url;
     this.info = info;
-    this.meta = driver.createMeta(this);
+    this.meta = driver.createMeta(this);//通过持有connection,创建一个元数据管理对象,查询数据库元信息 new CalciteMetaImpl((CalciteConnectionImpl) connection);
     this.metaData = factory.newDatabaseMetaData(this);
     this.holdability = metaData.getResultSetHoldability();
   }
@@ -428,6 +427,7 @@ public abstract class AvaticaConnection implements Connection {
     return statement.openResultSet;
   }
 
+  //与executeQueryInternal逻辑相同,只是需要先将sql转化成Signature
   protected ResultSet prepareAndExecuteInternal(
       final AvaticaStatement statement, String sql, int maxRowCount)
       throws SQLException {

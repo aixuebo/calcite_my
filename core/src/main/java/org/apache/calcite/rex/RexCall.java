@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * An expression formed by a call to an operator with zero or more expressions
  * as operands.
+ * 一个操作对应的表达式，即该操作带着N个表达式rexNode参数对象集合
  *
  * <p>Operators may be binary, unary, functions, special syntactic constructs
  * like <code>CASE ... WHEN ... END</code>, or even internally generated
@@ -35,6 +36,7 @@ import java.util.List;
  * really irrelevant, because row-expressions (unlike
  * {@link org.apache.calcite.sql.SqlNode SQL expressions})
  * do not directly represent a piece of source code.
+ * 操作可能是一元函数、二元函数、或者function、或者 case when then。
  *
  * <p>It's not often necessary to sub-class this class. The smarts should be in
  * the operator, rather than the call. Any extra information about the call can
@@ -44,8 +46,8 @@ import java.util.List;
 public class RexCall extends RexNode {
   //~ Instance fields --------------------------------------------------------
 
-  private final SqlOperator op;//function等操作
-  public final ImmutableList<RexNode> operands;//具体参数
+  private final SqlOperator op;//具体操作
+  public final ImmutableList<RexNode> operands;//操作参数
   private final RelDataType type;//返回类型
 
   //~ Constructors -----------------------------------------------------------
@@ -135,10 +137,12 @@ public class RexCall extends RexNode {
     return op.kind;
   }
 
+  //操作参数
   public List<RexNode> getOperands() {
     return operands;
   }
 
+  //具体操作
   public SqlOperator getOperator() {
     return op;
   }

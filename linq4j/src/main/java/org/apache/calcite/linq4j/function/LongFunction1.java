@@ -20,6 +20,8 @@ package org.apache.calcite.linq4j.function;
  * Function that takes one parameter and returns a native {@code long} value.
  *
  * @param <T0> Type of argument #0
+ *
+ * 将对象转换成Long值
  */
 public interface LongFunction1<T0> extends Function<Long> {
   long apply(T0 v0);

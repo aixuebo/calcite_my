@@ -20,6 +20,8 @@ import org.apache.calcite.sql.parser.SqlParserPos;
 
 /**
  * Enumerates the types of join.
+ * 表示枚举值
+ * 一种字面量对象  即特殊字符串含义的对象
  */
 public enum JoinType implements SqlLiteral.SqlSymbol {
   /**
@@ -59,6 +61,7 @@ public enum JoinType implements SqlLiteral.SqlSymbol {
    * Creates a parse-tree node representing an occurrence of this
    * condition type keyword at a particular position in the parsed
    * text.
+   * 枚举值可以转换成SqlLiteral。
    */
   public SqlLiteral symbol(SqlParserPos pos) {
     return SqlLiteral.createSymbol(this, pos);

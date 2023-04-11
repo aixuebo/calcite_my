@@ -241,6 +241,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    * Map of derived RelDataType for each node. This is an IdentityHashMap
    * since in some cases (such as null literals) we need to discriminate by
    * instance.
+   * 存储每一个SqlNode对应的类型
    */
   private final Map<SqlNode, RelDataType> nodeToTypeMap =
       new IdentityHashMap<SqlNode, RelDataType>();
@@ -321,24 +322,33 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     return unknownType;
   }
 
+    /**
+     * 对select *部分进行扩展,扩展成N个字段
+     * @param selectList        Select clause to be expanded,selectItem内容,其中包含.*的内容
+     * @param select  select语法块
+     * @param includeSystemVars Whether to include system variables
+     * @return 因为要对*进行扩展,所以会将SqlIdentifier(*)转换成new SqlNodeList(new ArrayList<SqlNode>();)
+     */
   public SqlNodeList expandStar(
       SqlNodeList selectList,
       SqlSelect select,
       boolean includeSystemVars) {
-    List<SqlNode> list = new ArrayList<SqlNode>();
-    List<Map.Entry<String, RelDataType>> types =
-        new ArrayList<Map.Entry<String, RelDataType>>();
-    for (int i = 0; i < selectList.size(); i++) {
+
+    List<SqlNode> list = new ArrayList<SqlNode>(); //存储扩展的节点
+    //存储每一个扩展的字段的别名 以及 对应的类型
+    List<Map.Entry<String, RelDataType>> types = new ArrayList<Map.Entry<String, RelDataType>>();//类型在设置过程中,会被解析元数据类型,缓存到全局变量nodeToTypeMap中
+
+    for (int i = 0; i < selectList.size(); i++) { //循环每一个selectItem
       final SqlNode selectItem = selectList.get(i);
       expandSelectItem(
           selectItem,
           select,
           list,
-          new LinkedHashSet<String>(),
+          new LinkedHashSet<String>(),//用于存储每一个字段对应的别名
           types,
-          includeSystemVars);
+          includeSystemVars); //扩展每一个selectItem,如果出现*,则对齐扩展;
     }
-    getRawSelectScope(select).setExpandedSelectList(list);
+    getRawSelectScope(select).setExpandedSelectList(list);//将select *部分中的内容,转换成具体的字段节点,赋值
     return new SqlNodeList(list, SqlParserPos.ZERO);
   }
 
@@ -393,6 +403,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    * @param types             List of data types in alias order
    * @param includeSystemVars If true include system vars in lists
    * @return Whether the node was expanded
+   * 扩展每一个selectItem,如果出现*,则对齐扩展;
    */
   private boolean expandSelectItem(
       final SqlNode selectItem,
@@ -401,12 +412,14 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       Set<String> aliases,
       List<Map.Entry<String, RelDataType>> types,
       final boolean includeSystemVars) {
+
     final SelectScope scope = (SelectScope) getWhereScope(select);
     if (expandStar(selectItems, aliases, types, includeSystemVars, scope,
         selectItem)) {
       return true;
     }
 
+    //以下代码基本上不会被执行到,可忽略
     // Expand the select item: fully-qualify columns, and convert
     // parentheses-free functions such as LOCALTIME into explicit function
     // calls.
@@ -442,16 +455,22 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     return false;
   }
 
+  //扩展每一个selectItem,如果出现*,则对齐扩展;
   private boolean expandStar(List<SqlNode> selectItems, Set<String> aliases,
       List<Map.Entry<String, RelDataType>> types, boolean includeSystemVars,
       SelectScope scope, SqlNode node) {
+
+    //*,一定是  SqlIdentifier节点
     if (!(node instanceof SqlIdentifier)) {
       return false;
     }
+
+    //* 一定是以*结尾
     final SqlIdentifier identifier = (SqlIdentifier) node;
     if (!identifier.isStar()) {
       return false;
     }
+
     final SqlParserPos starPosition = identifier.getParserPosition();
     switch (identifier.names.size()) {
     case 1:
@@ -459,8 +478,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
         final SqlNode from = p.right.getNode();
         final SqlValidatorNamespace fromNs = getNamespace(from, scope);
         assert fromNs != null;
-        final RelDataType rowType = fromNs.getRowType();
-        for (RelDataTypeField field : rowType.getFieldList()) {
+        final RelDataType rowType = fromNs.getRowType();//所属表对应的字段集合
+        for (RelDataTypeField field : rowType.getFieldList()) { //循环每一个字段
           String columnName = field.getName();
 
           // TODO: do real implicit collation here
@@ -517,11 +536,12 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     }
   }
 
+  //核心入口
   public SqlNode validate(SqlNode topNode) {
     SqlValidatorScope scope = new EmptyScope(this);
     scope = new CatalogScope(scope, ImmutableList.of("CATALOG"));
-    final SqlNode topNode2 = validateScopedExpression(topNode, scope);
-    final RelDataType type = getValidatedNodeType(topNode2);
+    final SqlNode topNode2 = validateScopedExpression(topNode, scope);//核心校验方法,返回校验成功的SqlNode
+    final RelDataType type = getValidatedNodeType(topNode2);//确定sql的返回值是正确的
     Util.discard(type);
     return topNode2;
   }
@@ -789,11 +809,12 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
   public SqlNode validateParameterizedExpression(
       SqlNode topNode,
-      final Map<String, RelDataType> nameToTypeMap) {
+      final Map<String, RelDataType> nameToTypeMap) {//sqlNode与类型的映射关系
     SqlValidatorScope scope = new ParameterScope(this, nameToTypeMap);
     return validateScopedExpression(topNode, scope);
   }
 
+  //核心校验入口
   private SqlNode validateScopedExpression(
       SqlNode topNode,
       SqlValidatorScope scope) {
@@ -835,7 +856,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     validateAccess(
         node,
         ns.getTable(),
-        SqlAccessEnum.SELECT);
+        SqlAccessEnum.SELECT); //校验table的访问权限是否满足需求
   }
 
   /**
@@ -1405,10 +1426,12 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     setValidatedNodeTypeImpl(node, type);
   }
 
+  //移除sqlNode与类型映射关系
   public void removeValidatedNodeType(SqlNode node) {
     nodeToTypeMap.remove(node);
   }
 
+  //设置sqlNode类型
   void setValidatedNodeTypeImpl(SqlNode node, RelDataType type) {
     Util.pre(type != null, "type != null");
     Util.pre(node != null, "node != null");
@@ -1420,6 +1443,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     nodeToTypeMap.put(node, type);
   }
 
+  //推测表达式类型
   public RelDataType deriveType(
       SqlValidatorScope scope,
       SqlNode expr) {
@@ -1427,7 +1451,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     Util.pre(expr != null, "expr != null");
 
     // if we already know the type, no need to re-derive
-    RelDataType type = nodeToTypeMap.get(expr);
+    RelDataType type = nodeToTypeMap.get(expr); //可能该node已经识别过了,先查询缓存
     if (type != null) {
       return type;
     }
@@ -1435,11 +1459,11 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     if (ns != null) {
       return ns.getType();
     }
-    type = deriveTypeImpl(scope, expr);
+    type = deriveTypeImpl(scope, expr);//推测类型
     Util.permAssert(
         type != null,
         "SqlValidator.deriveTypeInternal returned null");
-    setValidatedNodeTypeImpl(expr, type);
+    setValidatedNodeTypeImpl(expr, type);//设置类型
     return type;
   }
 
@@ -1559,7 +1583,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       // REVIEW:  should dynamic parameter types always be nullable?
       RelDataType newInferredType =
           typeFactory.createTypeWithNullability(inferredType, true);
-      if (SqlTypeUtil.inCharFamily(inferredType)) {
+      if (SqlTypeUtil.inCharFamily(inferredType)) { //如果类型是string类型,继续处理
         newInferredType =
             typeFactory.createTypeWithCharsetAndCollation(
                 newInferredType,
@@ -1586,7 +1610,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
         } else {
           type = inferredType;
         }
-        inferUnknownTypes(type, scope, child);
+        inferUnknownTypes(type, scope, child); //设置当前child的类型
       }
     } else if (node instanceof SqlCase) {
       // REVIEW wael: can this be done in a paramtypeinference strategy
@@ -1650,17 +1674,18 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       SqlNode exp,
       SqlValidatorScope scope,
       final boolean includeSystemVars) {
-    String alias = SqlValidatorUtil.getAlias(exp, -1);
+    String alias = SqlValidatorUtil.getAlias(exp, -1); //获取别名
     String uniqueAlias =
         SqlValidatorUtil.uniquify(
-            alias, aliases, SqlValidatorUtil.EXPR_SUGGESTER);
-    if (!alias.equals(uniqueAlias)) {
+            alias, aliases, SqlValidatorUtil.EXPR_SUGGESTER);//返回唯一的名字
+    if (!alias.equals(uniqueAlias)) { //说明别名有变化，因此套一层call
       exp = SqlValidatorUtil.addAlias(exp, uniqueAlias);
     }
-    fieldList.add(Pair.of(uniqueAlias, deriveType(scope, exp)));
+    fieldList.add(Pair.of(uniqueAlias, deriveType(scope, exp)));//设置唯一别名与类型映射
     list.add(exp);
   }
 
+  //获取select 中的别名，即推测一个别名
   public String deriveAlias(
       SqlNode node,
       int ordinal) {
@@ -1692,6 +1717,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     return expandIdentifiers;
   }
 
+  //是否允许中间结果 orderby
   protected boolean shouldAllowIntermediateOrderBy() {
     return true;
   }
@@ -2561,10 +2587,10 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     }
   }
 
-  //校验字符内容
+  //校验字面量sqlNode字符内容
   public void validateLiteral(SqlLiteral literal) {
-    switch (literal.getTypeName()) {
-    case DECIMAL:
+    switch (literal.getTypeName()) {//字面量对应的类型
+    case DECIMAL://校验必须能转换成DECIMAL类型
       // Decimal and long have the same precision (as 64-bit integers), so
       // the unscaled value of a decimal must fit into a long.
 
@@ -2585,7 +2611,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       break;
 
     case DOUBLE:
-      validateLiteralAsDouble(literal);
+      validateLiteralAsDouble(literal);//校验必须能转换成double类型
       break;
 
     case BINARY:
@@ -2704,7 +2730,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     Util.pre(targetRowType != null, "targetRowType != null");
     switch (node.getKind()) {
     case AS:
-      validateFrom(
+      validateFrom( // user as u ，此时sqlNode是SqlIdentifier
           ((SqlCall) node).operand(0),
           targetRowType,
           scope);
@@ -2719,7 +2745,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       validateOver((SqlCall) node, scope);
       break;
     default:
-      validateQuery(node, scope);
+      validateQuery(node, scope); // from user,此时sqlNode是SqlIdentifier
       break;
     }
 
@@ -2737,8 +2763,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     SqlNode right = join.getRight();
     SqlNode condition = join.getCondition();
     boolean natural = join.isNatural();
-    final JoinType joinType = join.getJoinType();
-    final JoinConditionType conditionType = join.getConditionType();
+    final JoinType joinType = join.getJoinType();//join、left join
+    final JoinConditionType conditionType = join.getConditionType();//on
     final SqlValidatorScope joinScope = scopes.get(join);
     validateFrom(left, unknownType, joinScope);
     validateFrom(right, unknownType, joinScope);
@@ -2835,6 +2861,9 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    *
    * @param condition Parse tree
    * @param clause    Name of clause: "WHERE", "GROUP BY", "ON"
+   * 用于where语句条件的校验,因此不允许有聚合函数和窗口函数
+   *
+   * 校验SqlNode节点不允许有聚合函数
    */
   private void validateNoAggs(SqlNode condition, String clause) {
     final SqlNode agg = aggOrOverFinder.findAgg(condition);
@@ -2912,14 +2941,12 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
     // Make sure that items in FROM clause have distinct aliases.
     final SqlValidatorScope fromScope = getFromScope(select);
-    final List<Pair<String, SqlValidatorNamespace>> children =
-        ((SelectScope) fromScope).children;
-    int duplicateAliasOrdinal = Util.firstDuplicate(Pair.left(children));
-    if (duplicateAliasOrdinal >= 0) {
-      final Pair<String, SqlValidatorNamespace> child =
-          children.get(duplicateAliasOrdinal);
-      throw newValidationError(child.right.getEnclosingNode(),
-          RESOURCE.fromAliasDuplicate(child.left));
+    final List<Pair<String, SqlValidatorNamespace>> children = ((SelectScope) fromScope).children;//返回from 表集合,比如查询from a,b 则返回a与b
+    //返回出现重复数据的位置
+    int duplicateAliasOrdinal = Util.firstDuplicate(Pair.left(children));//校验a和b等from的表名集合中,是否有重复的
+    if (duplicateAliasOrdinal >= 0) { //说明有重复数据
+      final Pair<String, SqlValidatorNamespace> child = children.get(duplicateAliasOrdinal);
+      throw newValidationError(child.right.getEnclosingNode(),RESOURCE.fromAliasDuplicate(child.left));
     }
 
     validateFrom(select.getFrom(), fromType, fromScope);
@@ -2932,7 +2959,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     // depend on the GROUP BY list, or the window function might reference
     // window name in the WINDOW clause etc.
     final RelDataType rowType =
-        validateSelectList(selectItems, select, targetRowType);
+        validateSelectList(selectItems, select, targetRowType);//校验selectItem
     ns.setType(rowType);//设置输出row的类型
 
     // Validate ORDER BY after we have set ns.rowType because in some
@@ -3027,6 +3054,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    * Validates the ORDER BY clause of a SELECT statement.
    *
    * @param select Select statement
+   * 校验order by语法
+   *
    */
   protected void validateOrderList(SqlSelect select) {
     // ORDER BY is validated in a scope where aliases in the SELECT clause
@@ -3036,7 +3065,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     if (orderList == null) {
       return;
     }
-    if (!shouldAllowIntermediateOrderBy()) {
+    if (!shouldAllowIntermediateOrderBy()) { //是否允许中间结果 orderby
       if (!cursorSet.contains(select)) {
         throw newValidationError(select, RESOURCE.invalidOrderByPos());
       }
@@ -3045,14 +3074,14 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
     Util.permAssert(orderScope != null, "orderScope != null");
     for (SqlNode orderItem : orderList) {
-      validateOrderItem(select, orderItem);
+      validateOrderItem(select, orderItem);//校验每一个order by item
     }
   }
 
   private void validateOrderItem(SqlSelect select, SqlNode orderItem) {
     if (SqlUtil.isCallTo(
         orderItem,
-        SqlStdOperatorTable.DESC)) {
+        SqlStdOperatorTable.DESC)) {//是否是desc排序
       validateFeature(RESOURCE.sQLConformance_OrderByDesc(),
           orderItem.getParserPosition());
       validateOrderItem(select,
@@ -3061,8 +3090,9 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     }
 
     final SqlValidatorScope orderScope = getOrderScope(select);
-    validateExpr(orderItem, orderScope);
+    validateExpr(orderItem, orderScope);//校验order by的item表达式
   }
+
 
   public SqlNode expandOrderExpr(SqlSelect select, SqlNode orderExpr) {
     return new OrderExpressionExpander(select, orderExpr).go();
@@ -3071,21 +3101,26 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
   /**
    * Validates the GROUP BY clause of a SELECT statement. This method is
    * called even if no GROUP BY clause is present.
+   * 校验group by 语法
+   * 校验group by没有聚合函数
+   * 校验节点本身信息
+   * 校验每一个group by item语法
    */
   protected void validateGroupClause(SqlSelect select) {
     SqlNodeList groupList = select.getGroup();
     if (groupList == null) {
       return;
     }
-    validateNoAggs(groupList, "GROUP BY");
+    validateNoAggs(groupList, "GROUP BY");//校验group by没有聚合函数
     final SqlValidatorScope groupScope = getGroupScope(select);
     inferUnknownTypes(unknownType, groupScope, groupList);
 
-    groupList.validate(this, groupScope);
+    groupList.validate(this, groupScope);//校验节点本身信息
 
     // Derive the type of each GROUP BY item. We don't need the type, but
     // it resolves functions, and that is necessary for deducing
     // monotonicity.
+    //推导每一个group by item的类型,这个类型本身是没用到的,但他在推论函数的单调性上,是必要的
     final SqlValidatorScope selectScope = getSelectScope(select);
     AggregatingSelectScope aggregatingScope = null;
     if (selectScope instanceof AggregatingSelectScope) {
@@ -3099,6 +3134,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       validateGroupItem(groupScope, aggregatingScope, groupItem);
     }
 
+    //group by字段里不能有聚合函数
     SqlNode agg = aggFinder.findAgg(groupList);
     if (agg != null) {
       throw newValidationError(agg, RESOURCE.aggregateIllegalInGroupBy());
@@ -3118,8 +3154,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       if (groupItem instanceof SqlNodeList) {
         break;
       }
-      final RelDataType type = deriveType(groupScope, groupItem);
-      setValidatedNodeTypeImpl(groupItem, type);
+      final RelDataType type = deriveType(groupScope, groupItem);//校验每一个group by item的推测返回值类型
+      setValidatedNodeTypeImpl(groupItem, type);//设置每一个类型的返回值
     }
   }
 
@@ -3140,22 +3176,37 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     validateWhereOrOn(whereScope, where, "WHERE");
   }
 
+  /**
+   * 校验where节点是否合法，或者on条件是否合法
+   * @param scope
+   * @param condition
+   * @param keyword
+   *
+   *     conditionSqlNode.validate(this, scope);//校验sql节点本身
+   *     推测返回值，校验返回值是否是boolean
+   */
   protected void validateWhereOrOn(
       SqlValidatorScope scope,
       SqlNode condition,
       String keyword) {
-    validateNoAggs(condition, keyword);
+    validateNoAggs(condition, keyword);//校验SqlNode节点不允许有聚合函数
     inferUnknownTypes(
         booleanType,
         scope,
         condition);
-    condition.validate(this, scope);
-    final RelDataType type = deriveType(scope, condition);
-    if (!SqlTypeUtil.inBooleanFamily(type)) {
+    condition.validate(this, scope);//校验节点本身
+    final RelDataType type = deriveType(scope, condition);//推测返回值
+    if (!SqlTypeUtil.inBooleanFamily(type)) { //返回值必须是boolean类型
       throw newValidationError(condition, RESOURCE.condMustBeBoolean(keyword));
     }
   }
 
+  /**
+   * 校验having是否都在group by里
+   * 校验having节点本身
+   * 校验返回值是否是boolean类型
+   * @param select
+   */
   protected void validateHavingClause(SqlSelect select) {
     // HAVING is validated in the scope after groups have been created.
     // For example, in "SELECT empno FROM emp WHERE empno = 10 GROUP BY
@@ -3179,6 +3230,13 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     }
   }
 
+  /**
+   * 校验selectItem
+   * @param selectItems
+   * @param select
+   * @param targetRowType
+   * @return 返回select的结果集类型
+   */
   protected RelDataType validateSelectList(
       final SqlNodeList selectItems,
       SqlSelect select,
@@ -3194,7 +3252,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
 
     for (int i = 0; i < selectItems.size(); i++) {
       SqlNode selectItem = selectItems.get(i);
-      if (selectItem instanceof SqlSelect) {
+      if (selectItem instanceof SqlSelect) {//select item本身又是一个子查询,这个部分并不常见--因为一般同学不会这么写
         handleScalarSubQuery(
             select,
             (SqlSelect) selectItem,
@@ -3213,7 +3271,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     }
 
     // Check expanded select list for aggregation.
-    if (selectScope instanceof AggregatingScope) {
+    if (selectScope instanceof AggregatingScope) { //校验聚合selectItem
       AggregatingScope aggScope = (AggregatingScope) selectScope;
       for (SqlNode selectItem : expandedSelectItems) {
         boolean matches = aggScope.checkAggregateExpr(selectItem, true);
@@ -3250,10 +3308,11 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    *
    * @param expr  Expression
    * @param scope Scope in which expression occurs
+   * 比如校验order by的item表达式
    */
   private void validateExpr(SqlNode expr, SqlValidatorScope scope) {
     // Call on the expression to validate itself.
-    expr.validateExpr(this, scope);
+    expr.validateExpr(this, scope);//通常情况下，该方法与validate方法是一样的，只有在SqlIdentifier这个子类的时候，对validateExpr进行了覆写,有自己的实现方式
 
     // Perform any validation specific to the scope. For example, an
     // aggregating scope requires that expressions are valid aggregations.
@@ -3270,6 +3329,17 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    * @param expandedSelectItems Select items after processing
    * @param aliasList           built from user or system values
    * @param fieldList           Built up entries for each select list entry
+   *
+   * select item本身又是一个子查询,这个部分并不常见
+   *
+  select id
+  (
+    select name
+    from biao
+    where id = a.id
+  ) as mo_seq
+  from biao a
+  limit 100
    */
   private void handleScalarSubQuery(
       SqlSelect parentSelect,
@@ -3287,6 +3357,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     expandedSelectItems.add(selectItem);
 
     // Get or generate alias and add to list.
+    //获取子查询的别名
     final String alias =
         deriveAlias(
             selectItem,
@@ -3294,12 +3365,13 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
     aliasList.add(alias);
 
     final SelectScope scope = (SelectScope) getWhereScope(parentSelect);
-    final RelDataType type = deriveType(scope, selectItem);
-    setValidatedNodeTypeImpl(selectItem, type);
+    final RelDataType type = deriveType(scope, selectItem);//计算子查询的返回值类型
+    setValidatedNodeTypeImpl(selectItem, type);//设置子查询的返回类型
 
     // we do not want to pass on the RelRecordType returned
     // by the sub query.  Just the type of the single expression
     // in the subquery select list.
+    // 因为返回值是select的结果集,因此是RelRecordType,而这个结果集中只有一个字段,这个是语法的强约束,所以获取第0个类型即可
     assert type instanceof RelRecordType;
     RelRecordType rec = (RelRecordType) type;
 
@@ -3590,6 +3662,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    *
    * @param table          Table
    * @param requiredAccess Access requested on table
+   *
+   * 校验table的访问权限是否满足需求
    */
   private void validateAccess(
       SqlNode node,
@@ -4018,6 +4092,8 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
    *
    * <p>Each method must return the derived type. This visitor is basically a
    * single-use dispatcher; the visit is never recursive.
+   *
+   * 访问sqlNode节点,返回该节点对应的数据类型
    */
   private class DeriveTypeVisitor implements SqlVisitor<RelDataType> {
     private final SqlValidatorScope scope;
@@ -4026,6 +4102,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       this.scope = scope;
     }
 
+    //根据字面量的sql类型,返回java类型
     public RelDataType visit(SqlLiteral literal) {
       return literal.createSqlType(typeFactory);
     }
@@ -4035,6 +4112,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       return operator.deriveType(SqlValidatorImpl.this, scope, call);
     }
 
+    //正常情况下,list是无返回结果的
     public RelDataType visit(SqlNodeList nodeList) {
       // Operand is of a type that we can't derive a type for. If the
       // operand is of a peculiar type, such as a SqlNodeList, then you
@@ -4043,17 +4121,20 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       throw Util.needToImplement(nodeList);
     }
 
+    //为字符串返回类型，他可能是无参数的函数，也可能是某一个列名称
     public RelDataType visit(SqlIdentifier id) {
       // First check for builtin functions which don't have parentheses,
       // like "LOCALTIME".
+      //校验字符串会不会是内置的无()的函数
       SqlCall call = SqlUtil.makeCall(opTab, id);
       if (call != null) {
         return call.getOperator().validateOperands(
             SqlValidatorImpl.this,
             scope,
-            call);
+            call);//此时call是无参数的函数,因此也就不需要有参数Operand的解析
       }
 
+      //说明此时字符串不是函数
       RelDataType type = null;
       if (!(scope instanceof EmptyScope)) {
         id = scope.fullyQualify(id).identifier;
@@ -4084,7 +4165,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       if (type == null || id.names.size() == 1) {
         // See if there's a column with the name we seek in
         // precisely one of the namespaces in this scope.
-        RelDataType colType = scope.resolveColumn(id.names.get(0), id);
+        RelDataType colType = scope.resolveColumn(id.names.get(0), id);//查看id是不是一个列名,如果是返回列的类型
         if (colType != null) {
           type = colType;
         }
@@ -4097,7 +4178,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
             RESOURCE.unknownIdentifier(last.toString()));
       }
 
-      // Resolve rest of identifier
+      // Resolve rest of identifier 全局属性信息,不常用,可忽略
       for (; i < id.names.size(); i++) {
         String name = id.names.get(i);
         final RelDataTypeField field = catalogReader.field(type, name);
@@ -4122,6 +4203,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
       return dataType.deriveType(SqlValidatorImpl.this);
     }
 
+    //返回位置类型
     public RelDataType visit(SqlDynamicParam param) {
       return unknownType;
     }
@@ -4236,7 +4318,7 @@ public class SqlValidatorImpl implements SqlValidatorWithHints {
               select,
               false);
       SqlNode expr = expandedSelectList.get(ordinal);
-      expr = stripAs(expr);
+      expr = stripAs(expr);//去除as节点
       if (expr instanceof SqlIdentifier) {
         expr = getScope().fullyQualify((SqlIdentifier) expr).identifier;
       }

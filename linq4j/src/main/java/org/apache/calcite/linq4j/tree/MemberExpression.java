@@ -21,10 +21,11 @@ import java.lang.reflect.Modifier;
 
 /**
  * Represents accessing a field or property.
+ * 代表一个属性或者字段的表达式
  */
 public class MemberExpression extends Expression {
-  public final Expression expression;
-  public final PseudoField field;
+  public final Expression expression;//属性对应的表达式
+  public final PseudoField field;//代表属性信息
 
   public MemberExpression(Expression expression, Field field) {
     this(expression, Types.field(field));

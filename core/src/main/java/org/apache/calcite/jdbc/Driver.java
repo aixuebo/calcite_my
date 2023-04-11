@@ -104,6 +104,7 @@ public class Driver extends UnregisteredDriver {
     };
   }
 
+  //一个连接要带的属性信息
   @Override protected Collection<ConnectionProperty> getConnectionProperties() {
     final List<ConnectionProperty> list = new ArrayList<ConnectionProperty>();
     Collections.addAll(list, BuiltInConnectionProperty.values());

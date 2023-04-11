@@ -18,6 +18,7 @@ package org.apache.calcite.linq4j.tree;
 
 /**
  * <p>Analogous to LINQ's System.Linq.Expressions.ExpressionType.</p>
+ * 代表表达式类型
  */
 public enum ExpressionType {
 
@@ -81,6 +82,7 @@ public enum ExpressionType {
    * A conditional AND operation that evaluates the second operand
    * only if the first operand evaluates to true. It corresponds to
    * {@code a && b} in Java.
+   *
    */
   AndAlso(" && ", false, 11, false),
 
@@ -99,6 +101,7 @@ public enum ExpressionType {
   /**
    * A method call, such as in the {@code obj.sampleMethod()}
    * expression.
+   * 方法调用 MethodCallExpression
    */
   Call(".", false, 1, false),
 
@@ -110,11 +113,13 @@ public enum ExpressionType {
 
   /**
    * A conditional operation, such as {@code a > b ? a : b} in Java.
+   * if表达式 ConditionalExpression
    */
   Conditional(" ? ", " : ", false, 13, true),
 
   /**
    * A constant value.
+   * 常量
    */
   Constant,
 
@@ -123,6 +128,7 @@ public enum ExpressionType {
    * Java. For a numeric
    * conversion, if the converted value is too large for the
    * destination type, no exception is thrown.
+   * 做强制转换操作,比如讲express表达式强制转换成java的class对象。参见 Expressions.convert_ 方法
    */
   Convert(null, false, 2, true),
 
@@ -252,6 +258,7 @@ public enum ExpressionType {
   /**
    * An operation that calls a constructor to create a new
    * object, such as new SampleType().
+   * 创建一个新对象
    */
   New,
 
@@ -260,6 +267,7 @@ public enum ExpressionType {
    * initializes it from a list of elements, such as new
    * SampleType[]{a, b, c} in C# or New SampleType(){a, b, c} in
    * Visual Basic.
+   * 创建一个初始化的数组
    */
   NewArrayInit,
 
@@ -268,6 +276,7 @@ public enum ExpressionType {
    * for each dimension are specified, such as new
    * SampleType[dim1, dim2] in C# or New SampleType(dim1, dim2)
    * in Visual Basic.
+   *
    */
   NewArrayBounds,
 
@@ -301,6 +310,7 @@ public enum ExpressionType {
    * A reference to a parameter or variable that is defined in
    * the context of the expression. For more information, see
    * ParameterExpression.
+   * 代表一个变量或者参数变量
    */
   Parameter,
 
@@ -581,7 +591,7 @@ public enum ExpressionType {
 
   While;
 
-  final String op;
+  final String op;//操作,比如 &&、+
   final String op2;
   final boolean postfix;
   final int lprec;

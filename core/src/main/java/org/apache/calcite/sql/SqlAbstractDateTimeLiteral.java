@@ -37,6 +37,7 @@ import java.util.TimeZone;
  * <li>TIME '14:33:44.567'</li>
  * <li><code>TIMESTAMP '1969-07-21 03:15 GMT'</code></li>
  * </ul>
+ * 日期类型的字面量sqlNode
  */
 abstract class SqlAbstractDateTimeLiteral extends SqlLiteral {
   //~ Instance fields --------------------------------------------------------

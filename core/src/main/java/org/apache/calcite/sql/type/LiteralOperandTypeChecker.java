@@ -32,6 +32,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  * ...)</code>
  * 参数校验策略:参数必须是一个SqlLiteral类型的值
  * 是否允许null通过,取决于构造函数。
+ *
+ * 校验参数是SqlLiteral字面量对象，或者是null && 只允许有一个参数
  */
 public class LiteralOperandTypeChecker implements SqlSingleOperandTypeChecker {
   //~ Instance fields --------------------------------------------------------
@@ -46,6 +48,7 @@ public class LiteralOperandTypeChecker implements SqlSingleOperandTypeChecker {
 
   //~ Methods ----------------------------------------------------------------
 
+  //校验参数是SqlLiteral字面量对象，或者是null,此时返回true，校验失败返回false
   public boolean checkSingleOperandType(
       SqlCallBinding callBinding,
       SqlNode node,

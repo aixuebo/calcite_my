@@ -31,6 +31,7 @@ import java.util.List;
  * <p>It is not required that single-input relational expressions use this
  * class as a base class. However, default implementations of methods make life
  * easier.
+ * 代表有一个输入的表达式
  */
 public abstract class SingleRel extends AbstractRelNode {
   //~ Instance fields --------------------------------------------------------

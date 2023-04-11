@@ -35,6 +35,10 @@ import static org.apache.calcite.util.Static.RESOURCE;
 /**
  * <code>SqlCallBinding</code> implements {@link SqlOperatorBinding} by
  * analyzing to the operands of a {@link SqlCall} with a {@link SqlValidator}.
+ *
+ * 代表sqlNode是一个SqlCall，而该SqlCall上绑定了Operator
+ *
+ * 因为sql核心处理的是sqlNode，而其中有一部分sqlNode上是可以绑定操作的，比如sqlCall上绑定SqlOperator。该对象可以更加丰富SqlOperator信息，可以获取到对应的sqlCall上每一个参数的类型与对应的属性值
  */
 public class SqlCallBinding extends SqlOperatorBinding {
   //~ Instance fields --------------------------------------------------------
@@ -109,14 +113,14 @@ public class SqlCallBinding extends SqlOperatorBinding {
   }
 
   // implement SqlOperatorBinding
-  //字符串处理
+  //字符串处理 -- 获取SqlOperator对应的sqlcall的第ordinal个参数值,该值是string
   public String getStringLiteralOperand(int ordinal) {
     SqlNode node = call.operand(ordinal);
     return SqlLiteral.stringValue(node);
   }
 
   // implement SqlOperatorBinding
-  //返回int值
+  //返回int值  获取SqlOperator对应的sqlcall的第ordinal个参数值,该值是int
   public int getIntLiteralOperand(int ordinal) {//第几个参数
     // todo: move this to SqlTypeUtil
     SqlNode node = call.operand(ordinal);
@@ -135,18 +139,17 @@ public class SqlCallBinding extends SqlOperatorBinding {
     throw Util.newInternal("should never come here");
   }
 
-  // implement SqlOperatorBinding
-  //值是否是null
+  //判断SqlOperator对应的sqlcall的第ordinal个参数值,该值是否是null
   public boolean isOperandNull(int ordinal, boolean allowCast) {
     return SqlUtil.isNullLiteral(call.operand(ordinal), allowCast);
   }
 
-  // implement SqlOperatorBinding 参数数量
+  // sqlCall上绑定了多少个参数
   public int getOperandCount() {
     return call.getOperandList().size();
   }
 
-  // implement SqlOperatorBinding
+  // 获取SqlOperator对应的sqlcall的第ordinal个参数对应的类型
   public RelDataType getOperandType(int ordinal) {
     final SqlNode operand = call.operand(ordinal);
     final RelDataType type = validator.deriveType(scope, operand);
@@ -167,7 +170,7 @@ public class SqlCallBinding extends SqlOperatorBinding {
     return validator.deriveType(scope, query);
   }
 
-  // implement SqlOperatorBinding
+  // 该方法使用率感觉不太高。获取SqlOperator对应的sqlcall的第ordinal个参数对应的值。该ordinal类型比较特殊，依然是一个SqlCall，代表values(xx,xx,xx),因此字段存储到columnList中
   public String getColumnListParamInfo(
       int ordinal,
       String paramName,

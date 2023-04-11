@@ -31,7 +31,8 @@ package org.apache.calcite.sql;
  * <p>A sample is not a {@link SqlNode}. To include it in a parse tree, wrap it
  * as a literal, viz:
  * {@link SqlLiteral#createSample(SqlSampleSpec, org.apache.calcite.sql.parser.SqlParserPos)}.
- * 代表是一个常量值
+ * 代码from xxx TABLESAMPLE SUBSTITUTE (name) 语法的解析
+ * 即对from xxx的表进行抽样数据，抽样结果作为from的结果。  而name表示的是抽样的名称
  */
 public abstract class SqlSampleSpec {
   //~ Constructors -----------------------------------------------------------
@@ -102,10 +103,10 @@ public abstract class SqlSampleSpec {
 
   /** Sample specification. */
   public static class SqlTableSampleSpec extends SqlSampleSpec {
-    private final boolean isBernoulli;
-    private final float samplePercentage;
-    private final boolean isRepeatable;
-    private final int repeatableSeed;
+    private final boolean isBernoulli;//抽样策略
+    private final float samplePercentage;//抽样百分比
+    private final boolean isRepeatable;//是否允许重复抽样
+    private final int repeatableSeed;//允许重复抽样的seed
 
     private SqlTableSampleSpec(boolean isBernoulli, float samplePercentage) {
       this.isBernoulli = isBernoulli;

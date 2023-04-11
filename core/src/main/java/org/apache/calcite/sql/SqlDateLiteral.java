@@ -29,6 +29,7 @@ import java.util.Calendar;
  * '2004-10-22'</code>.
  *
  * <p>Create values using {@link SqlLiteral#createDate}.
+ * 日期类型的字面量sqlNode
  */
 public class SqlDateLiteral extends SqlAbstractDateTimeLiteral {
   //~ Constructors -----------------------------------------------------------

@@ -22,11 +22,12 @@ import java.util.List;
 /**
  * Represents creating a new array and possibly initializing the elements of the
  * new array.
+ * 新创建一个数组
  */
 public class NewArrayExpression extends Expression {
-  public final int dimension;
-  public final Expression bound;
-  public final List<Expression> expressions;
+  public final int dimension;//多少维数组
+  public final Expression bound;//不清楚做什么的
+  public final List<Expression> expressions;//初始化数组元素
   /**
    * Cache the hash code for the expression
    */
@@ -50,11 +51,13 @@ public class NewArrayExpression extends Expression {
     return visitor.visit(this, dimension, bound, expressions);
   }
 
+  // new double[]{90, 80, 70, 60, 50};
+  // new double[][]{{90, 80, 70, 60, 50},{...},{...}};
   @Override void accept(ExpressionWriter writer, int lprec, int rprec) {
     writer.append("new ").append(Types.getComponentTypeN(type));
     for (int i = 0; i < dimension; i++) {
       if (i == 0 && bound != null) {
-        writer.append('[').append(bound).append(']');
+        writer.append('[').append(bound).append(']'); //new double[5]
       } else {
         writer.append("[]");
       }

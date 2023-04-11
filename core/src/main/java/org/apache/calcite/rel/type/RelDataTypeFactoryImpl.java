@@ -50,54 +50,64 @@ public abstract class RelDataTypeFactoryImpl implements RelDataTypeFactory {
 
   /**
    * Global cache. Uses soft values to allow GC.
+   * 提供get+cache能力
+   *
+   * 输入key，返回key对应的一行对象的类型
    */
   private static final LoadingCache<Object, RelDataType> CACHE =
       CacheBuilder.newBuilder()
           .softValues()
           .build(
               new CacheLoader<Object, RelDataType>() {
-                @Override public RelDataType load(Object key) {
+                @Override public RelDataType load(Object key) { //返回key对应的类型后，缓存在内存
                   if (key instanceof RelDataType) {
                     return (RelDataType) key;
                   }
                   @SuppressWarnings("unchecked")
                   final Pair<List<String>, List<RelDataType>> pair =
-                      (Pair<List<String>, List<RelDataType>>) key;
+                      (Pair<List<String>, List<RelDataType>>) key; //key是一组映射，字段集合，字段类型集合的映射
                   final ImmutableList.Builder<RelDataTypeField> list =
                       ImmutableList.builder();
                   for (int i = 0; i < pair.left.size(); i++) {
                     list.add(
                         new RelDataTypeFieldImpl(
-                            pair.left.get(i), i, pair.right.get(i)));
+                            pair.left.get(i), i, pair.right.get(i)));//字段名称与字段类型
                   }
                   return new RelRecordType(list.build());
                 }
               });
 
+  //提供java类型与sql类型的映射
   private static final Map<Class, RelDataTypeFamily> CLASS_FAMILIES =
       ImmutableMap.<Class, RelDataTypeFamily>builder()
+
           .put(String.class, SqlTypeFamily.CHARACTER)
           .put(byte[].class, SqlTypeFamily.BINARY)
+
           .put(boolean.class, SqlTypeFamily.BOOLEAN)
           .put(Boolean.class, SqlTypeFamily.BOOLEAN)
+
           .put(char.class, SqlTypeFamily.NUMERIC)
           .put(Character.class, SqlTypeFamily.NUMERIC)
+
           .put(short.class, SqlTypeFamily.NUMERIC)
           .put(Short.class, SqlTypeFamily.NUMERIC)
           .put(int.class, SqlTypeFamily.NUMERIC)
           .put(Integer.class, SqlTypeFamily.NUMERIC)
           .put(long.class, SqlTypeFamily.NUMERIC)
           .put(Long.class, SqlTypeFamily.NUMERIC)
+
           .put(float.class, SqlTypeFamily.APPROXIMATE_NUMERIC)
           .put(Float.class, SqlTypeFamily.APPROXIMATE_NUMERIC)
           .put(double.class, SqlTypeFamily.APPROXIMATE_NUMERIC)
           .put(Double.class, SqlTypeFamily.APPROXIMATE_NUMERIC)
+
           .put(java.sql.Date.class, SqlTypeFamily.DATE)
           .put(Time.class, SqlTypeFamily.TIME)
           .put(Timestamp.class, SqlTypeFamily.TIMESTAMP)
           .build();
 
-  protected final RelDataTypeSystem typeSystem;
+  protected final RelDataTypeSystem typeSystem;//提供类型的精准度信息
 
   //~ Constructors -----------------------------------------------------------
 
@@ -113,6 +123,7 @@ public abstract class RelDataTypeFactoryImpl implements RelDataTypeFactory {
   }
 
   // implement RelDataTypeFactory
+  //classjava对象,表示的是字段的内存信息
   public RelDataType createJavaType(Class clazz) {
     final JavaType javaType =
         clazz == String.class
@@ -569,10 +580,11 @@ public abstract class RelDataTypeFactoryImpl implements RelDataTypeFactory {
 
   /**
    * Type which is based upon a Java class.
+   * 允许java对象作为一个列的类型 --- 即列最终转换成java内存对象，比如int，或者自定义的java对象
    */
   public class JavaType extends RelDataTypeImpl {
     private final Class clazz;
-    private final boolean nullable;
+    private final boolean nullable; //string和非isPrimitive对象都是true，即允许值是null，isPrimitive不允许是null，必须有默认值
     private SqlCollation collation;
     private Charset charset;
 
@@ -609,6 +621,7 @@ public abstract class RelDataTypeFactoryImpl implements RelDataTypeFactory {
       return nullable;
     }
 
+    //返回class对应的sql类型归属，是boolean还是小数、正数、还是java对象
     @Override public RelDataTypeFamily getFamily() {
       RelDataTypeFamily family = CLASS_FAMILIES.get(clazz);
       return family != null ? family : this;
@@ -620,6 +633,7 @@ public abstract class RelDataTypeFactoryImpl implements RelDataTypeFactory {
       sb.append(")");
     }
 
+    //有可能是数组，所以获取最基础的class是什么
     public RelDataType getComponentType() {
       final Class componentType = clazz.getComponentType();
       if (componentType == null) {
@@ -637,6 +651,7 @@ public abstract class RelDataTypeFactoryImpl implements RelDataTypeFactory {
       return this.collation;
     }
 
+    //返回class对应的sql类型归属，是boolean还是小数、正数、还是其他特殊对象
     public SqlTypeName getSqlTypeName() {
       final SqlTypeName typeName =
           JavaToSqlTypeConversionRules.instance().lookup(clazz);

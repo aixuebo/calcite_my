@@ -27,7 +27,7 @@ import java.util.List;
  *
  * <p><strong>NOTE: This class is experimental and subject to
  * change/removal without notice</strong>.</p>
- * 一个java对象表示一行数据
+ * 一个java对象表示一行数据，相当于struck对象
  */
 public class JavaRecordType extends RelRecordType {
   final Class clazz;//java对象

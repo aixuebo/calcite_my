@@ -201,6 +201,7 @@ public class ReflectiveSchema
       this.enumerable = enumerable;
     }
 
+    //java对象elementType,表示一行内所有的列
     public RelDataType getRowType(RelDataTypeFactory typeFactory) {
       return ((JavaTypeFactory) typeFactory).createType(elementType);
     }
@@ -327,9 +328,9 @@ public class ReflectiveSchema
     }
   }
 
-  /** Table based on a Java field. */
+  /** Table based on a Java field.java对象的属性代表一个表对象 */
   private static class FieldTable<T> extends ReflectiveTable {
-    private final Field field;//表name
+    private final Field field;//表name对应的对象
 
     /**
      *
@@ -361,7 +362,7 @@ public class ReflectiveSchema
     private final Field[] fields;//表的字段集合
 
     public FieldSelector(Class elementType) {
-      this.fields = elementType.getFields();
+      this.fields = elementType.getFields(); //返回java对象的所有属性集合
     }
 
     //一行数据,返回数据内容

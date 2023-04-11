@@ -27,11 +27,13 @@ import java.util.List;
  *
  * <p>Its fields are those of its constituent records, but unlike a
  * {@link RelRecordType}, those fields' names are not necessarily distinct.</p>
+ *
+ * 相当于元组对象,即(类型1,类型2,类型3)
  */
 public class RelCrossType extends RelDataTypeImpl {
   //~ Instance fields --------------------------------------------------------
 
-  public final ImmutableList<RelDataType> types;
+  public final ImmutableList<RelDataType> types;//类型集合
 
   //~ Constructors -----------------------------------------------------------
 
@@ -40,20 +42,21 @@ public class RelCrossType extends RelDataTypeImpl {
    * factory method.
    */
   public RelCrossType(
-      List<RelDataType> types,
-      List<RelDataTypeField> fields) {
+      List<RelDataType> types,//元组类型
+      List<RelDataTypeField> fields) {//元组name、序号、类型
     super(fields);
     this.types = ImmutableList.copyOf(types);
     assert types != null;
     assert types.size() >= 1;
     for (RelDataType type : types) {
-      assert !(type instanceof RelCrossType);
+      assert !(type instanceof RelCrossType);//注意,元组不能嵌套
     }
     computeDigest();
   }
 
   //~ Methods ----------------------------------------------------------------
 
+  //不属于struct
   @Override public boolean isStruct() {
     return false;
   }

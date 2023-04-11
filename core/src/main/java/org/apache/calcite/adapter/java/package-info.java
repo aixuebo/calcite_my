@@ -19,6 +19,8 @@
  * Query provider based on Java in-memory data
  * structures.
  * 基于java class管理的数据库 表关系
+ *
+ * class里面包含class[],数组中class表示表，每一个数组元素表示一行数据，数组对象表示表列信息
  */
 @PackageMarker
 package org.apache.calcite.adapter.java;

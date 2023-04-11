@@ -31,7 +31,7 @@ public interface SqlOperandTypeInference {
    * 推测未知的参数类型
    * @param callBinding  description of the call being analyzed
    * @param returnType   the type known or inferred for the result of the call 结果类型
-   * @param operandTypes receives the inferred types for all operands 参数类型
+   * @param operandTypes receives the inferred types for all operands 将所有的参数类型都设置为已推测的类型
    */
   void inferOperandTypes(
       SqlCallBinding callBinding,

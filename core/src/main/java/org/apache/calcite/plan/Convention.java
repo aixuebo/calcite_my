@@ -39,6 +39,8 @@ public interface Convention extends RelTrait {
 
   /**
    * Default implementation.
+   * 持有name和RelNode的class
+   * 即提供接口以及对应的名称
    */
   class Impl implements Convention {
     private final String name;

@@ -225,11 +225,12 @@ public abstract class SqlNode implements Cloneable {
    * <p>Usually, this method does much the same as {@link #validate}, but a
    * {@link SqlIdentifier} can occur in expression and non-expression
    * contexts.
+   * 通常情况下，该方法与validate方法是一样的，只有在SqlIdentifier这个子类的时候，对validateExpr进行了覆写,有自己的实现方式
    */
   public void validateExpr(
       SqlValidator validator,
       SqlValidatorScope scope) {
-    validate(validator, scope);
+    validate(validator, scope);//本身也是调用的validate方法
     Util.discard(validator.deriveType(scope, this));
   }
 

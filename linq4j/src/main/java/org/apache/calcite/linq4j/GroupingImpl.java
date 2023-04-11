@@ -24,6 +24,8 @@ import java.util.Map;
  *
  * @param <K> Key type
  * @param <V> Value type
+ *
+ * 实现group by操作的结果，返回值是一组数据，即<key,List<value>>
  */
 class GroupingImpl<K, V> extends AbstractEnumerable<V>
     implements Grouping<K, V>, Map.Entry<K, Enumerable<V>> {
@@ -66,6 +68,7 @@ class GroupingImpl<K, V> extends AbstractEnumerable<V>
     return key;
   }
 
+  //返回value集合
   public Enumerator<V> enumerator() {
     return Linq4j.enumerator(values);
   }

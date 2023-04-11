@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * Represents a relational dataset in a {@link RelOptSchema}. It has methods to
  * describe and implement itself.
+ * 表达式rel操作的一个table表
  */
 public interface RelOptTable {
   //~ Methods ----------------------------------------------------------------
@@ -87,6 +88,7 @@ public interface RelOptTable {
    *
    * @param columns Ordinals of key columns
    * @return Whether the given columns are a key or a superset of a key
+   * 是否是表的主键
    */
   boolean isKey(ImmutableBitSet columns);
 
@@ -117,7 +119,9 @@ public interface RelOptTable {
   }
 
   /** Contains the context needed to convert a a table into a relational
-   * expression. */
+   * expression.
+   * 实现类是LixToRelTranslator
+   **/
   interface ToRelContext extends ViewExpander {
     RelOptCluster getCluster();
   }

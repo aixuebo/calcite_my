@@ -29,6 +29,8 @@ import java.util.List;
  *
  * <p>Created by the parser, then it is rewritten to proper SqlFunction by
  * the validator to a function defined in a Calcite schema.</p>
+ *
+ * 针对转义字符特殊操作
  */
 public class SqlUnresolvedFunction extends SqlFunction {
   /**

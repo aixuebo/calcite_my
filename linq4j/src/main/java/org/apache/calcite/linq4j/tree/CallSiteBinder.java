@@ -19,6 +19,8 @@ package org.apache.calcite.linq4j.tree;
 /**
  * Creates a {@link DynamicExpression} that represents a dynamic operation bound
  * by the provided {@code CallSiteBinder}.
+ * 通过他的子类,去绑定动态操作
+ * 目前没有被用
  */
 public interface CallSiteBinder {
 }

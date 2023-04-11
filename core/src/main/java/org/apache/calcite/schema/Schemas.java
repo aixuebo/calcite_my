@@ -135,7 +135,9 @@ public final class Schemas {
     return schema.getExpression(schema.getParentSchema(), schema.getName());
   }
 
-  /** Returns the expression for a sub-schema. */
+  /** Returns the expression for a sub-schema.
+   * 返回子schema信息的表达式
+   **/
   public static Expression subSchemaExpression(SchemaPlus schema, String name,
       Class type) {
     // (Type) schemaExpression.getSubSchema("name")
@@ -162,19 +164,25 @@ public final class Schemas {
         type);
   }
 
-  /** Returns the expression to access a table within a schema. */
+  /** Returns the expression to access a table within a schema.
+   * 通过schema查找对应的table,将其转换成表达式
+   *
+   * 目标:表达式 --> java方法,传入哪种table类型scan方式,明确如何读取数据源返回enumerable数据
+   **/
   public static Expression tableExpression(SchemaPlus schema, Type elementType,
       String tableName, Class clazz) {
     final MethodCallExpression expression;
     if (Table.class.isAssignableFrom(clazz)) {
       expression = Expressions.call(
           expression(schema),
-          BuiltInMethod.SCHEMA_GET_TABLE.method,
-          Expressions.constant(tableName));
+          BuiltInMethod.SCHEMA_GET_TABLE.method,//getTable方法
+          Expressions.constant(tableName));//table名字
+
       if (ScannableTable.class.isAssignableFrom(clazz)) {
         return Expressions.call(
-            BuiltInMethod.SCHEMAS_ENUMERABLE.method,
-            Expressions.convert_(expression, ScannableTable.class),
+            BuiltInMethod.SCHEMAS_ENUMERABLE.method,//调用schema的enumerable方法
+                //将表达式转换成ScannableTable对象
+            Expressions.convert_(expression, ScannableTable.class),//传入参数是ScannableTable对象,输出是enumerable迭代器对象
             DataContext.ROOT);
       }
       if (FilterableTable.class.isAssignableFrom(clazz)) {

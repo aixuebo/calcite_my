@@ -448,11 +448,13 @@ public class StandardConvertletTable extends ReflectiveConvertletTable {
     return cx.getRexBuilder().makeCast(type, arg);
   }
 
+  //ceil函数对应的sqlNode转换成表达式RexNode
   protected RexNode convertFloorCeil(
       SqlRexContext cx,
       SqlCall call,
       boolean floor) {
     // Rewrite floor, ceil of interval
+    //说明ceil方法参数是SqlIntervalLiteral类型的,正常情况下不会这么操作,所以这部分代码可以忽略
     if (call.operandCount() == 1
         && call.operand(0) instanceof SqlIntervalLiteral) {
       final SqlIntervalLiteral literal = call.operand(0);
@@ -664,17 +666,20 @@ public class StandardConvertletTable extends ReflectiveConvertletTable {
         rexBuilder.makeLiteral(false));
   }
 
+  //将函数sqlNode转换成表达式RexNode
   public RexNode convertFunction(
       SqlRexContext cx,
       SqlFunction fun,
       SqlCall call) {
-    final List<SqlNode> operands = call.getOperandList();
-    final List<RexNode> exprs = convertExpressionList(cx, operands);
+    final List<SqlNode> operands = call.getOperandList();//参数信息
+    final List<RexNode> exprs = convertExpressionList(cx, operands);//将参数信息 先转换成 表达式
+
+    //用户自定义function
     if (fun.getFunctionType() == SqlFunctionCategory.USER_DEFINED_CONSTRUCTOR) {
       return makeConstructorCall(cx, fun, exprs);
     }
-    RelDataType returnType =
-        cx.getValidator().getValidatedNodeTypeIfKnown(call);
+
+    RelDataType returnType = cx.getValidator().getValidatedNodeTypeIfKnown(call);//sqlNode节点的返回值类型
     if (returnType == null) {
       returnType = cx.getRexBuilder().deriveReturnType(fun, exprs);
     }
@@ -813,6 +818,7 @@ public class StandardConvertletTable extends ReflectiveConvertletTable {
     }
   }
 
+  //将参数信息 sqlNode转换成表达式RexNode
   private static List<RexNode> convertExpressionList(
       SqlRexContext cx,
       List<SqlNode> nodes) {
@@ -1157,7 +1163,9 @@ public class StandardConvertletTable extends ReflectiveConvertletTable {
     }
   }
 
-  /** Convertlet that handles {@code FLOOR} and {@code CEIL} functions. */
+  /** Convertlet that handles {@code FLOOR} and {@code CEIL} functions.
+   *  ceil函数对应的sqlNode转换成表达式RexNode
+   **/
   private class FloorCeilConvertlet implements SqlRexConvertlet {
     private final boolean floor;
 

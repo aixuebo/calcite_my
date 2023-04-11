@@ -174,6 +174,8 @@ import static org.apache.calcite.util.Static.RESOURCE;
  *
  * <p>The public entry points are: {@link #convertQuery},
  * {@link #convertExpression(SqlNode)}.
+ *
+ * 入口 RelNode convertQuery
  */
 public class SqlToRelConverter {
   //~ Static fields/initializers ---------------------------------------------
@@ -506,11 +508,12 @@ public class SqlToRelConverter {
 
   /**
    * Converts an unvalidated query's parse tree into a relational expression.
+   * 将sqlNode转换成表达式relNode。
    *
-   * @param query           Query to convert
+   * @param query           Query to convert 是查询root入口
    * @param needsValidation Whether to validate the query before converting;
    *                        <code>false</code> if the query has already been
-   *                        validated.
+   *                        validated. 是否转换之前要校验一下sqlNode
    * @param top             Whether the query is top-level, say if its result
    *                        will become a JDBC result set; <code>false</code> if
    *                        the query will be part of a view.
@@ -519,13 +522,15 @@ public class SqlToRelConverter {
       SqlNode query,
       final boolean needsValidation,
       final boolean top) {
-    if (needsValidation) {
+
+    if (needsValidation) { //校验query
       query = validator.validate(query);
     }
 
     RelNode result = convertQueryRecursive(query, top, null);
     checkConvertedType(query, result);
 
+    //是否打印日志
     boolean dumpPlan = SQL2REL_LOGGER.isLoggable(Level.FINE);
     if (dumpPlan) {
       SQL2REL_LOGGER.fine(
@@ -1820,7 +1825,7 @@ public class SqlToRelConverter {
       convertFrom(bb, operands[0]);
       return;
 
-    case WITH_ITEM:
+    case WITH_ITEM://from是子查询，子查询里面有with?
       convertFrom(bb, ((SqlWithItem) from).query);
       return;
 

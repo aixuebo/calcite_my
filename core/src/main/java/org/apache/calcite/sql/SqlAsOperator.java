@@ -118,8 +118,7 @@ public class SqlAsOperator extends SqlSpecialOperator {
       SqlValidatorScope scope,
       SqlCall call) {
     // special case for AS:  never try to derive type for alias
-    RelDataType nodeType =
-        validator.deriveType(scope, call.operand(0));
+    RelDataType nodeType = validator.deriveType(scope, call.operand(0));
     assert nodeType != null;
     return validateOperands(validator, scope, call);
   }

@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Implementation of {@link SqlValidatorScope} that can see all schemas in the
  * current catalog.
- * 可以访问所有的schema的实现
+ * 该scope可以访问所有的schema元数据信息
  *
  * <p>Occurs near the root of the scope stack; its parent is typically
  * {@link EmptyScope}.
@@ -45,7 +45,7 @@ import java.util.Set;
 class CatalogScope extends DelegatingScope {
   /** Fully-qualified name of the catalog. Typically empty or ["CATALOG"]. */
   final ImmutableList<String> names;//catalog
-  private final Set<List<String>> schemaNames;//每一个schema可能由xx.xx组成,因此是List<String>代表一个schema,Set表示全部schema
+  private final Set<List<String>> schemaNames;//默认输出metadata，每一个schema可能由xx.xx组成,因此是List<String>代表一个schema,Set表示全部schema
 
   //~ Constructors -----------------------------------------------------------
 

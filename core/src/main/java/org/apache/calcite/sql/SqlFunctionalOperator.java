@@ -23,6 +23,7 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
 /**
  * SqlFunctionalOperator is a base class for special operators which use
  * functional syntax.
+ * 代表 LATERAL 函数
  */
 public class SqlFunctionalOperator extends SqlSpecialOperator {
   //~ Constructors -----------------------------------------------------------

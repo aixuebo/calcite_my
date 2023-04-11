@@ -255,6 +255,10 @@ public final class SqlParserUtil {
 
   /**
    * Unquotes a quoted string, using different quotes for beginning and end.
+   * startQuote和endQuote是转义字符，要求：
+   * 1.必须占用1个字节。
+   * 2.必须在字符串s的开头和结尾
+   *
    */
   public static String strip(String s, String startQuote, String endQuote,
       String escape, Casing casing) {
@@ -263,8 +267,9 @@ public final class SqlParserUtil {
       assert startQuote.length() == 1;
       assert endQuote.length() == 1;
       assert escape != null;
-      assert s.startsWith(startQuote) && s.endsWith(endQuote) : s;
-      s = s.substring(1, s.length() - 1).replace(escape, endQuote);
+      assert s.startsWith(startQuote) && s.endsWith(endQuote) : s; //要求转义字符必须是1个字节，并且是字符串的开始和结束
+      s = s.substring(1, s.length() - 1) //删除转义字符
+              .replace(escape, endQuote);//字符串替换,将符合要求的escape编码成转义字符
     }
     switch (casing) {
     case TO_UPPER:

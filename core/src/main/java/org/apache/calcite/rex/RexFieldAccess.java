@@ -27,15 +27,19 @@ import org.apache.calcite.sql.SqlKind;
  * <p>You might expect to use a <code>RexFieldAccess</code> to access columns of
  * relational tables, for example, the expression <code>emp.empno</code> in the
  * query
+ * 你可能起到使用RexFieldAccess去访问一个table的某一列,
  *
  * <blockquote>
  * <pre>SELECT emp.empno FROM emp</pre>
  * </blockquote>
  *
  * but there is a specialized expression {@link RexInputRef} for this purpose.
+ * 但其实这种方式,是用RexInputRef实现的
+ *
  * So in practice, <code>RexFieldAccess</code> is usually used to access fields
  * of correlating variables, for example the expression <code>emp.deptno</code>
  * in
+ * 因此RexFieldAccess用于以下场景,where的子查询中使用父类的字段
  *
  * <blockquote>
  * <pre>SELECT ename

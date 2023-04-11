@@ -24,6 +24,8 @@ import java.util.Comparator;
  * Extension methods for {@link OrderedEnumerable}.
  *
  * @param <T> Element type
+ *
+ * 对集合进一步扩展,丰富他排序功能，其实可被忽略,使用order by替代即可
  */
 public interface ExtendedOrderedEnumerable<T> extends Enumerable<T> {
   /**

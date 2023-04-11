@@ -57,6 +57,8 @@ public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
     final SqlValidator validator = callBinding.getValidator();
     for (int i = 0; i < argTypes.length; i++) {
       final RelDataType argType = argTypes[i] = callBinding.getOperandType(i);//获取参数类型
+
+      //因为是union all操作,所以每一个参数都是一个子查询，因此类型都是一个Struct对象
       if (!argType.isStruct()) {//参数必须是isStruct类型,即包含多个字段
         if (throwOnFailure) {
           throw new AssertionError("setop arg must be a struct");
@@ -72,7 +74,7 @@ public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
         continue;
       }
 
-      if (fields.size() != colCount) {//列数必须相同
+      if (fields.size() != colCount) {//每一个union all的子查询,列数必须相同
         if (throwOnFailure) {
           SqlNode node = callBinding.getCall().operand(i);
           if (node instanceof SqlSelect) {
@@ -91,15 +93,16 @@ public class SetopOperandTypeChecker implements SqlOperandTypeChecker {
     // ordinal, form a 'slice' containing the types of the ordinal'th
     // column j.
     for (int i = 0; i < colCount; i++) {//循环每一个列
-      final int i2 = i;
+      final int i2 = i;//第几列
       final RelDataType type = callBinding.getTypeFactory().leastRestrictive(//相同的列必须可以有相同的父类类型,获取该父类类型
+              //leastRestrictive参数传入List,返回List公共的类型
               new AbstractList<RelDataType>() {
-                public RelDataType get(int index) {
-                  return argTypes[index].getFieldList().get(i2)
+                public RelDataType get(int index) { //第index个子查询
+                  return argTypes[index].getFieldList().get(i2)//获取第index个子查询的第i2列类型
                       .getType();
                 }
 
-                public int size() {
+                public int size() { //一共多少个子查询
                   return argTypes.length;
                 }
               });

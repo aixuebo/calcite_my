@@ -98,6 +98,7 @@ public abstract class MetaImpl implements Meta {
     }
   }
 
+  //将迭代器对象内容,转换成list里,并且返回,list的元素表示一行具体的数据
   public static List<List<Object>> collect(CursorFactory cursorFactory,
       Iterable<Object> iterable,
       List<List<Object>> list) {
@@ -168,14 +169,17 @@ public abstract class MetaImpl implements Meta {
 
   /** Creates an empty result set. Useful for JDBC metadata methods that are
    * not implemented or which query entities that are not supported (e.g.
-   * triggers in Lingual). */
+   * triggers in Lingual).
+   * 参数代表列字段对象
+   **/
   protected <E> MetaResultSet createEmptyResultSet(final Class<E> clazz) {
     return createResultSet(Collections.<String, Object>emptyMap(),
-        fieldMetaData(clazz).columns,
+        fieldMetaData(clazz).columns,//列字段集合
         CursorFactory.deduce(fieldMetaData(clazz).columns, null),
         Collections.emptyList());
   }
 
+  //字段name、字段类型、第几个字段 --->转换成一个列对象
   protected static ColumnMetaData columnMetaData(String name, int index,
       Class<?> type) {
     TypeInfo pair = TypeInfo.m.get(type);
@@ -201,7 +205,7 @@ public abstract class MetaImpl implements Meta {
           && !Modifier.isStatic(field.getModifiers())) {
         list.add(
             columnMetaData(
-                AvaticaUtils.camelToUpper(field.getName()),
+                AvaticaUtils.camelToUpper(field.getName()),//驼峰
                 list.size() + 1, field.getType()));
       }
     }
@@ -209,8 +213,10 @@ public abstract class MetaImpl implements Meta {
   }
 
   protected MetaResultSet createResultSet(
-      Map<String, Object> internalParameters, List<ColumnMetaData> columns,
-      CursorFactory cursorFactory, Iterable<Object> iterable) {
+      Map<String, Object> internalParameters,
+      List<ColumnMetaData> columns,//集合列字段信息
+      CursorFactory cursorFactory,
+      Iterable<Object> iterable) { //结果集合
     try {
       final AvaticaStatement statement = connection.createStatement();
       final SignatureWithIterable signature =
@@ -408,8 +414,11 @@ public abstract class MetaImpl implements Meta {
     }
   }
 
-  /** Metadata describing a primary key. */
+  /** Metadata describing a primary key.
+   * 描述一个主键
+   **/
   public static class MetaPrimaryKey {
+    //主键属于哪个库 哪个表 哪个列
     public final String tableCat;
     public final String tableSchem;
     public final String tableName;
@@ -702,7 +711,10 @@ public abstract class MetaImpl implements Meta {
   }
 
   /** Prepare result with a iterable. Use this for simple statements
-   * that have a canned response and don't need to be executed. */
+   * that have a canned response and don't need to be executed.
+   *
+   * 准备一个结果集,该结果集是一个迭代器,不需要被执行
+   **/
   protected interface WithIterable {
     Iterable getIterable();
   }
@@ -710,12 +722,14 @@ public abstract class MetaImpl implements Meta {
   /** Prepare result that contains an iterable. */
   protected static class SignatureWithIterable extends Signature
       implements WithIterable {
-    private final Iterable iterable;
+    private final Iterable iterable;//迭代器结果集
 
     public SignatureWithIterable(Map<String, Object> internalParameters,
-        List<ColumnMetaData> columns, String sql,
-        List<AvaticaParameter> parameters, CursorFactory cursorFactory,
-        Iterable<Object> iterable) {
+        List<ColumnMetaData> columns,//集合的列字段信息
+        String sql,//查询sql
+        List<AvaticaParameter> parameters,
+        CursorFactory cursorFactory,
+        Iterable<Object> iterable) { //返回的数据结果集
       super(columns, sql, parameters, internalParameters, cursorFactory);
       this.iterable = iterable;
     }

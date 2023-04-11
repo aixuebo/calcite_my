@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * Result of compiling code generated from a {@link RexNode} expression.
- * 编译代码,产生结果
+ * 从RexNode行表达式编译代码,产生结果
  */
 public class RexExecutable {
   public static final String GENERATED_CLASS_NAME = "Reducer";
@@ -76,7 +76,7 @@ public class RexExecutable {
       List<RexNode> reducedValues) {
     Object[] values = compiledFunction.apply(dataContext);//返回结果值
     assert values.length == constExps.size();
-    final List<Object> valueList = Arrays.asList(values);
+    final List<Object> valueList = Arrays.asList(values);//数组转换成List
     for (Pair<RexNode, Object> value : Pair.zip(constExps, valueList)) {//表达式节点与参数值映射
       reducedValues.add(
           rexBuilder.makeLiteral(value.right, value.left.getType(), true));//获取具体的表达式值

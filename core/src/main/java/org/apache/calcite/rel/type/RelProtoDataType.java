@@ -23,6 +23,8 @@ import org.apache.calcite.linq4j.function.Function1;
  * {@link org.apache.calcite.rel.type.RelDataTypeFactory}.
  *
  * @see org.apache.calcite.rel.type.RelDataTypeImpl#proto
+ *
+ * 输入工厂RelDataTypeFactory，可以获取对应的RelDataType类型对象,用于后续存储数据
  */
 public interface RelProtoDataType
     extends Function1<RelDataTypeFactory, RelDataType> {

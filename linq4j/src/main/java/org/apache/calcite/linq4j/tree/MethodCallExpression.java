@@ -24,11 +24,12 @@ import java.util.List;
 
 /**
  * Represents a call to either a static or an instance method.
+ * 代表一个方法的调用
  */
 public class MethodCallExpression extends Expression {
-  public final Method method;
-  public final Expression targetExpression; // null for call to static method
-  public final List<Expression> expressions;
+  public final Method method; //调用的方法名称,从该对象中可以获取class以及方法名称
+  public final Expression targetExpression; // null for call to static method 等同于method,只是用表达式的方式表示
+  public final List<Expression> expressions; //参数信息
   /**
    * Cache the hash code for the expression
    */
@@ -82,6 +83,7 @@ public class MethodCallExpression extends Expression {
     }
   }
 
+  //xx.xx.xx.class.methodName(Expression,Expression)
   @Override void accept(ExpressionWriter writer, int lprec, int rprec) {
     if (writer.requireParentheses(this, lprec, rprec)) {
       return;

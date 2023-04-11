@@ -30,6 +30,7 @@ import java.io.File;
 
 /**
  * Table based on a JSON file.
+ * 读取一个json文件
  */
 public class JsonTable extends AbstractTable implements ScannableTable {
   private final File file;
@@ -43,13 +44,16 @@ public class JsonTable extends AbstractTable implements ScannableTable {
     return "JsonTable";
   }
 
+  //表的字段类型  json的形式文件，每一行只包含一列数据
   public RelDataType getRowType(RelDataTypeFactory typeFactory) {
+    //创建一个map类型,因为csv一行是有多列的
     return typeFactory.builder().add("_MAP",
         typeFactory.createMapType(
             typeFactory.createSqlType(SqlTypeName.VARCHAR),
             typeFactory.createSqlType(SqlTypeName.ANY))).build();
   }
 
+  //读取文件内容，解析成List<Object[]>，即解析成一个表的所有数据。每一行数据是Object
   public Enumerable<Object[]> scan(DataContext root) {
     return new AbstractEnumerable<Object[]>() {
       public Enumerator<Object[]> enumerator() {

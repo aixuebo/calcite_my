@@ -26,6 +26,14 @@ import org.apache.calcite.util.Util;
 
 /**
  * A postfix unary operator.
+ is [not] null --> SqlStdOperatorTable.IS_NOT_NULL/IS_NULL
+ is [not] true ---> SqlStdOperatorTable.IS_NOT_TRUE/IS_TRUE
+ is [not] false ---> SqlStdOperatorTable.IS_NOT_FALSE/IS_FALSE
+ is [not] UNKNOWN ---> SqlStdOperatorTable.IS_NOT_UNKNOWN/IS_UNKNOWN
+ is a set ---> SqlStdOperatorTable.IS_A_SET 用于检测嵌套表是否包含重复的元素值
+ DESC
+ NULLS FIRST、NULLS LAST
+ 窗口函数中FOLLOWING、PRECEDING
  */
 public class SqlPostfixOperator extends SqlOperator {
   //~ Constructors -----------------------------------------------------------

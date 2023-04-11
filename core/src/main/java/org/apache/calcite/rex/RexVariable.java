@@ -20,6 +20,7 @@ import org.apache.calcite.rel.type.RelDataType;
 
 /**
  * A row-expression which references a field.
+ * 行表达式,变量,代表一个字段的引用
  */
 public abstract class RexVariable extends RexNode {
   //~ Instance fields --------------------------------------------------------

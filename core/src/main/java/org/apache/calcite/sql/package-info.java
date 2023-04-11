@@ -35,17 +35,17 @@
  *
  *     <li>{@link org.apache.calcite.sql.SqlLiteral} represents a boolean,
  *         numeric, string, or date constant, or the value <code>NULL</code>.
- *         </li>
+ *         </li> 代表字面量有含义的字符串，比如 on、left join、null、true、数字等
  *
  *     <li>{@link org.apache.calcite.sql.SqlIdentifier} represents an
  *         identifier, such as <code> EMPNO</code> or <code>emp.deptno</code>.
- *         </li>
+ *         </li> 代表xx.xx这类字符串
  *
  *     <li>{@link org.apache.calcite.sql.SqlCall} is a call to an operator or
  *         function.  By means of special operators, we can use this construct
  *         to represent virtually every non-leaf node in the tree. For example,
  *         a <code>select</code> statement is a call to the 'select'
- *         operator.</li>
+ *         operator.</li> 代表一个操作或者函数
  *
  *     <li>{@link org.apache.calcite.sql.SqlNodeList} is a list of nodes.</li>
  *

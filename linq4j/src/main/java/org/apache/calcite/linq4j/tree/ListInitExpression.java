@@ -18,6 +18,7 @@ package org.apache.calcite.linq4j.tree;
 
 /**
  * Represents a constructor call that has a collection initializer.
+ * 创建一个list,并且使用add方法初始化元素
  */
 public class ListInitExpression extends Expression {
   public ListInitExpression(ExpressionType nodeType, Class type) {

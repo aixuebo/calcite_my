@@ -22,14 +22,15 @@ import java.util.List;
 
 /**
  * Declaration of a class.
+ * 声明一个class,即创建一个class的代码
  */
 public class ClassDeclaration extends MemberDeclaration {
   public final int modifier;
   public final String classClass = "class";
-  public final String name;
-  public final List<MemberDeclaration> memberDeclarations;
-  public final Type extended;
-  public final List<Type> implemented;
+  public final String name;//class的名字
+  public final List<MemberDeclaration> memberDeclarations; //包含构造函数、属性、方法
+  public final Type extended; //继承自哪个类
+  public final List<Type> implemented;//实现哪个接口
 
   public ClassDeclaration(int modifier, String name, Type extended,
       List<Type> implemented, List<MemberDeclaration> memberDeclarations) {
@@ -42,6 +43,8 @@ public class ClassDeclaration extends MemberDeclaration {
   }
 
   public void accept(ExpressionWriter writer) {
+
+    //public class className extends extended implements x,x,x {
     String modifiers = Modifier.toString(modifier);
     writer.append(modifiers);
     if (!modifiers.isEmpty()) {
@@ -54,6 +57,7 @@ public class ClassDeclaration extends MemberDeclaration {
     if (!implemented.isEmpty()) {
       writer.list(" implements ", ", ", "", implemented);
     }
+
     writer.list(" {\n", "", "}", memberDeclarations);
     writer.newlineAndIndent();
   }

@@ -22,7 +22,9 @@ import java.util.Properties;
  * Definition of a property that may be specified on the JDBC connect string.
  * {@link BuiltInConnectionProperty} enumerates built-in properties, but
  * there may be others; the list is not closed.
- * 代表一个Property属性
+ * 代表一个连接要带的Property属性
+ *
+ * key、类型、值、是否必须
  */
 public interface ConnectionProperty {
   /** The name of this property. (E.g. "MATERIALIZATIONS_ENABLED".) 属性name*/

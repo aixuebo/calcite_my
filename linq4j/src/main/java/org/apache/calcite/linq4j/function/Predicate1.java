@@ -20,6 +20,8 @@ package org.apache.calcite.linq4j.function;
  * Function with one parameter returning a native {@code boolean} value.
  *
  * @param <T0> Type of argument #0
+ *
+ * 接收一个参数,判断boolean返回值
  */
 public interface Predicate1<T0> extends Function<Boolean> {
   /**

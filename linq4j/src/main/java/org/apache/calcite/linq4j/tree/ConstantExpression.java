@@ -28,8 +28,11 @@ import java.util.List;
 
 /**
  * Represents an expression that has a constant value.
+ * 代表常数表达式
  */
 public class ConstantExpression extends Expression {
+
+  //核心属性，属性值+类型,并且校验属性值是归属于该类型
   public final Object value;
 
   public ConstantExpression(Type type, Object value) {

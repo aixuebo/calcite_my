@@ -31,6 +31,7 @@ import java.util.List;
 /**
  * SqlTypeFactoryImpl provides a default implementation of
  * {@link RelDataTypeFactory} which supports SQL types.
+ * 创建sql类型对象的工厂类
  */
 public class SqlTypeFactoryImpl extends RelDataTypeFactoryImpl {
   //~ Constructors -----------------------------------------------------------
@@ -209,6 +210,7 @@ public class SqlTypeFactoryImpl extends RelDataTypeFactoryImpl {
     return canonize(newType);
   }
 
+  //确定sql类型是基础类型
   private void assertBasic(SqlTypeName typeName) {
     assert typeName != null;
     assert typeName != SqlTypeName.MULTISET

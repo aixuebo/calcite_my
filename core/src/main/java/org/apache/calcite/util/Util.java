@@ -1752,6 +1752,8 @@ public class Util {
    * @param <K>       Key type
    * @param <V>       Value type
    * @return Map with given contents
+   *
+   * 至少key和value是存在的,keyValues是一堆一堆的key与value迭代产生
    */
   public static <K, V> Map<K, V> mapOf(K key, V value, Object... keyValues) {
     final Map<K, V> map = new LinkedHashMap<K, V>(1 + keyValues.length);
@@ -1925,14 +1927,19 @@ public class Util {
    *
    * @param list List
    * @return Ordinal of first duplicate, or -1 if not found
+   * -1表示没找到重复的元素位置。
+   * 位置从0开始计数。
+   * 返回 第一次出现重复的数据位置
    */
   public static <E> int firstDuplicate(List<E> list) {
     final int size = list.size();
     if (size < 2) {
+      //0和1个元素，肯定不会重复
       // Lists of size 0 and 1 are always distinct.
       return -1;
     }
     if (size < 15) {
+      //数据量少,可以采用双重循环的方式解决该问题
       // For smaller lists, avoid the overhead of creating a set. Threshold
       // determined empirically using UtilTest.testIsDistinctBenchmark.
       for (int i = 1; i < size; i++) {
@@ -1946,9 +1953,10 @@ public class Util {
       }
       return -1;
     }
+    //数据量多,通过map方式的特性解决该问题
     final Map<E, Object> set = new HashMap<E, Object>(size);
     for (E e : list) {
-      if (set.put(e, "") != null) {
+      if (set.put(e, "") != null) {//返回第一次出现重复的数值的位置,此时整合是size位置
         return set.size();
       }
     }

@@ -34,6 +34,8 @@ import java.util.List;
 /**
  * Visitor which looks for an aggregate function inside a tree of
  * {@link SqlNode} objects.
+ * 寻找聚合函数
+ * 参见 class SqlAggFunction extends SqlFunction
  */
 class AggFinder extends SqlBasicVisitor<Void> {
   //~ Instance fields --------------------------------------------------------
@@ -62,7 +64,8 @@ class AggFinder extends SqlBasicVisitor<Void> {
    *
    * @param node Parse tree to search
    * @return First aggregate function in parse tree, or null if not found
-   * 去该SqlNode阶段查找聚合函数,最终会调用到visit方法
+   *
+   * 参见 visit(SqlCall call) 中 if (operator.isAggregator())
    */
   public SqlNode findAgg(SqlNode node) {
     try {
@@ -74,6 +77,7 @@ class AggFinder extends SqlBasicVisitor<Void> {
     }
   }
 
+  //参见 visit(SqlCall call) 中 if (operator.isAggregator())
   public SqlNode findAgg(List<SqlNode> nodes) {
     try {
       for (SqlNode node : nodes) {

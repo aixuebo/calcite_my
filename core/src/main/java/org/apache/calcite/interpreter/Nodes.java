@@ -68,7 +68,7 @@ public class Nodes {
         condition = filter.getCondition();
         input = filter.getInput();
       } else {
-        condition = project.getCluster().getRexBuilder().makeLiteral(true);
+        condition = project.getCluster().getRexBuilder().makeLiteral(true);//没有where条件,设置condition = true
       }
       if (input instanceof TableScan) {
         final TableScan scan = (TableScan) input;

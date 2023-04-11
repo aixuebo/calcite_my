@@ -42,6 +42,13 @@ import java.util.zip.GZIPInputStream;
 /** Enumerator that reads from a CSV file.
  *
  * @param <E> Row type
+ *
+ * 真正读取一个csv文件,将一行数据进行格式转换,以及where条件处理
+ *
+ *
+ * 有两种方式可以获取csv文件的字段格式。
+ * 1.一个是第一行有描述,通过deduceRowType方法解析
+ * 2.明确字段的类型,通过构造函数传过来
  */
 class CsvEnumerator<E> implements Enumerator<E> {
   private final CSVReader reader;
@@ -82,6 +89,7 @@ class CsvEnumerator<E> implements Enumerator<E> {
     }
   }
 
+  //字符串如何转换成各个字段的类型
   private static RowConverter<?> converter(List<CsvFieldType> fieldTypes,
       int[] fields) {
     if (fields.length == 1) {
@@ -109,9 +117,9 @@ class CsvEnumerator<E> implements Enumerator<E> {
         final CsvFieldType fieldType;
         final int colon = string.indexOf(':');
         if (colon >= 0) {
-          name = string.substring(0, colon);
-          String typeString = string.substring(colon + 1);
-          fieldType = CsvFieldType.of(typeString);
+          name = string.substring(0, colon);//colName
+          String typeString = string.substring(colon + 1);//colType
+          fieldType = CsvFieldType.of(typeString);//colType的java对象类型
           if (fieldType == null) {
             System.out.println("WARNING: Found unknown type: "
               + typeString + " in file: " + file.getAbsolutePath()
@@ -179,6 +187,7 @@ class CsvEnumerator<E> implements Enumerator<E> {
           return false;
         }
         if (filterValues != null) {//说明有where条件
+          //循环每一个字段的内容,判断是否参与where条件判断,所以还是比较耗时的操作
           for (int i = 0; i < strings.length; i++) {
             String filterValue = filterValues[i];//说明该列有where条件
             if (filterValue != null) {
@@ -188,6 +197,8 @@ class CsvEnumerator<E> implements Enumerator<E> {
             }
           }
         }
+
+        //具体的数据进行格式转换
         current = rowConverter.convertRow(strings);
         return true;
       }
@@ -219,6 +230,7 @@ class CsvEnumerator<E> implements Enumerator<E> {
 
   /** Row converter.
    *  解析的是字符串,但最终结果每一行的列是有类型的,要转换成所属类型
+   *  E通常是Object[]形式，即每一行的数据转换成数组列，每一个列的类型未知,因此是Object
    **/
   abstract static class RowConverter<E> {
     abstract E convertRow(String[] rows);//传入字符串形式的row信息
@@ -301,9 +313,9 @@ class CsvEnumerator<E> implements Enumerator<E> {
     }
   }
 
-  /** Array row converter. */
+  /** Array row converter.每一行数据是一个数组 */
   static class ArrayRowConverter extends RowConverter<Object[]> {
-    private final CsvFieldType[] fieldTypes;
+    private final CsvFieldType[] fieldTypes;//将解析的字符串的每一个字段，转换成对应的类型
     private final int[] fields;
 
     ArrayRowConverter(List<CsvFieldType> fieldTypes, int[] fields) {
@@ -311,20 +323,21 @@ class CsvEnumerator<E> implements Enumerator<E> {
       this.fields = fields;
     }
 
+    //传入具体的一行数据
     public Object[] convertRow(String[] strings) {
-      final Object[] objects = new Object[fields.length];
-      for (int i = 0; i < fields.length; i++) {
-        int field = fields[i];
-        objects[i] = convert(fieldTypes[field], strings[field]);
+      final Object[] objects = new Object[fields.length];//返回一行数据
+      for (int i = 0; i < fields.length; i++) {//循环每一个字段
+        int field = fields[i];//第几个字段
+        objects[i] = convert(fieldTypes[field], strings[field]);//获取第几个字段对应的类型、字段对应的具体的值。
       }
       return objects;
     }
   }
 
-  /** Single column row converter. */
+  /** Single column row converter. 只有一行一列数据 */
   private static class SingleColumnRowConverter extends RowConverter {
     private final CsvFieldType fieldType;
-    private final int fieldIndex;
+    private final int fieldIndex;//只保留第index列数据
 
     private SingleColumnRowConverter(CsvFieldType fieldType, int fieldIndex) {
       this.fieldType = fieldType;

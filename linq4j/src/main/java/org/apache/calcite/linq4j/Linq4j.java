@@ -33,6 +33,49 @@ import java.util.RandomAccess;
 
 /**
  * Utility and factory methods for Linq4j.
+ *
+ * 核心入口
+ 1.基础迭代器功能
+ Enumerable a = Linq4j.asEnumerable(Iterable) //迭代一个集合,可以是Iterable、List、Collection、T[]
+ Enumerable a = Linq4j.emptyEnumerable() //迭代一个空集合
+ Enumerable<T> a = Linq4j.singletonEnumerable(T element) //返回只有一个元素的集合
+ Enumerator<T> a = Linq4j.singletonNullEnumerator() //返回只有一个元素,并且该元素是null的集合
+
+ 2.Enumerator与Iterator转换
+ Iterator<T> enumeratorIterator(Enumerator<T> enumerator)
+ Enumerator<T> iterableEnumerator(final Iterable<? extends T> iterable)
+ Enumerator<List<T>> product(List<Enumerator<T>> enumerators)
+ Iterable<List<T>> product(final Iterable<? extends Iterable<T>> iterables)
+
+ 3.迭代器高级功能
+ Enumerable<TResult> cast(Iterable<TSource> source, Class<TResult> clazz) 将元素强转成class对象
+ Enumerable<TResult> ofType(Iterable<TSource> source, Class<TResult> clazz) 将元素强转成class对象
+ Enumerable<E> concat(final List<Enumerable<E>> enumerableList) 依次循环Enumerable中每一个元素,即相当于new list().addAll(value).addAll(value)
+
+ QueryProvider query = Linq4j.DEFAULT_PROVIDER
+
+ 4.demo:
+ try {
+ Enumerator<String> result = Linq4j.enumerator(list);
+ while(result.moveNext()){
+ System.out.println(result.current());
+ }
+
+ Enumerable result2 = Linq4j.asEnumerable(list).select(new Function1<String,Integer>(){
+ public Integer apply(String v0) {
+ return 1;
+ }
+ });
+
+ Enumerator<Integer> result3 = result2.enumerator();
+ while(result3.moveNext()){
+ System.out.println(result3.current());
+ }
+
+ } catch (Exception e) {
+ e.printStackTrace();
+ }
+
  */
 public abstract class Linq4j {
   private Linq4j() {}
@@ -42,6 +85,7 @@ public abstract class Linq4j {
   private static final Method AUTO_CLOSEABLE_CLOSE_METHOD =
       getMethod("java.lang.AutoCloseable", "close");
 
+  //反射返回某一个Method对象
   public static Method getMethod(String className, String methodName,
       Class... parameterTypes) {
     try {
@@ -63,6 +107,7 @@ public abstract class Linq4j {
     }
   };
 
+  //空集合迭代器
   private static final Enumerator<Object> EMPTY_ENUMERATOR =
       new Enumerator<Object>() {
         public Object current() {
@@ -98,6 +143,7 @@ public abstract class Linq4j {
    * @param <T> Element type
    *
    * @return Iterator
+   * 将Enumerator转换成Iterator处理
    */
   public static <T> Iterator<T> enumeratorIterator(Enumerator<T> enumerator) {
     return new EnumeratorIterator<T>(enumerator);
@@ -451,7 +497,13 @@ public abstract class Linq4j {
     }
   }
 
-  /** Iterable enumerator. */
+  /** Iterable enumerator.
+   * Iterable 转换成 Enumerator。因为他俩天生就是可以相互转换的
+   *
+   * 因为iterable 可以重复转换成iterator,因此可以实现reset功能 iterable.iterator();
+   *
+   * 而iterator不能作为参数的原因是 他不能实现reset功能
+   **/
   @SuppressWarnings("unchecked")
   static class IterableEnumerator<T> implements Enumerator<T> {
     private final Iterable<? extends T> iterable;
@@ -619,7 +671,9 @@ public abstract class Linq4j {
     }
   }
 
-  /** Enumerator that returns one element. */
+  /** Enumerator that returns one element.
+   * 只有一个非null元素的Enumerator
+   **/
   private static class SingletonEnumerator<E> implements Enumerator<E> {
     final E e;
     int i = 0;
@@ -644,7 +698,9 @@ public abstract class Linq4j {
     }
   }
 
-  /** Enumerator that returns one null element. */
+  /** Enumerator that returns one null element.
+   * 只有一个null元素的Enumerator
+   **/
   private static class SingletonNullEnumerator<E> implements Enumerator<E> {
     int i = 0;
 
@@ -664,7 +720,9 @@ public abstract class Linq4j {
     }
   }
 
-  /** Iterator that reads from an underlying {@link Enumerator}. */
+  /** Iterator that reads from an underlying {@link Enumerator}.
+   * 将Enumerator转换成Iterator处理
+   **/
   private static class EnumeratorIterator<T> implements Iterator<T>, Closeable {
     private final Enumerator<T> enumerator;
     boolean hasNext;
@@ -693,7 +751,9 @@ public abstract class Linq4j {
     }
   }
 
-  /** Enumerator optimized for random-access list. */
+  /** Enumerator optimized for random-access list.
+   * 迭代器持有list,reset方法移动index指针为-1即可完成
+   **/
   private static class ListEnumerator<V> implements Enumerator<V> {
     private final List<? extends V> list;
     int i = -1;

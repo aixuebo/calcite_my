@@ -30,6 +30,7 @@ import java.util.List;
  * inputs is UNKNOWN.</p>
  *
  * <p>By the way, UNKNOWN is just the boolean form of NULL.</p>
+ * 顺便说一下,UNKNOWN 其实等同于 null操作
  *
  * <p>Examples:</p>
  * <ul>
@@ -40,6 +41,8 @@ import java.util.List;
  *   <li>{@code p1 OR p2} is strong if p1 and p2 are strong
  *   <li>{@code c1 = 1 OR c2 IS NULL} is strong on c1 but not c2
  * </ul>
+ *
+ * true表示null
  */
 public class Strong {
   private final ImmutableBitSet nullColumns;
@@ -61,7 +64,7 @@ public class Strong {
   private boolean strong(RexNode node) {
     switch (node.getKind()) {
     case LITERAL:
-      return ((RexLiteral) node).getValue() == null;
+      return ((RexLiteral) node).getValue() == null;//值是否是null
     case IS_TRUE:
     case IS_NOT_NULL:
     case AND:
@@ -71,9 +74,9 @@ public class Strong {
     case LESS_THAN_OR_EQUAL:
     case GREATER_THAN:
     case GREATER_THAN_OR_EQUAL:
-      return anyStrong(((RexCall) node).getOperands());
+      return anyStrong(((RexCall) node).getOperands());//任意一个对象是strong,则返回true
     case OR:
-      return allStrong(((RexCall) node).getOperands());
+      return allStrong(((RexCall) node).getOperands());//全都得是strong,才返回true
     case INPUT_REF:
       return nullColumns.get(((RexInputRef) node).getIndex());
     default:
@@ -81,6 +84,7 @@ public class Strong {
     }
   }
 
+  //全都得是strong,才返回true
   private boolean allStrong(List<RexNode> operands) {
     for (RexNode operand : operands) {
       if (!strong(operand)) {
@@ -90,6 +94,7 @@ public class Strong {
     return true;
   }
 
+  //任意一个对象是strong,则返回true
   private boolean anyStrong(List<RexNode> operands) {
     for (RexNode operand : operands) {
       if (strong(operand)) {

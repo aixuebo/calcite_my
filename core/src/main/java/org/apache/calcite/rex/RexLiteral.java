@@ -138,7 +138,7 @@ public class RexLiteral extends RexNode {
    * represented by a {@link BigDecimal}. But since this field is private, it
    * doesn't really matter how the values are stored.
    */
-  private final Comparable value;//具体的值
+  private final Comparable value;//具体的值,该值类型可比较
 
   /**
    * The real type of this literal, as reported by {@link #getType}.

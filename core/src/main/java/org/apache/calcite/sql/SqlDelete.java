@@ -28,7 +28,7 @@ import java.util.List;
  * A <code>SqlDelete</code> is a node of a parse tree which represents a DELETE
  * statement.
  * 1.语法:
- * delete from table alias where condition
+ * delete from table as alias where condition
  * delete sourceSelect(不常用,因此是set方式进构造函数的)
  * 2.操作:new SqlSpecialOperator("DELETE", SqlKind.DELETE)
  * 3.参数:
@@ -40,10 +40,10 @@ public class SqlDelete extends SqlCall {
   public static final SqlSpecialOperator OPERATOR =
       new SqlSpecialOperator("DELETE", SqlKind.DELETE);
 
-  SqlNode targetTable;
-  SqlNode condition;
-  SqlSelect sourceSelect;
-  SqlIdentifier alias;
+  SqlNode targetTable;//delete from targetTable
+  SqlNode condition;//where条件
+  SqlSelect sourceSelect;//大多数场景是null,因此可以忽略
+  SqlIdentifier alias;//targetTable的别名
 
   //~ Constructors -----------------------------------------------------------
 

@@ -223,7 +223,7 @@ public abstract class Prepare {
 
     RelNode rootRel =
         sqlToRelConverter.convertQuery(sqlQuery, needsValidation, true);
-    Hook.CONVERTED.run(rootRel);
+    Hook.CONVERTED.run(rootRel);//调用钩子,触发函数,知道已经sql转换成表达式操作 已经完成
 
     if (timingTracer != null) {
       timingTracer.traceTime("end sql2rel");

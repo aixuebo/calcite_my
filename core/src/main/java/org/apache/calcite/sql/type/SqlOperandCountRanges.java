@@ -20,6 +20,7 @@ import org.apache.calcite.sql.SqlOperandCountRange;
 
 /**
  * Helpers for {@link SqlOperandCountRange}.
+ * 维护参数的数量范围
  */
 public abstract class SqlOperandCountRanges {
   //固定长度的参数
@@ -38,7 +39,7 @@ public abstract class SqlOperandCountRanges {
     return new RangeImpl(min, -1);
   }
 
-  //任意多个数量,比0大就可以
+  //无参数 或者 无穷个参数
   public static SqlOperandCountRange any() {
     return new RangeImpl(0, -1);
   }
@@ -46,7 +47,7 @@ public abstract class SqlOperandCountRanges {
   /** Implementation of {@link SqlOperandCountRange}. */
   private static class RangeImpl implements SqlOperandCountRange {
     private final int min;
-    private final int max;
+    private final int max;//-1表示无穷参数
 
     public RangeImpl(int min, int max) {
       this.min = min;

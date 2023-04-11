@@ -101,12 +101,11 @@ public abstract class RelDataTypeImpl
         }
       }
     }
-    // Extra field
+    // Extra field  定义扩展属性
     if (fieldList.size() > 0) {
       final RelDataTypeField lastField = Iterables.getLast(fieldList);
       if (lastField.getName().equals("_extra")) {
-        return new RelDataTypeFieldImpl(
-            fieldName, -1, lastField.getType());
+        return new RelDataTypeFieldImpl(fieldName, -1, lastField.getType());
       }
     }
     return null;
@@ -304,7 +303,7 @@ public abstract class RelDataTypeImpl
    * Returns an implementation of
    * {@link RelProtoDataType}
    * that copies a given type using the given type factory.
-   * 复制参数类型
+   * 复制参数类型  --- 无论输入参数是什么工厂，返回值都是参数对象类型
    */
   public static RelProtoDataType proto(final RelDataType protoType) {
     assert protoType != null;

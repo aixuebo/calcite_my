@@ -23,6 +23,7 @@ import org.apache.calcite.sql.type.OperandTypes;
 
 /**
  * The <code>UNNEST</code> operator.
+ * 现实场景不常用，因此不用在研究该函数场景
  */
 public class SqlUnnestOperator extends SqlFunctionalOperator {
   //~ Constructors -----------------------------------------------------------

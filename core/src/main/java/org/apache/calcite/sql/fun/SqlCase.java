@@ -39,10 +39,10 @@ import java.util.List;
  * 4.SqlKind:SqlKind.case
  */
 public class SqlCase extends SqlCall {
-  SqlNode value;
-  SqlNodeList whenList;
-  SqlNodeList thenList;
-  SqlNode elseExpr;
+  SqlNode value;//case xxx
+  SqlNodeList whenList; //when
+  SqlNodeList thenList; //then
+  SqlNode elseExpr; //else
 
   //~ Constructors -----------------------------------------------------------
 
@@ -73,15 +73,17 @@ public class SqlCase extends SqlCall {
    * ...<br>
    * ELSE elseClause<br>
    * END</code></blockquote>
+   *
+   * 转换成SqlCase对象
    */
   public static SqlCase createSwitched(SqlParserPos pos, SqlNode value,
       SqlNodeList whenList, SqlNodeList thenList, SqlNode elseClause) {
     if (null != value) {
       List<SqlNode> list = whenList.getList();
-      for (int i = 0; i < list.size(); i++) {
+      for (int i = 0; i < list.size(); i++) { //循环每一个when
         SqlNode e = list.get(i);
         final SqlCall call;
-        if (e instanceof SqlNodeList) {
+        if (e instanceof SqlNodeList) { //如果when是一个list,说明是in操作,所以做一次转换,将SqlNodeList转换成SqlNode
           call = SqlStdOperatorTable.IN.createCall(pos, value, e);
         } else {
           call = SqlStdOperatorTable.EQUALS.createCall(pos, value, e);

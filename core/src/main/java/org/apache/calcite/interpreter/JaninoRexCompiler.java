@@ -167,6 +167,10 @@ public class JaninoRexCompiler implements Interpreter.ScalarCompiler {
     }
   }
 
+  /**
+   * expr = 要创建的class对象元数据信息
+   * s代表class的代码内容
+   */
   static Scalar getScalar(ClassDeclaration expr, String s)
       throws CompileException, IOException {
     ICompilerFactory compilerFactory;
@@ -177,8 +181,8 @@ public class JaninoRexCompiler implements Interpreter.ScalarCompiler {
           "Unable to instantiate java compiler", e);
     }
     IClassBodyEvaluator cbe = compilerFactory.newClassBodyEvaluator();
-    cbe.setClassName(expr.name);
-    cbe.setImplementedInterfaces(new Class[]{Scalar.class});
+    cbe.setClassName(expr.name);//class的name
+    cbe.setImplementedInterfaces(new Class[]{Scalar.class});//实现Scalar该接口
     cbe.setParentClassLoader(JaninoRexCompiler.class.getClassLoader());
     if (CalcitePrepareImpl.DEBUG) {
       // Add line numbers to the generated janino class

@@ -31,6 +31,8 @@ import java.util.Map;
  *
  * <p>Allows a CSV table to be included in a model.json file, even in a
  * schema that is not based upon {@link CsvSchema}.</p>
+ *
+ * 绕开从schema定义table的方式,直接通过配置文件定义table
  */
 @SuppressWarnings("UnusedDeclaration")
 public class CsvTableFactory implements TableFactory<CsvTable> {

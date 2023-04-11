@@ -49,7 +49,9 @@ public class CsvTranslatableTable extends CsvTable
 
   /** Returns an enumerable over a given projection of the fields.
    *
-   * <p>Called from generated code. */
+   * <p>Called from generated code.
+   * 投影,只最终查找的数据只有选中的字段被返回
+   **/
   public Enumerable<Object> project(final int[] fields) {
     return new AbstractEnumerable<Object>() {
       public Enumerator<Object> enumerator() {
@@ -63,6 +65,7 @@ public class CsvTranslatableTable extends CsvTable
     return Schemas.tableExpression(schema, getElementType(), tableName, clazz);
   }
 
+  //返回值类型是object[]数组
   public Type getElementType() {
     return Object[].class;
   }
@@ -73,11 +76,11 @@ public class CsvTranslatableTable extends CsvTable
   }
 
   public RelNode toRel(
-      RelOptTable.ToRelContext context,
+      RelOptTable.ToRelContext context,//实现类是LixToRelTranslator
       RelOptTable relOptTable) {
     // Request all fields.
-    final int fieldCount = relOptTable.getRowType().getFieldCount();
-    final int[] fields = CsvEnumerator.identityList(fieldCount);
+    final int fieldCount = relOptTable.getRowType().getFieldCount();//多少个字段
+    final int[] fields = CsvEnumerator.identityList(fieldCount);//待查询的字段序号集合
     return new CsvTableScan(context.getCluster(), relOptTable, this, fields);
   }
 }

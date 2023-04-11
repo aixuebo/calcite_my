@@ -23,6 +23,7 @@ import org.apache.calcite.sql.SqlNode;
 
 /**
  * Namespace representing the row type produced by joining two relations.
+ * 对join两边对象进行类型校验与组装
  */
 class JoinNamespace extends AbstractNamespace {
   //~ Instance fields --------------------------------------------------------
@@ -37,15 +38,17 @@ class JoinNamespace extends AbstractNamespace {
   }
 
   //~ Methods ----------------------------------------------------------------
-
+  //反正两个对象 join后的类型
   protected RelDataType validateImpl() {
     RelDataType leftType =
-        validator.getNamespace(join.getLeft()).getRowType();
+        validator.getNamespace(join.getLeft()).getRowType();//左边对象的类型
     RelDataType rightType =
-        validator.getNamespace(join.getRight()).getRowType();
+        validator.getNamespace(join.getRight()).getRowType();//右边对象的类型
+
+    //根据join类型,设置left还是right允许为null
     final RelDataTypeFactory typeFactory = validator.getTypeFactory();
     switch (join.getJoinType()) {
-    case LEFT:
+    case LEFT: //比如left join,因此rightType是允许为null的
       rightType = typeFactory.createTypeWithNullability(rightType, true);
       break;
     case RIGHT:
@@ -59,6 +62,7 @@ class JoinNamespace extends AbstractNamespace {
     return typeFactory.createJoinType(leftType, rightType);
   }
 
+  //sqlJoin节点
   public SqlNode getNode() {
     return join;
   }

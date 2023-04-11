@@ -20,6 +20,8 @@ package org.apache.calcite.linq4j.function;
  * Compares values for equality.
  *
  * @param <T> Value type
+ *
+ * 等值比较,用于重写equal方法,判断两个对象是否相同
  */
 public interface EqualityComparer<T> {
   boolean equal(T v1, T v2);

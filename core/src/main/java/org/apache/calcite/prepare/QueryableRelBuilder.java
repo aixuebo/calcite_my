@@ -90,15 +90,10 @@ class QueryableRelBuilder<T> implements QueryableFactory<T> {
       return rel;
     }
     if (queryable instanceof AbstractTableQueryable) {
-      final AbstractTableQueryable tableQueryable =
-          (AbstractTableQueryable) queryable;
+      final AbstractTableQueryable tableQueryable = (AbstractTableQueryable) queryable;
       final QueryableTable table = tableQueryable.table;
-      final CalciteSchema.TableEntry tableEntry =
-          CalciteSchema.from(tableQueryable.schema)
-              .add(tableQueryable.tableName, tableQueryable.table);
-      final RelOptTableImpl relOptTable =
-          RelOptTableImpl.create(null, table.getRowType(translator.typeFactory),
-              tableEntry, null);
+      final CalciteSchema.TableEntry tableEntry = CalciteSchema.from(tableQueryable.schema).add(tableQueryable.tableName, tableQueryable.table);
+      final RelOptTableImpl relOptTable = RelOptTableImpl.create(null, table.getRowType(translator.typeFactory),tableEntry, null);
       if (table instanceof TranslatableTable) {
         return ((TranslatableTable) table).toRel(translator, relOptTable);
       } else {
@@ -509,12 +504,12 @@ class QueryableRelBuilder<T> implements QueryableFactory<T> {
       Queryable<T> source,
       FunctionExpression<Function1<T, TResult>> selector) {
     RelNode child = toRel(source);
-    List<RexNode> nodes = translator.toRexList(selector, child);
+    List<RexNode> nodes = translator.toRexList(selector, child);//select内容如何转换
     setRel(
         new LogicalProject(
             translator.cluster,
-            child,
-            nodes,
+            child,//查询的数据源
+            nodes,//查询的select字段
             null,
             Project.Flags.BOXED));
     return null;

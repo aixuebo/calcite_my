@@ -52,6 +52,7 @@ public class SqlAccessType {
     return accessEnums.toString();
   }
 
+  //格式SqlAccessEnum的字符串数组
   public static SqlAccessType create(String[] accessNames) {
     assert accessNames != null;
     EnumSet<SqlAccessEnum> enumSet = EnumSet.noneOf(SqlAccessEnum.class);
@@ -63,6 +64,7 @@ public class SqlAccessType {
     return new SqlAccessType(enumSet);
   }
 
+  //格式[select,insert]
   public static SqlAccessType create(String accessString) {
     assert accessString != null;
     accessString = accessString.replace('[', ' ');

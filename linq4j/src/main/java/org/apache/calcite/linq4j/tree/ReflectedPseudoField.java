@@ -21,6 +21,7 @@ import java.lang.reflect.Type;
 
 /**
  * Represents a PseudoField that is implemented via java reflection Field
+ * 反射的方法,代表一个字段属性
  */
 public class ReflectedPseudoField implements PseudoField {
   private final Field field;

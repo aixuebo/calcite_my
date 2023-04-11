@@ -62,7 +62,9 @@ public class Enumerables {
   private Enumerables() {}
 
   /** Converts an enumerable over singleton arrays into the enumerable of their
-   * first elements. */
+   * first elements.
+   * 只保留第一列的值
+   **/
   public static <E> Enumerable<E> slice0(Enumerable<E[]> enumerable) {
     //noinspection unchecked
     return enumerable.select((Function1<E[], E>) SLICE);

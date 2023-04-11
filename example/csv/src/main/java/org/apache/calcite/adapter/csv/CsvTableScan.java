@@ -43,9 +43,16 @@ import java.util.List;
  * <p>Like any table scan, it serves as a leaf node of a query tree.</p>
  */
 public class CsvTableScan extends TableScan implements EnumerableRel {
-  final CsvTranslatableTable csvTable;
-  final int[] fields;
+  final CsvTranslatableTable csvTable;//可以获取表对应的字段类型
+  final int[] fields;//查询哪几个字段
 
+  /**
+   *
+   * @param cluster
+   * @param table 查询的是哪个table表
+   * @param csvTable
+   * @param fields
+   */
   protected CsvTableScan(RelOptCluster cluster, RelOptTable table,
       CsvTranslatableTable csvTable, int[] fields) {
     super(cluster, cluster.traitSetOf(EnumerableConvention.INSTANCE), table);
@@ -65,6 +72,7 @@ public class CsvTableScan extends TableScan implements EnumerableRel {
         .item("fields", Primitive.asList(fields));
   }
 
+  //推测返回值
   @Override public RelDataType deriveRowType() {
     final List<RelDataTypeField> fieldList = table.getRowType().getFieldList();
     final RelDataTypeFactory.FieldInfoBuilder builder =
@@ -75,6 +83,7 @@ public class CsvTableScan extends TableScan implements EnumerableRel {
     return builder.build();
   }
 
+  //查询表规则
   @Override public void register(RelOptPlanner planner) {
     planner.addRule(CsvProjectTableScanRule.INSTANCE);
   }
@@ -97,7 +106,7 @@ public class CsvTableScan extends TableScan implements EnumerableRel {
         physType,
         Blocks.toBlock(
             Expressions.call(table.getExpression(CsvTranslatableTable.class),
-                "project", Expressions.constant(fields))));
+                "project", Expressions.constant(fields))));//调用CsvTranslatableTable的project方法,参数是fields
   }
 }
 

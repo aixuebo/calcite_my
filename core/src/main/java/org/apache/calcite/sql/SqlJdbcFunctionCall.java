@@ -364,7 +364,9 @@ public class SqlJdbcFunctionCall extends SqlFunction {
       "POWER", "RADIANS", "RAND", "ROUND", "SIGN", "SIN", "SQRT",
       "TAN", "TRUNCATE");
 
-  /** List of all string function names defined by JDBC. */
+  /** List of all string function names defined by JDBC.
+   * 逗号分隔的字符串处理函数
+   **/
   private static final String STRING_FUNCTIONS = constructFuncList(
       "ASCII", "CHAR", "CONCAT", "DIFFERENCE", "INSERT", "LCASE",
       "LEFT", "LENGTH", "LOCATE", "LTRIM", "REPEAT", "REPLACE",
@@ -373,14 +375,18 @@ public class SqlJdbcFunctionCall extends SqlFunction {
       // "LEFT", "TRIM", "REPEAT", "REPLACE",
       // "RIGHT", "SPACE", "SUBSTRING", "UPPER", "INITCAP", "OVERLAY"
 
-  /** List of all time/date function names defined by JDBC. */
+  /** List of all time/date function names defined by JDBC.
+   *  逗号分隔的时间日期函数
+   **/
   private static final String TIME_DATE_FUNCTIONS = constructFuncList(
       "CURDATE", "CURTIME", "DAYNAME", "DAYOFMONTH", "DAYOFWEEK",
       "DAYOFYEAR", "HOUR", "MINUTE", "MONTH", "MONTHNAME", "NOW",
       "QUARTER", "SECOND", "TIMESTAMPADD", "TIMESTAMPDIFF",
       "WEEK", "YEAR");
 
-  /** List of all system function names defined by JDBC. */
+  /** List of all system function names defined by JDBC.
+   * 逗号分隔的系统函数
+   **/
   private static final String SYSTEM_FUNCTIONS = constructFuncList(
       "DATABASE", "IFNULL", "USER");
 

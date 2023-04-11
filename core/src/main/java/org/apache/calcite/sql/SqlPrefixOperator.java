@@ -28,6 +28,10 @@ import org.apache.calcite.util.Util;
 
 /**
  * A unary operator.
+ * + ---> SqlStdOperatorTable.UNARY_PLUS
+ * - ---> SqlStdOperatorTable.UNARY_MINUS
+ * NOT ---> SqlStdOperatorTable.NOT
+ * EXISTS ---> SqlStdOperatorTable.EXISTS
  */
 public class SqlPrefixOperator extends SqlOperator {
   //~ Constructors -----------------------------------------------------------

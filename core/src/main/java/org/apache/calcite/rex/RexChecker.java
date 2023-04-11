@@ -31,6 +31,7 @@ import java.util.List;
  * <ul>
  * <li>Use<code>fail=true</code> to throw an {@link AssertionError} as soon as
  * an invalid node is detected:
+ * fail=true,表示当无效的rexnode被检测到,则抛异常 AssertionError
  *
  * <blockquote><code>RexNode node;<br>
  * RelDataType rowType;<br>
@@ -110,14 +111,14 @@ public class RexChecker extends RexVisitorImpl<Boolean> {
   }
 
   /**
-   * 校验
+   * 校验某一个字段变量
    * 1.校验字段序号是否在范围内
    * 2.判断类型要相同
    * @param ref
    * @return
    */
   public Boolean visitInputRef(RexInputRef ref) {
-    final int index = ref.getIndex();
+    final int index = ref.getIndex();//第几个字段
 
     //校验字段序号是否在范围内
     if ((index < 0) || (index >= inputTypeList.size())) {
@@ -147,7 +148,7 @@ public class RexChecker extends RexVisitorImpl<Boolean> {
 
   //针对参数校验
   public Boolean visitCall(RexCall call) {
-    for (RexNode operand : call.getOperands()) {
+    for (RexNode operand : call.getOperands()) {//针对每一个参数,校验每一个参数是否都有效
       Boolean valid = operand.accept(this);
       if (valid != null && !valid) {
         return false;
@@ -183,6 +184,7 @@ public class RexChecker extends RexVisitorImpl<Boolean> {
 
   /**
    * Returns whether an expression is valid.
+   * 单独校验一个表达式是否是有效的 -- 传入this即该check对象
    */
   public final boolean isValid(RexNode expr) {
     return expr.accept(this);

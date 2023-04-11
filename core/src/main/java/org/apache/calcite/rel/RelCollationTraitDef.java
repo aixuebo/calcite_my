@@ -24,6 +24,7 @@ import org.apache.calcite.rel.core.Sort;
 
 /**
  * Definition of the ordering trait.
+ * 定义一个排序的特性
  *
  * <p>Ordering is a physical property (i.e. a trait) because it can be changed
  * without loss of information. The converter to do this is the
@@ -35,14 +36,18 @@ import org.apache.calcite.rel.core.Sort;
  * <code>{the_year, the_month, the_date}</code> and also by
  * <code>{time_id}</code>. We have to allow a RelNode to belong to more than
  * one RelSubset (these RelSubsets are always in the same set).</p>
+ *
+ * 定义可排序的trait特性
  */
 public class RelCollationTraitDef extends RelTraitDef<RelCollation> {
-  public static final RelCollationTraitDef INSTANCE =
-      new RelCollationTraitDef();
+
+  //单例模式
+  public static final RelCollationTraitDef INSTANCE = new RelCollationTraitDef();
 
   private RelCollationTraitDef() {
   }
 
+  //返回具体的特性是什么
   public Class<RelCollation> getTraitClass() {
     return RelCollation.class;
   }

@@ -31,8 +31,8 @@ public abstract class Expression extends AbstractNode {
    * be a different implementation that retains information about type
    * parameters.</p>
    *
-   * @param nodeType Node type
-   * @param type Type of the expression
+   * @param nodeType Node type  表达式本身归属分类,比如常数表达式、变量表达式
+   * @param type Type of the expression 表达式对应的类型
    */
   public Expression(ExpressionType nodeType, Type type) {
     super(nodeType, type);

@@ -565,6 +565,9 @@ public abstract class SqlUtil {
    * returns a call to that function, otherwise returns null.
    * 如果一个identifier是一个合法的无参数的函数,则规格化该函数,否则返回null
    * 即将一个字符串转换成SqlCall(其实字符串是function的name)
+   *
+   *
+   * 字符串id会不会是内置的无()的函数,如果是,则返回该函数
    */
   public static SqlCall makeCall(
       SqlOperatorTable opTab,

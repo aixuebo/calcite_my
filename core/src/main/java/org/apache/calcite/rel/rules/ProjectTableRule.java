@@ -47,6 +47,9 @@ import java.util.List;
  * @see org.apache.calcite.rel.rules.FilterTableRule
  */
 public abstract class ProjectTableRule extends RelOptRule {
+
+  //true,确定支持对表进行where 以及 select投影处理
+  //即判断table是否是ProjectableFilterableTable对象
   private static final Predicate<TableScan> PREDICATE =
       new Predicate<TableScan>() {
         public boolean apply(TableScan scan) {
@@ -56,8 +59,9 @@ public abstract class ProjectTableRule extends RelOptRule {
         }
       };
 
+  //匹配ProjectableFilterableTable --> EnumerableInterpreter --> Project
   public static final ProjectTableRule INSTANCE =
-      new ProjectTableRule(
+      new ProjectTableRule( //定义一个规则,包含了若干个operand(RelOptRuleOperand)
           operand(Project.class,
               operand(EnumerableInterpreter.class,
                   operand(TableScan.class, null, PREDICATE, none()))),

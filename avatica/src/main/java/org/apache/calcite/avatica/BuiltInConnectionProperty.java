@@ -25,6 +25,9 @@ import static org.apache.calcite.avatica.ConnectionConfigImpl.parse;
 
 /**
  * Enumeration of Avatica's built-in connection properties.
+ *
+ *  代表一个连接要带的Property属性
+ *  key、类型、值、是否必须
  */
 public enum BuiltInConnectionProperty implements ConnectionProperty {
   /** Factory. */

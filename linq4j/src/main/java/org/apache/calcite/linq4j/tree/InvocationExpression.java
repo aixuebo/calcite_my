@@ -19,6 +19,8 @@ package org.apache.calcite.linq4j.tree;
 /**
  * Represents an expression that applies a delegate or lambda expression to a
  * list of argument expressions.
+ *
+ * 代表一个表达式，可以利用动态代理或者lambda的方式,执行结果
  */
 public class InvocationExpression extends Expression {
   public InvocationExpression(ExpressionType nodeType, Class type) {

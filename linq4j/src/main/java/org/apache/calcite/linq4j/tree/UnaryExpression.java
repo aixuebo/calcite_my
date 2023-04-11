@@ -20,6 +20,7 @@ import java.lang.reflect.Type;
 
 /**
  * Represents an expression that has a unary operator.
+ * 代表一元操作
  */
 public class UnaryExpression extends Expression {
   public final Expression expression;

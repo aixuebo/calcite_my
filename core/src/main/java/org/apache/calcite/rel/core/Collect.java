@@ -31,7 +31,7 @@ import java.util.List;
 
 /**
  * A relational expression that collapses multiple rows into one.
- *
+ * 将多行合并为一行的关系表达式
  * <p>Rules:</p>
  *
  * <ul>
@@ -40,6 +40,8 @@ import java.util.List;
  * {@link org.apache.calcite.sql.fun.SqlMultisetValueConstructor} or to
  * {@link org.apache.calcite.sql.fun.SqlMultisetQueryConstructor}.</li>
  * </ul>
+ *
+ * 用于MULTISET函数
  */
 public class Collect extends SingleRel {
   //~ Instance fields --------------------------------------------------------

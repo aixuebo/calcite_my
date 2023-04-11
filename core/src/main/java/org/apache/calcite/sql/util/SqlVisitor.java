@@ -40,6 +40,8 @@ import org.apache.calcite.sql.SqlOperator;
  *
  * @param <R> Return type
  * 不同的sqlNode调用visit时，该如何处理,返回处理结果。比如查找聚合函数,如果找到返回等case场景
+ *
+ * 参数是全部sqlNode的子类,即实现类去定义当访问某一个具体的sqlNode时,该如何操作,返回R对象
  */
 public interface SqlVisitor<R> {
   //~ Methods ----------------------------------------------------------------

@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * ExplicitOperandTypeInferences implements {@link SqlOperandTypeInference} by
  * explicitly supplying a type for each parameter.
- * 准确的还原参数类型
+ * 精准的猜测类型，即构造函数中明确了每一个参数的类型
  */
 public class ExplicitOperandTypeInference implements SqlOperandTypeInference {
   //~ Instance fields --------------------------------------------------------

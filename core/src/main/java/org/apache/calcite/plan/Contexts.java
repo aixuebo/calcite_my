@@ -20,6 +20,7 @@ import org.apache.calcite.config.CalciteConnectionConfig;
 
 /**
  * Utilities for {@link Context}.
+ * 上下文环境,持有全局变量CalciteConnectionConfig
  */
 public class Contexts {
   public static final EmptyContext EMPTY_CONTEXT = new EmptyContext();

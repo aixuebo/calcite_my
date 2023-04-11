@@ -39,7 +39,7 @@ import static org.apache.calcite.util.Static.RESOURCE;
 public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
   //~ Instance fields --------------------------------------------------------
 
-  protected final int nOperands;//参数数量,-1表示无限参数数量
+  protected final int nOperands;//参数数量,-1表示无参数或者无限参数数量
 
   //~ Constructors -----------------------------------------------------------
 
@@ -68,7 +68,7 @@ public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
         : Util.range(0, nOperands);
   }
 
-  //校验所有参数
+  //校验所有参数都是相同的类型
   private boolean checkOperandTypesImpl(
       SqlOperatorBinding operatorBinding,
       boolean throwOnFailure,
@@ -125,7 +125,7 @@ public class SameOperandTypeChecker implements SqlSingleOperandTypeChecker {
   // implement SqlOperandTypeChecker 无限个参数
   public SqlOperandCountRange getOperandCountRange() {
     if (nOperands == -1) {
-      return SqlOperandCountRanges.any();
+      return SqlOperandCountRanges.any();//无参数 或者 无穷个参数
     } else {
       return SqlOperandCountRanges.of(nOperands);
     }

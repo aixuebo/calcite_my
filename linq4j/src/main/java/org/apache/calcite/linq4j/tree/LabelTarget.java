@@ -18,6 +18,7 @@ package org.apache.calcite.linq4j.tree;
 
 /**
  * Used to represent the target of a {@link GotoStatement}.
+ * 代表java的label关键词,用于for循环中goto内容
  */
 public class LabelTarget {
   public final String name;

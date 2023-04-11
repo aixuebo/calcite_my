@@ -92,7 +92,7 @@ public class SelectScope extends ListScope {
   private final SqlSelect select;
   protected final List<String> windowNames = new ArrayList<String>();//window的name集合
 
-  private List<SqlNode> expandedSelectList = null;
+  private List<SqlNode> expandedSelectList = null;//将select *部分中的内容,转换成具体的字段节点
 
   /**
    * List of column names which sort this scope. Empty if this scope is not

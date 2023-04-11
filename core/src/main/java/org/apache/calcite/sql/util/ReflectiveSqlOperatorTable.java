@@ -41,6 +41,7 @@ import java.util.Map;
 /**
  * ReflectiveSqlOperatorTable implements the {@link SqlOperatorTable } interface
  * by reflecting the public fields of a subclass.
+ * 反射的方式,获取函数集合
  */
 public abstract class ReflectiveSqlOperatorTable implements SqlOperatorTable {
   public static final String IS_NAME = "INFORMATION_SCHEMA";

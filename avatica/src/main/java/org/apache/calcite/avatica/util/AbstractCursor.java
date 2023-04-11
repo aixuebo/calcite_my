@@ -64,13 +64,22 @@ public abstract class AbstractCursor implements Cursor {
   public List<Accessor> createAccessors(List<ColumnMetaData> types,
       Calendar localCalendar, ArrayImpl.Factory factory) {
     List<Accessor> accessors = new ArrayList<Accessor>();
-    for (ColumnMetaData type : types) {
+    for (ColumnMetaData type : types) { //列信息集合
       accessors.add(
           createAccessor(type, accessors.size(), localCalendar, factory));
     }
     return accessors;
   }
 
+  /**
+   *
+   * @param type
+   * @param ordinal 第几个字段
+   * @param localCalendar
+   * @param factory
+   * @return
+   * 根据字段类型,返回如何将value值转换成指定类型的对象
+   */
   protected Accessor createAccessor(ColumnMetaData type, int ordinal,
       Calendar localCalendar, ArrayImpl.Factory factory) {
     // Create an accessor appropriate to the underlying type; the accessor
@@ -294,6 +303,7 @@ public abstract class AbstractCursor implements Cursor {
       throw cannotConvert("Reader");
     }
 
+    //不能转换到这个类型
     private RuntimeException cannotConvert(String targetType) {
       return new RuntimeException("cannot convert to " + targetType + " ("
           + this + ")");
@@ -359,6 +369,7 @@ public abstract class AbstractCursor implements Cursor {
   /**
    * Accessor of exact numeric values. The subclass must implement the
    * {@link #getLong()} method.
+   * 抽取数值类型的数据,即value值可以转换成数值
    */
   private abstract static class ExactNumericAccessor extends AccessorImpl {
     public ExactNumericAccessor(Getter getter) {
@@ -395,6 +406,7 @@ public abstract class AbstractCursor implements Cursor {
   /**
    * Accessor that assumes that the underlying value is a {@link Boolean};
    * corresponds to {@link java.sql.Types#BOOLEAN}.
+   * 转换成boolean类型的数据
    */
   private static class BooleanAccessor extends ExactNumericAccessor {
     public BooleanAccessor(Getter getter) {
@@ -1023,8 +1035,15 @@ public abstract class AbstractCursor implements Cursor {
     private final ColumnMetaData.AvaticaType componentType;
     private final ArrayImpl.Factory factory;
 
+    /**
+     *
+     * @param getter  用于提取具体的值
+     * @param componentType
+     * @param factory
+     */
     public ArrayAccessor(Getter getter,
-        ColumnMetaData.AvaticaType componentType, ArrayImpl.Factory factory) {
+        ColumnMetaData.AvaticaType componentType,
+        ArrayImpl.Factory factory) {
       super(getter);
       this.componentType = componentType;
       this.factory = factory;

@@ -326,6 +326,7 @@ public abstract class EnumerableDefaults {
 
   /**
    * Concatenates two sequences.
+   * 把两个集合连接起来,相当于new list().addAll(enumerable0).addAll(enumerable1)
    */
   public static <TSource> Enumerable<TSource> concat(
       Enumerable<TSource> enumerable0, Enumerable<TSource> enumerable1) {
@@ -431,10 +432,16 @@ public abstract class EnumerableDefaults {
     if (comparer == Functions.identityComparer()) {
       return distinct(enumerable);
     }
+
+
     final Set<Wrapped<TSource>> set = new HashSet<Wrapped<TSource>>();
+
+    //对数据包装,然后过滤重复
     Function1<TSource, Wrapped<TSource>> wrapper = wrapperFor(comparer);
-    Function1<Wrapped<TSource>, TSource> unwrapper = unwrapper();
     enumerable.select(wrapper).into(set);
+
+    //对过滤重复后的数据,进一步解包装,返回原始数据
+    Function1<Wrapped<TSource>, TSource> unwrapper = unwrapper();
     return Linq4j.asEnumerable(set).select(unwrapper);
   }
 
@@ -461,6 +468,8 @@ public abstract class EnumerableDefaults {
    * Produces the set difference of two sequences by
    * using the default equality comparer to compare values. (Defined
    * by Enumerable.)
+   *
+   * 返回source0的子集，即删除source1的元素
    */
   public static <TSource> Enumerable<TSource> except(
       Enumerable<TSource> source0, Enumerable<TSource> source1) {
@@ -487,18 +496,23 @@ public abstract class EnumerableDefaults {
       Enumerable<TSource> source0, Enumerable<TSource> source1,
       EqualityComparer<TSource> comparer) {
     Set<Wrapped<TSource>> set = new HashSet<Wrapped<TSource>>();
+
+
+    //对元素进行包装,增加comparer信息,存放到set中
     Function1<TSource, Wrapped<TSource>> wrapper = wrapperFor(comparer);
     source0.select(wrapper).into(set);
-    final Enumerator<Wrapped<TSource>> os =
-        source1.select(wrapper).enumerator();
+
+    final Enumerator<Wrapped<TSource>> os = source1.select(wrapper).enumerator();//对元素进行包装
     try {
       while (os.moveNext()) {
         Wrapped<TSource> o = os.current();
-        set.remove(o);
+        set.remove(o); //删除存在的数据
       }
     } finally {
       os.close();
     }
+
+    //对数据进行解包装,返回原始数据
     Function1<Wrapped<TSource>, TSource> unwrapper = unwrapper();
     return Linq4j.asEnumerable(set).select(unwrapper);
   }
@@ -793,6 +807,8 @@ public abstract class EnumerableDefaults {
    * Correlates the elements of two sequences based on
    * equality of keys and groups the results. The default equality
    * comparer is used to compare keys.
+   *
+   * 相当于join操作,只是匹配的是 左边表+右边匹配的list一起参与运算,计算结果
    */
   public static <TSource, TInner, TKey, TResult> Enumerable<TResult> groupJoin(
       final Enumerable<TSource> outer, final Enumerable<TInner> inner,
@@ -800,16 +816,18 @@ public abstract class EnumerableDefaults {
       final Function1<TInner, TKey> innerKeySelector,
       final Function2<TSource, Enumerable<TInner>, TResult> resultSelector) {
     return new AbstractEnumerable<TResult>() {
-      final Map<TKey, TSource> outerMap = outer.toMap(outerKeySelector);
-      final Lookup<TKey, TInner> innerLookup = inner.toLookup(innerKeySelector);
-      final Enumerator<Map.Entry<TKey, TSource>> entries =
-          Linq4j.enumerator(outerMap.entrySet());
+
+      final Map<TKey, TSource> outerMap = outer.toMap(outerKeySelector);//转换成key-value形式数据
+      final Lookup<TKey, TInner> innerLookup = inner.toLookup(innerKeySelector);//转换成key-value形式数据
+
+      final Enumerator<Map.Entry<TKey, TSource>> entries = Linq4j.enumerator(outerMap.entrySet());
+
 
       public Enumerator<TResult> enumerator() {
         return new Enumerator<TResult>() {
           public TResult current() {
-            final Map.Entry<TKey, TSource> entry = entries.current();
-            final Enumerable<TInner> inners = innerLookup.get(entry.getKey());
+            final Map.Entry<TKey, TSource> entry = entries.current();//左边表的key与value
+            final Enumerable<TInner> inners = innerLookup.get(entry.getKey());//右边表的匹配集合
             return resultSelector.apply(entry.getValue(),
                 inners == null ? Linq4j.<TInner>emptyEnumerable() : inners);
           }
@@ -943,37 +961,43 @@ public abstract class EnumerableDefaults {
   /** Implementation of join that builds the right input and probes with the
    * left. */
   private static <TSource, TInner, TKey, TResult> Enumerable<TResult> join_(
-      final Enumerable<TSource> outer, final Enumerable<TInner> inner,
-      final Function1<TSource, TKey> outerKeySelector,
-      final Function1<TInner, TKey> innerKeySelector,
-      final Function2<TSource, TInner, TResult> resultSelector,
-      final EqualityComparer<TKey> comparer, final boolean generateNullsOnLeft,
-      final boolean generateNullsOnRight) {
+      final Enumerable<TSource> outer, //左表数据
+      final Enumerable<TInner> inner,//右表数据
+      final Function1<TSource, TKey> outerKeySelector,//提取左表key
+      final Function1<TInner, TKey> innerKeySelector,//提取右表key
+      final Function2<TSource, TInner, TResult> resultSelector,//左表一行数据+右表一行数据,生产结果数据
+      final EqualityComparer<TKey> comparer,
+      final boolean generateNullsOnLeft,//左表允许null,用于left join等场景
+      final boolean generateNullsOnRight) { //右表允许null,用于left join等场景
     return new AbstractEnumerable<TResult>() {
+
       public Enumerator<TResult> enumerator() {
+
         final Lookup<TKey, TInner> innerLookup =
             comparer == null
                 ? inner.toLookup(innerKeySelector)
-                : inner.toLookup(innerKeySelector, comparer);
+                : inner.toLookup(innerKeySelector, comparer); //右表数据转换成Map<k,list<v>>
 
         return new Enumerator<TResult>() {
-          Enumerator<TSource> outers = outer.enumerator();
-          Enumerator<TInner> inners = Linq4j.emptyEnumerator();
+          Enumerator<TSource> outers = outer.enumerator();//左表数据迭代器
+          Enumerator<TInner> inners = Linq4j.emptyEnumerator();//右表关联key后的list迭代器
+
           Set<TKey> unmatchedKeys =
               generateNullsOnLeft
                   ? new HashSet<TKey>(innerLookup.keySet())
                   : null;
 
           public TResult current() {
-            return resultSelector.apply(outers.current(), inners.current());
+            return resultSelector.apply(outers.current(), inners.current()); //左右两个表的数据,生产结果
           }
 
+          //循环计算下一个左表和右表的数据
           public boolean moveNext() {
             for (;;) {
-              if (inners.moveNext()) {
+              if (inners.moveNext()) { //右表产生下一行数据
                 return true;
               }
-              if (!outers.moveNext()) {
+              if (!outers.moveNext()) {//说明左表没有数据了
                 if (unmatchedKeys != null) {
                   // We've seen everything else. If we are doing a RIGHT or FULL
                   // join (leftNull = true) there are any keys which right but
@@ -992,19 +1016,19 @@ public abstract class EnumerableDefaults {
                 }
                 return false;
               }
-              final TSource outer = outers.current();
+              final TSource outer = outers.current();//左表切换下一行数据
               final Enumerable<TInner> innerEnumerable;
               if (outer == null) {
                 innerEnumerable = null;
               } else {
-                final TKey outerKey = outerKeySelector.apply(outer);
+                final TKey outerKey = outerKeySelector.apply(outer);//左表产生的key
                 if (outerKey == null) {
                   innerEnumerable = null;
                 } else {
                   if (unmatchedKeys != null) {
                     unmatchedKeys.remove(outerKey);
                   }
-                  innerEnumerable = innerLookup.get(outerKey);
+                  innerEnumerable = innerLookup.get(outerKey);//找到右表的数据集合
                 }
               }
               if (innerEnumerable == null
@@ -1038,9 +1062,10 @@ public abstract class EnumerableDefaults {
    * {@code EqualityComparer<TSource>} is used to compare keys.
    */
   public static <TSource, TInner, TResult> Enumerable<TResult> correlateJoin(
-      final CorrelateJoinType joinType, final Enumerable<TSource> outer,
-      final Function1<TSource, Enumerable<TInner>> inner,
-      final Function2<TSource, TInner, TResult> resultSelector) {
+      final CorrelateJoinType joinType,
+      final Enumerable<TSource> outer,//左边表
+      final Function1<TSource, Enumerable<TInner>> inner,//通过左边表查找右边表list
+      final Function2<TSource, TInner, TResult> resultSelector) {//join后的结果集计算
     return new AbstractEnumerable<TResult>() {
       public Enumerator<TResult> enumerator() {
         return new Enumerator<TResult>() {
@@ -1050,6 +1075,7 @@ public abstract class EnumerableDefaults {
           TInner innerValue;
           int state = 0; // 0 -- moving outer, 1 moving inner;
 
+          //做join计算
           public TResult current() {
             return resultSelector.apply(outerValue, innerValue);
           }
@@ -1057,14 +1083,14 @@ public abstract class EnumerableDefaults {
           public boolean moveNext() {
             while (true) {
               switch (state) {
-              case 0:
+              case 0: //循环左边表
                 // move outer
                 if (!outerEnumerator.moveNext()) {
                   return false;
                 }
                 outerValue = outerEnumerator.current();
                 // initial move inner
-                Enumerable<TInner> innerEnumerable = inner.apply(outerValue);
+                Enumerable<TInner> innerEnumerable = inner.apply(outerValue);//右边表集合
                 if (innerEnumerable == null) {
                   innerEnumerable = Linq4j.emptyEnumerable();
                 }
@@ -1464,6 +1490,7 @@ public abstract class EnumerableDefaults {
    * @param <TResult> Target type
    *
    * @return Collection of T2
+   * 匹配元素是class的子类的元素被保留
    */
   public static <TSource, TResult> Enumerable<TResult> ofType(
       Enumerable<TSource> enumerable, Class<TResult> clazz) {
@@ -1488,6 +1515,8 @@ public abstract class EnumerableDefaults {
    * 将所有的元素排序
    *
    * 考虑到有一些元素是相同的,因此将其抓换成map<k,list<v>>类型,对key排序,然后相同的内容存储到list中,按照顺序输出map元素即可
+   *
+   * 先进行LookupImpl处理,将数据转换成treeMap --> 输出treeMap中value迭代器,自然就有顺序的
    */
   public static <TSource, TKey> Enumerable<TSource> orderBy(
       Enumerable<TSource> source, Function1<TSource, TKey> keySelector,
@@ -1498,7 +1527,7 @@ public abstract class EnumerableDefaults {
     final Map<TKey, List<TSource>> map = new TreeMap<TKey, List<TSource>>(comparator);//排序集合
     LookupImpl<TKey, TSource> lookup = toLookup_(map, source, keySelector,
         Functions.<TSource>identitySelector());
-    return lookup.valuesEnumerable();
+    return lookup.valuesEnumerable(); //返回排序好的value集合
   }
 
   /**
@@ -1806,6 +1835,9 @@ public abstract class EnumerableDefaults {
    * Computes the sum of the sequence of Decimal values
    * that are obtained by invoking a transform function on each
    * element of the input sequence.
+   *
+   * 数据转换成BigDecimal,然后求和
+   * sum(map(value -> BigDecimal))
    */
   public static <TSource> BigDecimal sum(Enumerable<TSource> source,
       BigDecimalFunction1<TSource> selector) {
@@ -1817,6 +1849,9 @@ public abstract class EnumerableDefaults {
    * Computes the sum of the sequence of nullable
    * Decimal values that are obtained by invoking a transform
    * function on each element of the input sequence.
+   *
+   * 数据转换成BigDecimal,然后求和，注意,元素允许是null
+   * sum(map(value -> BigDecimal))
    */
   public static <TSource> BigDecimal sum(Enumerable<TSource> source,
       NullableBigDecimalFunction1<TSource> selector) {
@@ -2104,6 +2139,26 @@ public abstract class EnumerableDefaults {
     return toLookup_(map, source, keySelector, elementSelector);
   }
 
+  /**
+
+   LookupImpl 转换成TreeMap<K,List<V>> --- 循环元素,将相同的元素放在List里,转换成map<key,List<value>>形式
+   参数:
+   1.集合队列
+   2.排序对象,key按照什么方式排序
+   3.key转换函数,将集合元素转换成key
+   4.value转换器,支持将原始value转换成需要的value元素形式。默认函数可以返回原始值本身,表示不需要转换
+
+
+   map = new treeMap<key,List<Value>>(comparator)
+   for(value){
+   key = keySelect(value)
+   value = map(value)
+   list = map.get(key).add(value)
+   map.put(key,list)
+   }
+   return new LookupImpl<TKey, TElement>(treeMap)
+
+   */
   static <TSource, TKey, TElement> LookupImpl<TKey, TElement> toLookup_(
       Map<TKey, List<TElement>> map, Enumerable<TSource> source,
       Function1<TSource, TKey> keySelector,
@@ -2179,6 +2234,7 @@ public abstract class EnumerableDefaults {
     return Linq4j.asEnumerable(set).select(unwrapper);
   }
 
+  //对数据源进行解包装,只返回原始数据
   private static <TSource> Function1<Wrapped<TSource>, TSource> unwrapper() {
     return new Function1<Wrapped<TSource>, TSource>() {
       public TSource apply(Wrapped<TSource> a0) {
@@ -2187,6 +2243,7 @@ public abstract class EnumerableDefaults {
     };
   }
 
+  //对数据源进行包装,相当于map操作,对原始对象追加EqualityComparer信息
   private static <TSource> Function1<TSource, Wrapped<TSource>> wrapperFor(
       final EqualityComparer<TSource> comparer) {
     return new Function1<TSource, Wrapped<TSource>>() {
@@ -2307,7 +2364,14 @@ public abstract class EnumerableDefaults {
     return sink;
   }
 
-  /** Enumerable that implements take-while. */
+  /** Enumerable that implements take-while.
+   * 实现while语法,直到函数返回值false时停止循环
+   * for(value) {
+   *
+   *     boolean b = predicate(value,index)
+   *     if(b == false) return
+   * }
+   **/
   static class TakeWhileEnumerator<TSource> implements Enumerator<TSource> {
     private final Enumerator<TSource> enumerator;
     private final Predicate2<TSource, Integer> predicate;
@@ -2348,7 +2412,9 @@ public abstract class EnumerableDefaults {
     }
   }
 
-  /** Enumerator that implements skip-while. */
+  /** Enumerator that implements skip-while.
+   * 循环,跳过不满足条件的数据
+   **/
   static class SkipWhileEnumerator<TSource> implements Enumerator<TSource> {
     private final Enumerator<TSource> enumerator;
     private final Predicate2<TSource, Integer> predicate;
@@ -2392,7 +2458,9 @@ public abstract class EnumerableDefaults {
     }
   }
 
-  /** Enumerator that casts each value. */
+  /** Enumerator that casts each value.
+   * 集合内每一个对象 进行强转,转换成新的对象  相当于map方法
+   **/
   static class CastingEnumerator<T> implements Enumerator<T> {
     private final Enumerator<?> enumerator;
     private final Class<T> clazz;
@@ -2419,7 +2487,9 @@ public abstract class EnumerableDefaults {
     }
   }
 
-  /** Value wrapped with a comparer. */
+  /** Value wrapped with a comparer.
+   * 对元素丰富属性，即如何比较元素
+   **/
   private static class Wrapped<T> {
     private final EqualityComparer<T> comparer;
     private final T element;
@@ -2429,10 +2499,12 @@ public abstract class EnumerableDefaults {
       this.element = element;
     }
 
+    //静态方法创建 元素包装对象
     static <T> Wrapped<T> upAs(EqualityComparer<T> comparer, T element) {
       return new Wrapped<T>(comparer, element);
     }
 
+    //定义比较方法,即使用EqualityComparer进行hash和equals比较
     @Override public int hashCode() {
       return comparer.hashCode(element);
     }
@@ -2443,20 +2515,26 @@ public abstract class EnumerableDefaults {
           ((Wrapped<T>) obj).element);
     }
 
+    //取消包装,即返回元素本身
     public T unwrap() {
       return element;
     }
   }
 
-  /** Map that wraps each value. */
+  /** Map that wraps each value.
+   * 对key进行包装，目标key使用新的方式进行hash和equals计算
+   *
+   * 外界看到的还是原始的key和value,但内部是透明化的解耦,内部存储的都是key+包装对象
+   **/
   private static class WrapMap<K, V> extends AbstractMap<K, V> {
-    private final Map<Wrapped<K>, V> map = new HashMap<Wrapped<K>, V>();
+    private final Map<Wrapped<K>, V> map = new HashMap<Wrapped<K>, V>();//包赚后的对象
     private final EqualityComparer<K> comparer;
 
     protected WrapMap(EqualityComparer<K> comparer) {
       this.comparer = comparer;
     }
 
+    //返回的是原生的key+value
     @Override public Set<Entry<K, V>> entrySet() {
       return new AbstractSet<Entry<K, V>>() {
         @Override public Iterator<Entry<K, V>> iterator() {
@@ -2468,6 +2546,7 @@ public abstract class EnumerableDefaults {
               return iterator.hasNext();
             }
 
+            //返回原始key
             public Entry<K, V> next() {
               Entry<Wrapped<K>, V> next = iterator.next();
               return new SimpleEntry<K, V>(next.getKey().element,
@@ -2490,18 +2569,22 @@ public abstract class EnumerableDefaults {
       return map.containsKey(wrap((K) key));
     }
 
+    //对key进行包装
     private Wrapped<K> wrap(K key) {
       return Wrapped.upAs(comparer, key);
     }
 
+    //先对key包装,然后再获取value值
     @Override public V get(Object key) {
       return map.get(wrap((K) key));
     }
 
+    //存放数据的时候,对key进行包装
     @Override public V put(K key, V value) {
       return map.put(wrap(key), value);
     }
 
+    //同样先对key包装,在删除
     @Override public V remove(Object key) {
       return map.remove(wrap((K) key));
     }
@@ -2515,7 +2598,11 @@ public abstract class EnumerableDefaults {
     }
   }
 
-  /** Reads a populated map, applying a selector function. */
+  /** Reads a populated map, applying a selector function.
+   * 读取map信息,将map信息转换成value。
+   *
+   * for(k,v:map) --> resultSelector(k,v) ,将k和v作为参数,转换成新的对象集合
+   **/
   private static class LookupResultEnumerable<TResult, TKey, TAccumulate>
       extends AbstractEnumerable2<TResult> {
     private final Map<TKey, TAccumulate> map;

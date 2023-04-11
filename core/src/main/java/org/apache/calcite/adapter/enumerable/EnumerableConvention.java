@@ -25,6 +25,8 @@ import org.apache.calcite.plan.RelTraitDef;
 /**
  * Family of calling conventions that return results as an
  * {@link org.apache.calcite.linq4j.Enumerable}.
+ *
+ * 返回值是 org.apache.calcite.linq4j.Enumerable
  */
 public enum EnumerableConvention implements Convention {
   INSTANCE;

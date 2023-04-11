@@ -195,12 +195,14 @@ public abstract class SqlTypeUtil {
    * Recreates a given RelDataType with nullability iff any of the param
    * argTypes are nullable.当且仅当参数中任意一个是nullable时候,即类型允许为null
    * 如果参数中有任意一个字段允许为null,则返回值就允许为null
+   *
+   * 对type类型进一步包装，包装是否允许是null
    */
   public static RelDataType makeNullableIfOperandsAre(
       final RelDataTypeFactory typeFactory,
-      final List<RelDataType> argTypes,
-      RelDataType type) {
-    Preconditions.checkNotNull(type);
+      final List<RelDataType> argTypes,//输入的类型集合
+      RelDataType type) {//期待返回值
+    Preconditions.checkNotNull(type);//期待返回值不允许是null,是null就没意义了
     if (containsNullable(argTypes)) {
       type = typeFactory.createTypeWithNullability(type, true);
     }

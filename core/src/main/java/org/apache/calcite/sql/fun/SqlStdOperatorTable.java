@@ -933,6 +933,7 @@ public class SqlStdOperatorTable extends ReflectiveSqlOperatorTable {
 
   /**
    * The <code>UNNEST</code> operator.
+   * 现实场景不常用，因此不用在研究该函数场景
    */
   public static final SqlSpecialOperator UNNEST =
       new SqlUnnestOperator();

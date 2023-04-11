@@ -38,9 +38,9 @@ public interface SqlReturnTypeInference {
    *
    * @param opBinding description of operator binding
    * @return inferred type; may be null
+   * 根据策略实现，通过参数类型,推导函数返回值类型
    */
-  RelDataType inferReturnType(
-      SqlOperatorBinding opBinding);
+  RelDataType inferReturnType(SqlOperatorBinding opBinding);
 }
 
 // End SqlReturnTypeInference.java
